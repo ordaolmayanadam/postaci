@@ -26,7 +26,7 @@ public sealed partial class ComposeWindow : Window
         Title = ViewModel.WindowTitle;
         ExtendsContentIntoTitleBar = true;
         SetTitleBar(TitleBarArea);
-        AppWindow.TitleBar.PreferredHeightOption = TitleBarHeightOption.Tall;
+        AppWindow.TitleBar.PreferredHeightOption = TitleBarHeightOption.Standard;
         AppWindow.SetIcon(MainWindow.IconPath);
         WindowHelper.Resize(this, 920, 760);
 
