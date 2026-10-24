@@ -1,27 +1,40 @@
-name: Özellik isteği
-description: Yeni bir özellik veya iyileştirme önerin
+name: Özellik isteği / Feature request
+description: Yeni bir özellik veya iyileştirme önerin / Suggest a new feature or improvement
 labels: [öneri]
 body:
+  - type: markdown
+    attributes:
+      value: Türkçe veya İngilizce yazabilirsiniz. / You may write in English or Turkish.
   - type: textarea
     id: problem
     attributes:
-      label: Hangi ihtiyacı karşılıyor?
-      description: Bugün neyi yapamıyorsunuz ya da ne zor geliyor?
+      label: Hangi ihtiyacı karşılıyor? / What need does it address?
+      description: Bugün neyi yapamıyorsunuz ya da ne zor geliyor? / What can't you do today, or what feels hard?
     validations:
       required: true
   - type: textarea
     id: proposal
     attributes:
-      label: Önerilen çözüm
-      description: Nasıl çalışmasını beklersiniz? Outlook/OWA'daki karşılığı varsa belirtin.
+      label: Önerilen çözüm / Proposed solution
+      description: |
+        Nasıl çalışmasını beklersiniz? Outlook/OWA'daki karşılığı varsa belirtin.
+        How would you expect it to work? Mention the Outlook/OWA equivalent if there is one.
     validations:
       required: true
   - type: textarea
     id: alternatives
     attributes:
-      label: Düşünülen alternatifler
+      label: Düşünülen alternatifler / Alternatives considered
   - type: dropdown
     id: area
     attributes:
-      label: Alan
-      options: [Posta, Takvim, Kişiler, Ayarlar, Bildirimler / tepsi, Kurulum / dağıtım, Diğer]
+      label: Alan / Area
+      options:
+        - Posta / Mail
+        - Takvim / Calendar
+        - Kişiler / Contacts
+        - Ayarlar / Settings
+        - Bildirimler, tepsi / Notifications, tray
+        - Kurulum, dağıtım / Installation, deployment
+        - Arayüz dili, çeviri / UI language, translation
+        - Diğer / Other

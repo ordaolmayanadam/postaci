@@ -13,7 +13,7 @@
   <a href="https://github.com/KULLANICI/DEPO/actions/workflows/ci.yml"><img src="https://github.com/KULLANICI/DEPO/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue" alt="License: MIT"></a>
   <a href="#built-with-ai"><img src="https://img.shields.io/badge/built%20with-AI-8A2BE2" alt="Built with AI"></a>
-  <a href="CONTRIBUTING.md"><img src="https://img.shields.io/badge/contributions-welcome-brightgreen" alt="Contributions welcome"></a>
+  <a href="CONTRIBUTING.en.md"><img src="https://img.shields.io/badge/contributions-welcome-brightgreen" alt="Contributions welcome"></a>
   <a href="https://github.com/KULLANICI/DEPO/releases/latest"><img src="https://img.shields.io/github/v/release/KULLANICI/DEPO?include_prereleases&label=release" alt="Latest release"></a>
 </p>
 
@@ -343,7 +343,7 @@ server (at most 30 s) and retries up to twice.
 - TLS certificate validation is never disabled.
 - **No telemetry.** The app's only network traffic goes to the configured Exchange server.
 
-See [SECURITY.md](SECURITY.md) for reporting vulnerabilities.
+See the [security policy](SECURITY.en.md) for reporting vulnerabilities.
 
 ## Known limitations and roadmap
 
@@ -378,7 +378,7 @@ Postacı is a project developed by one person together with an AI assistant, and
   [issue](../../issues).
 
 Contributions prepared with AI tools are welcome too; the rules are in
-[CONTRIBUTING.md](CONTRIBUTING.md#yapay-zekâ-araçlarıyla-katkı) (in Turkish).
+[CONTRIBUTING.en.md](CONTRIBUTING.en.md#contributing-with-ai-tools).
 
 ## Contributing
 
@@ -386,9 +386,9 @@ Postacı is open to everyone: whether this is your first open-source contributio
 developer, bug reports, suggestions, documentation fixes, translations, tests and code are all welcome. Even trying
 it on a real Exchange server and sharing the result is very valuable.
 
-The contributor guide, [CONTRIBUTING.md](CONTRIBUTING.md), covers the development environment, layering rules, how
-to add an EWS operation, writing tests and the PR process. It is written in Turkish; issues, PRs and commit messages
-may be in English or Turkish. How we treat each other is described in [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md).
+The [contributor guide](CONTRIBUTING.en.md) covers the development environment, layering rules, how to add an EWS
+operation, writing tests and the PR process. Issues, PRs and commit messages may be written in English or Turkish.
+How we treat each other is described in the [Code of Conduct](CODE_OF_CONDUCT.en.md).
 
 ## License
 

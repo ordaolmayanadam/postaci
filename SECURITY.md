@@ -1,5 +1,7 @@
 # Güvenlik politikası
 
+**Türkçe** · [English](SECURITY.en.md)
+
 ## Güvenlik açığı bildirme
 
 Güvenlik açıklarını **herkese açık issue olarak açmayın.** Bunun yerine deponun **Security → Report a vulnerability**
@@ -11,6 +13,8 @@ Bildirimde şunları belirtin:
 - Etkilenen sürüm veya commit
 - Açığın etkisi (ör. betik çalıştırma, kimlik bilgisinin sızması, kimlik doğrulamasının atlanması)
 - Yeniden oluşturma adımları; gerçek posta verisi veya kimlik bilgisi **içermeden**
+
+Bildirimler Türkçe veya İngilizce yazılabilir.
 
 ## Kapsam
 

@@ -1,5 +1,7 @@
 # Davranış kuralları
 
+**Türkçe** · [English](CODE_OF_CONDUCT.en.md)
+
 Postacı herkesin katkısına açık bir projedir. Deneyim düzeyi, yaş, cinsiyet, cinsel yönelim, engellilik, etnik
 köken, din, uyruk, dil veya görünüş fark etmeksizin herkesin rahatça katılabileceği bir ortam istiyoruz.
 

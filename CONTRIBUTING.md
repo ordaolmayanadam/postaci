@@ -1,5 +1,7 @@
 # Postacı'ya katkıda bulunma
 
+**Türkçe** · [English](CONTRIBUTING.en.md)
+
 Postacı'yı geliştirmeye ayıracağınız zaman için teşekkürler. Postacı bir şirket ürünü değil, **herkesin
 geliştirmesine açık kişisel bir açık kaynak projesidir** ve büyük bölümü yapay zekâ yardımıyla yazılmıştır
 (ayrıntılar [README'de](README.md#yapay-zekâ-ile-geliştirme)). İlk katkınız olsa bile çekinmeyin; nereden
@@ -35,7 +37,6 @@ Kısa yol: [Ortam](#geliştirme-ortamı) → [Derle ve test et](#derleme-ve-test
 - Katkı türü fark etmez: hata bildirimi, öneri, belge ve yazım düzeltmesi, test, gerçek sunucuda deneme raporu,
   kod. **`iyi ilk issue`** etiketli konular yeni başlayanlar için seçilmiştir.
 - Topluluk kurallarımız [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md) dosyasındadır; katılan herkes bunlara uyar.
-
 - **Hata bildirimi** ve **özellik önerisi** için [issue şablonlarını](.github/ISSUE_TEMPLATE) kullanın. Önce aynı
   konuda açık bir issue olup olmadığına bakın.
 - **Güvenlik açıklarını** issue olarak açmayın; [SECURITY.md](SECURITY.md)'deki gizli bildirim yolunu kullanın.
@@ -60,8 +61,9 @@ Test verilerinde `sirket.com`, `mail.test.local`, `ad.soyad@sirket.com` gibi uyd
 yanıtını örnek olarak paylaşmanız gerekiyorsa önce bütün adları, adresleri, kimlikleri (`ItemId`, `ChangeKey`) ve
 içerikleri değiştirin.
 
-Yanlışlıkla gizli veri paylaşıldığını fark ederseniz hemen bakımcılara haber verin.
-**Şüpheli durum 24 saat içinde Yönetim birimine bildirmesi gerekmektedir.**
+Yanlışlıkla gizli veri paylaştığınızı (veya başkasının paylaştığını) fark ederseniz hemen bakımcılara haber verin;
+içerik silinir ve gerekirse Git geçmişinden de temizlenir. Bir parola veya token sızdıysa beklemeden değiştirin:
+silinen içerik bile önbelleklerde veya fork'larda kalmış olabilir.
 
 ## Yapay zekâ araçlarıyla katkı
 
@@ -410,7 +412,8 @@ await WaitUntil(() => vm.Messages.Count == 2 && !vm.IsLoadingList);
 
 1. Depoyu fork'layın (veya yazma izniniz varsa dal açın) ve `main`'den güncel bir dal oluşturun.
 2. Değişikliği yapın, test ekleyin, `dotnet test --project tests/ExchangeMail.Core.Tests` ile yerelde çalıştırın.
-3. Kullanıcıya görünen bir değişiklikse README'yi (özellikler, kısayollar, sorun giderme) güncelleyin.
+3. Kullanıcıya görünen bir değişiklikse README'yi (özellikler, kısayollar, sorun giderme) güncelleyin; mümkünse
+   hem [Türkçe](README.md) hem [İngilizce](README.en.md) sürümü, değilse PR'da belirtin, yardımcı olunur.
 4. PR'ı açın; [şablondaki](.github/pull_request_template.md) bölümleri doldurun. Arayüz değişikliklerinde açık ve
    koyu temada ekran görüntüsü ekleyin (gerçek veri olmadan!).
 5. CI'ın iki işi de yeşil olmalıdır:
