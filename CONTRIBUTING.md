@@ -32,6 +32,9 @@ Kısa yol: [Ortam](#geliştirme-ortamı) → [Derle ve test et](#derleme-ve-test
 - Büyük bir değişiklik (yeni ekran, yeni bağımlılık, mimari değişiklik) düşünüyorsanız kodlamaya başlamadan önce
   bir issue açıp yaklaşımı konuşalım; boşa emek harcanmasın.
 - Küçük düzeltmeler (yazım hatası, açıkça yanlış bir davranış) için doğrudan PR açabilirsiniz.
+- Proje [MIT Lisansı](LICENSE) ile dağıtılır. PR göndererek katkınızın aynı lisansla yayımlanmasını kabul etmiş
+  olursunuz. Başka bir projeden kod kopyalıyorsanız lisansının MIT ile uyumlu olduğundan emin olun ve kaynağını PR
+  açıklamasında belirtin.
 
 ## Gizlilik kuralı
 

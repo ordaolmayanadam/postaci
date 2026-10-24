@@ -14,4 +14,5 @@
 - [ ] Katman kuralları korundu (Core ve ViewModels WinUI'ye bağımlı değil)
 - [ ] Kullanıcıya görünen metinler Türkçe
 - [ ] README / CONTRIBUTING gerekiyorsa güncellendi
+- [ ] Eklenen kod kendi yazdığım ya da MIT ile uyumlu lisanslı (kaynağı belirtildi)
 - [ ] Ekran görüntülerinde ve test verilerinde gerçek kişi, adres veya posta içeriği yok

@@ -60,7 +60,9 @@ jobs:
 
       - name: Zip
         shell: pwsh
-        run: Compress-Archive -Path publish/Postaci -DestinationPath "Postaci-${{ steps.version.outputs.value }}-${{ matrix.rid }}.zip"
+        run: |
+          Copy-Item LICENSE publish/Postaci/LICENSE.txt
+          Compress-Archive -Path publish/Postaci -DestinationPath "Postaci-${{ steps.version.outputs.value }}-${{ matrix.rid }}.zip"
 
       - uses: actions/upload-artifact@v7
         with:

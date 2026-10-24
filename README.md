@@ -11,6 +11,7 @@
 
 <p align="center">
   <a href="https://github.com/KULLANICI/DEPO/actions/workflows/ci.yml"><img src="https://github.com/KULLANICI/DEPO/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/lisans-MIT-blue" alt="Lisans: MIT"></a>
   <a href="https://github.com/KULLANICI/DEPO/releases/latest"><img src="https://img.shields.io/github/v/release/KULLANICI/DEPO?include_prereleases&label=s%C3%BCr%C3%BCm" alt="Son sürüm"></a>
 </p>
 
@@ -341,6 +342,12 @@ test yazma ve PR süreci için [CONTRIBUTING.md](CONTRIBUTING.md) dosyasını ok
 
 ## Lisans
 
-Bu depo için henüz bir lisans seçilmedi. Lisans dosyası (`LICENSE`) eklenene kadar tüm hakları depo sahibine aittir.
+Postacı [MIT Lisansı](LICENSE) ile dağıtılır: kodu ticari projeler dahil özgürce kullanabilir, değiştirebilir ve
+dağıtabilirsiniz; tek koşul, telif ve lisans metnini kopyalarla birlikte korumaktır. Yazılım "olduğu gibi", hiçbir
+garanti olmadan sunulur.
+
+Kullanılan başlıca bileşenler de açık kaynak lisanslıdır: .NET ve Windows App SDK (MIT),
+CommunityToolkit.Mvvm (MIT), xUnit (Apache 2.0). Microsoft Edge WebView2 Runtime işletim sistemiyle gelir ve
+uygulamayla birlikte dağıtılmaz.
 
 Simge kaynakları ve yeniden üretme betikleri [`assets/icon/`](assets/icon/) altındadır.
