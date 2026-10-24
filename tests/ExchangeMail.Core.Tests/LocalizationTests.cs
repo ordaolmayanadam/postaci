@@ -1,6 +1,7 @@
 using System.Globalization;
 using System.Text.RegularExpressions;
 using System.Xml.Linq;
+using ExchangeMail.Core.Models;
 using ExchangeMail.ViewModels;
 
 namespace ExchangeMail.Core.Tests;
@@ -181,4 +182,19 @@ public partial class LocalizationTests
 
     [GeneratedRegex(@"""[^""\n]*[çğıİöşüÇĞÖŞÜ][^""\n]*""")]
     private static partial Regex TurkishLiteralPattern();
+}
+
+public class FolderNameTests
+{
+    [Fact]
+    public void Standard_folders_use_the_interface_language_and_others_keep_the_server_name()
+    {
+        static FolderViewModel Folder(string name, WellKnownFolder kind) =>
+            new(new MailFolder { Id = name, DisplayName = name, WellKnown = kind }, 0);
+
+        Assert.Equal(Strings.Folder_Inbox, Folder("Posteingang", WellKnownFolder.Inbox).DisplayName);
+        Assert.Equal(Strings.Folder_SentItems, Folder("Sent Items", WellKnownFolder.SentItems).DisplayName);
+        Assert.Equal("Projeler", Folder("Projeler", WellKnownFolder.None).DisplayName);
+        Assert.Equal("Inbox", Strings.ResourceManager.GetString(nameof(Strings.Folder_Inbox), System.Globalization.CultureInfo.GetCultureInfo(Loc.English)));
+    }
 }

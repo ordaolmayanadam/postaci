@@ -271,6 +271,9 @@
   <data name="Common_Remove" xml:space="preserve">
     <value>Remove</value>
   </data>
+  <data name="Common_ResizeColumn" xml:space="preserve">
+    <value>Resize column</value>
+  </data>
   <data name="Common_ResultCount" xml:space="preserve">
     <value>{0} results</value>
   </data>
@@ -594,6 +597,24 @@
   </data>
   <data name="Ews_UnknownError" xml:space="preserve">
     <value>Unknown EWS error</value>
+  </data>
+  <data name="Folder_DeletedItems" xml:space="preserve">
+    <value>Deleted Items</value>
+  </data>
+  <data name="Folder_Drafts" xml:space="preserve">
+    <value>Drafts</value>
+  </data>
+  <data name="Folder_Inbox" xml:space="preserve">
+    <value>Inbox</value>
+  </data>
+  <data name="Folder_JunkEmail" xml:space="preserve">
+    <value>Junk Email</value>
+  </data>
+  <data name="Folder_Outbox" xml:space="preserve">
+    <value>Outbox</value>
+  </data>
+  <data name="Folder_SentItems" xml:space="preserve">
+    <value>Sent Items</value>
   </data>
   <data name="FreeBusy_Away" xml:space="preserve">
     <value>Away</value>

@@ -7,7 +7,20 @@ namespace ExchangeMail.ViewModels;
 public sealed partial class FolderViewModel(MailFolder folder, int depth) : ObservableObject
 {
     public string Id => folder.Id;
-    public string DisplayName => folder.DisplayName;
+    /// <summary>
+    /// Standard folders use the interface language; the server names them in the mailbox's language, which can
+    /// differ from the language chosen in Postacı.
+    /// </summary>
+    public string DisplayName => WellKnown switch
+    {
+        WellKnownFolder.Inbox => Strings.Folder_Inbox,
+        WellKnownFolder.Drafts => Strings.Folder_Drafts,
+        WellKnownFolder.SentItems => Strings.Folder_SentItems,
+        WellKnownFolder.DeletedItems => Strings.Folder_DeletedItems,
+        WellKnownFolder.JunkEmail => Strings.Folder_JunkEmail,
+        WellKnownFolder.Outbox => Strings.Folder_Outbox,
+        _ => folder.DisplayName,
+    };
     public int Depth => depth;
     public WellKnownFolder WellKnown => folder.WellKnown;
 

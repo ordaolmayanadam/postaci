@@ -271,6 +271,9 @@
   <data name="Common_Remove" xml:space="preserve">
     <value>Kaldır</value>
   </data>
+  <data name="Common_ResizeColumn" xml:space="preserve">
+    <value>Sütunu yeniden boyutlandır</value>
+  </data>
   <data name="Common_ResultCount" xml:space="preserve">
     <value>{0} sonuç</value>
   </data>
@@ -594,6 +597,24 @@
   </data>
   <data name="Ews_UnknownError" xml:space="preserve">
     <value>Bilinmeyen EWS hatası</value>
+  </data>
+  <data name="Folder_DeletedItems" xml:space="preserve">
+    <value>Silinmiş Öğeler</value>
+  </data>
+  <data name="Folder_Drafts" xml:space="preserve">
+    <value>Taslaklar</value>
+  </data>
+  <data name="Folder_Inbox" xml:space="preserve">
+    <value>Gelen Kutusu</value>
+  </data>
+  <data name="Folder_JunkEmail" xml:space="preserve">
+    <value>Gereksiz E-posta</value>
+  </data>
+  <data name="Folder_Outbox" xml:space="preserve">
+    <value>Giden Kutusu</value>
+  </data>
+  <data name="Folder_SentItems" xml:space="preserve">
+    <value>Gönderilmiş Öğeler</value>
   </data>
   <data name="FreeBusy_Away" xml:space="preserve">
     <value>Dışarıda</value>
