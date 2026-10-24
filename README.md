@@ -17,6 +17,10 @@
   <a href="https://github.com/KULLANICI/DEPO/releases/latest"><img src="https://img.shields.io/github/v/release/KULLANICI/DEPO?include_prereleases&label=s%C3%BCr%C3%BCm" alt="Son sürüm"></a>
 </p>
 
+<p align="center">
+  <b>Türkçe</b> · <a href="README.en.md">English</a>
+</p>
+
 ---
 
 Postacı, kurum içinde barındırılan **Exchange Server 2016, 2019 ve Subscription Edition** posta kutularına
@@ -373,7 +377,8 @@ olun, hata bildirimleri, öneriler, belge düzeltmeleri, çeviriler, testler ve 
 Gerçek bir Exchange sunucusunda deneyip sonucu paylaşmak bile çok değerlidir.
 
 Geliştirme ortamı, katman kuralları, yeni bir EWS işleminin nasıl ekleneceği, test yazma ve PR süreci için
-[CONTRIBUTING.md](CONTRIBUTING.md) dosyasını okuyun. Topluluk içinde birbirimize nasıl davrandığımız
+[CONTRIBUTING.md](CONTRIBUTING.md) dosyasını okuyun. Issue, PR ve commit mesajları Türkçe veya İngilizce
+yazılabilir. Topluluk içinde birbirimize nasıl davrandığımız
 [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md) dosyasında yazılıdır.
 
 ## Lisans
