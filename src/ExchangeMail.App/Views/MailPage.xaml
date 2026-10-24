@@ -63,7 +63,16 @@
                 SelectionMode="Single">
                 <ListView.ItemTemplate>
                     <DataTemplate x:DataType="vm:FolderViewModel">
-                        <Grid Height="36" Padding="{x:Bind h:Ui.Indent(Depth)}" ColumnSpacing="12">
+                        <!--  A drop target for messages dragged from the list; the background makes the whole row hit-testable.  -->
+                        <Grid
+                            Height="36"
+                            Padding="{x:Bind h:Ui.Indent(Depth)}"
+                            AllowDrop="True"
+                            Background="Transparent"
+                            ColumnSpacing="12"
+                            DragLeave="OnFolderDragLeave"
+                            DragOver="OnFolderDragOver"
+                            Drop="OnFolderDrop">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="Auto" />
                                 <ColumnDefinition Width="*" />
@@ -124,6 +133,13 @@
                             Command="{x:Bind ViewModel.ClearSearchCommand}"
                             Visibility="{x:Bind ViewModel.IsSearchActive, Mode=OneWay}" />
                         <ProgressRing Width="16" Height="16" IsActive="{x:Bind ViewModel.IsLoadingList, Mode=OneWay}" />
+                        <ToggleButton
+                            Padding="8,4"
+                            AutomationProperties.Name="{h:L Key=Mail_ConversationView}"
+                            IsChecked="{x:Bind ViewModel.IsConversationView, Mode=TwoWay}"
+                            ToolTipService.ToolTip="{h:L Key=Mail_ConversationView}">
+                            <FontIcon Glyph="&#xE8F2;" FontSize="14" />
+                        </ToggleButton>
                     </StackPanel>
                 </Grid>
             </StackPanel>
@@ -144,14 +160,22 @@
                 Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                 Visibility="{x:Bind ViewModel.IsListEmpty, Mode=OneWay}" />
 
+            <!--
+                Extended selection: Ctrl/Shift-click and Ctrl+A. The selection is synced with the view model in code-behind
+                (SelectedItem can only carry one row). Dragged rows can be dropped on a folder.
+            -->
             <ListView
                 x:Name="MessageList"
                 Grid.Row="2"
+                CanDragItems="True"
+                CanReorderItems="False"
                 ItemsSource="{x:Bind ViewModel.Messages}"
-                SelectedItem="{x:Bind ViewModel.SelectedMessage, Mode=TwoWay}"
-                SelectionMode="Single"
+                SelectionMode="Extended"
                 DoubleTapped="OnMessageDoubleTapped"
-                KeyDown="OnMessageListKeyDown">
+                DragItemsCompleted="OnMessagesDragCompleted"
+                DragItemsStarting="OnMessagesDragStarting"
+                KeyDown="OnMessageListKeyDown"
+                SelectionChanged="OnMessageSelectionChanged">
                 <ListView.ItemTemplate>
                     <DataTemplate x:DataType="vm:MessageItemViewModel">
                         <Grid Padding="0,8" ColumnSpacing="10">
@@ -168,6 +192,7 @@
                                 <Grid ColumnSpacing="6">
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
                                         <ColumnDefinition Width="Auto" />
                                         <ColumnDefinition Width="Auto" />
                                         <ColumnDefinition Width="Auto" />
@@ -196,8 +221,18 @@
                                         FontSize="12"
                                         ToolTipService.ToolTip="{h:L Key=Mail_HasAttachment}"
                                         Visibility="{x:Bind HasAttachments}" />
-                                    <TextBlock
+                                    <!--  Number of messages in the conversation.  -->
+                                    <Border
                                         Grid.Column="4"
+                                        Padding="6,0"
+                                        VerticalAlignment="Center"
+                                        Background="{ThemeResource SubtleFillColorSecondaryBrush}"
+                                        CornerRadius="8"
+                                        Visibility="{x:Bind HasCount}">
+                                        <TextBlock Text="{x:Bind CountText}" Style="{StaticResource CaptionTextBlockStyle}" />
+                                    </Border>
+                                    <TextBlock
+                                        Grid.Column="5"
                                         VerticalAlignment="Center"
                                         Text="{x:Bind DateText}"
                                         Style="{StaticResource CaptionTextBlockStyle}"
@@ -270,7 +305,7 @@
                 </AppBarButton>
                 <AppBarSeparator />
                 <AppBarButton Icon="Delete" Label="{h:L Key=Common_Delete}" Command="{x:Bind ViewModel.DeleteCommand}" />
-                <AppBarButton Icon="MoveToFolder" Label="{h:L Key=Mail_Move}" IsEnabled="{x:Bind h:Ui.IsNotNull(ViewModel.SelectedMessage), Mode=OneWay}">
+                <AppBarButton Icon="MoveToFolder" Label="{h:L Key=Mail_Move}" IsEnabled="{x:Bind ViewModel.HasSelection, Mode=OneWay}">
                     <AppBarButton.Flyout>
                         <MenuFlyout x:Name="MoveFlyout" Opening="OnMoveFlyoutOpening" />
                     </AppBarButton.Flyout>
@@ -294,7 +329,7 @@
                 Spacing="8"
                 Visibility="{x:Bind ViewModel.ShowPlaceholder, Mode=OneWay}">
                 <FontIcon Glyph="&#xE715;" FontSize="48" Foreground="{ThemeResource TextFillColorTertiaryBrush}" />
-                <TextBlock Text="{h:L Key=Mail_SelectItem}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                <TextBlock Text="{x:Bind ViewModel.PlaceholderText, Mode=OneWay}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
             </StackPanel>
 
             <ProgressRing
@@ -328,6 +363,12 @@
                             IsTextSelectionEnabled="True"
                             TextWrapping="Wrap" />
                     </StackPanel>
+                    <TextBlock
+                        Margin="0,-8,0,0"
+                        Text="{x:Bind ViewModel.Current.ThreadText, Mode=OneWay}"
+                        Style="{StaticResource CaptionTextBlockStyle}"
+                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                        Visibility="{x:Bind ViewModel.Current.IsThread, Mode=OneWay, FallbackValue=Collapsed}" />
                     <Grid ColumnSpacing="12">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="Auto" />

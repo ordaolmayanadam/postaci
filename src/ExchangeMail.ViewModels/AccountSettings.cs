@@ -102,10 +102,16 @@ public sealed class SettingsStore(string? directory = null)
 /// <summary>An authenticated connection to one mailbox.</summary>
 public sealed class MailSession(EwsClient client, AccountSettings account, UserPreferences? preferences = null) : IDisposable
 {
-    public EwsClient Client { get; } = client;
+    public EwsClient Client { get; } = WithAnchor(client, account);
     public AccountSettings Account { get; } = account;
     /// <summary>Shared, live preferences; the settings page edits this instance.</summary>
     public UserPreferences Preferences { get; } = preferences ?? new UserPreferences();
 
     public void Dispose() => Client.Dispose();
+
+    private static EwsClient WithAnchor(EwsClient client, AccountSettings account)
+    {
+        if (!string.IsNullOrWhiteSpace(account.Email)) client.AnchorMailbox ??= account.Email;
+        return client;
+    }
 }

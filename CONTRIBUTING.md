@@ -251,6 +251,8 @@ istek biçimi testlerde birebir doğrulanabilir. Yeni bir işlem şu adımlarla 
 | `EwsClient.Calendar.cs` | Randevu listeleme/okuma/oluşturma/güncelleme/silme, toplantı yanıtı, uygunluk |
 | `EwsClient.Contacts.cs` | Kişiler, dizin araması |
 | `EwsClient.AutoReply.cs` | Otomatik yanıt (Out of Office) |
+| `EwsClient.Conversations.cs` | Konuşma listesi ve konuşma iletileri |
+| `EwsClient.Streaming.cs` | Streaming abonelik ve anlık bildirimler (uzun süre açık kalan bağlantı) |
 
 Yeni bir alan (ör. görevler) ekliyorsanız `EwsClient.Tasks.cs` gibi yeni bir partial dosya açın ve modelleri
 `Models/` altına koyun.

@@ -67,7 +67,36 @@ public sealed record MailDetail(
     bool IsHtml,
     bool IsRead,
     Importance Importance,
-    IReadOnlyList<AttachmentInfo> Attachments);
+    IReadOnlyList<AttachmentInfo> Attachments,
+    string? ItemClass = null);
+
+/// <summary>A conversation (thread) as listed in one folder.</summary>
+public sealed record ConversationSummary(
+    string ConversationId,
+    string Topic,
+    IReadOnlyList<string> Senders,
+    IReadOnlyList<string> Recipients,
+    DateTimeOffset LastDelivery,
+    int MessageCount,
+    int GlobalMessageCount,
+    int UnreadCount,
+    bool HasAttachments,
+    Importance Importance,
+    IReadOnlyList<EwsItemId> ItemIds);
+
+public sealed record ConversationPage(IReadOnlyList<ConversationSummary> Items, int TotalCount, int NextOffset, bool IsLastPage);
+
+/// <summary>One message of a conversation, with only the text it added (not the quoted history).</summary>
+public sealed record ThreadMessage(
+    EwsItemId ItemId,
+    string Subject,
+    MailboxAddress? From,
+    IReadOnlyList<MailboxAddress> To,
+    DateTimeOffset? Received,
+    string Body,
+    bool IsHtml,
+    string Preview,
+    string ItemClass);
 
 public sealed record OutgoingAttachment(string Name, string ContentType, byte[] Content);
 

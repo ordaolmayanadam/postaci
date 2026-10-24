@@ -589,6 +589,12 @@
   <data name="Ews_SoapFault" xml:space="preserve">
     <value>SOAP hatası</value>
   </data>
+  <data name="Ews_StreamUnreadable" xml:space="preserve">
+    <value>Sunucudan okunamayan bir bildirim alındı.</value>
+  </data>
+  <data name="Ews_SubscriptionIdMissing" xml:space="preserve">
+    <value>Yanıtta SubscriptionId yok.</value>
+  </data>
   <data name="Ews_Timeout" xml:space="preserve">
     <value>Sunucu zamanında yanıt vermedi.</value>
   </data>
@@ -700,6 +706,15 @@
   <data name="Mail_ClickToSave" xml:space="preserve">
     <value>Kaydetmek için tıklayın</value>
   </data>
+  <data name="Mail_ConversationCount" xml:space="preserve">
+    <value>{0} konuşma</value>
+  </data>
+  <data name="Mail_ConversationCount_One" xml:space="preserve">
+    <value>{0} konuşma</value>
+  </data>
+  <data name="Mail_ConversationView" xml:space="preserve">
+    <value>Konuşmaya göre grupla</value>
+  </data>
   <data name="Mail_EditDraft" xml:space="preserve">
     <value>Taslağı düzenle</value>
   </data>
@@ -730,6 +745,9 @@
   <data name="Mail_ItemCount_One" xml:space="preserve">
     <value>{0} öğe</value>
   </data>
+  <data name="Mail_ItemsSelected" xml:space="preserve">
+    <value>{0} öğe seçildi</value>
+  </data>
   <data name="Mail_MarkReadFailed" xml:space="preserve">
     <value>Okundu olarak işaretlenemedi: {0}</value>
   </data>
@@ -745,6 +763,9 @@
   <data name="Mail_Move" xml:space="preserve">
     <value>Taşı</value>
   </data>
+  <data name="Mail_MoveToFolder" xml:space="preserve">
+    <value>{0} klasörüne taşı</value>
+  </data>
   <data name="Mail_New" xml:space="preserve">
     <value>Yeni posta</value>
   </data>
@@ -759,6 +780,9 @@
   </data>
   <data name="Mail_OpenFailed" xml:space="preserve">
     <value>İleti açılamadı: {0}</value>
+  </data>
+  <data name="Mail_PermanentDeleteManyQuestion" xml:space="preserve">
+    <value>{0} öğe kalıcı olarak silinecek. Devam edilsin mi?</value>
   </data>
   <data name="Mail_PermanentDeleteQuestion" xml:space="preserve">
     <value>Bu ileti kalıcı olarak silinecek. Devam edilsin mi?</value>
@@ -795,6 +819,12 @@
   </data>
   <data name="Mail_ShowImages" xml:space="preserve">
     <value>Resimleri göster</value>
+  </data>
+  <data name="Mail_ThreadCount" xml:space="preserve">
+    <value>Konuşmada {0} ileti</value>
+  </data>
+  <data name="Mail_ThreadCount_One" xml:space="preserve">
+    <value>Konuşmada {0} ileti</value>
   </data>
   <data name="Mail_ToggleRead" xml:space="preserve">
     <value>Okundu / okunmadı</value>

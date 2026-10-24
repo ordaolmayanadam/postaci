@@ -51,6 +51,9 @@ public sealed partial class UserPreferences : ObservableObject
     [ObservableProperty] private int _calendarSidebarWidth;
     [ObservableProperty] private int _calendarDetailPaneWidth;
 
+    /// <summary>The message list groups mail by conversation.</summary>
+    [ObservableProperty] private bool _conversationView;
+
     /// <summary>Interface language: "tr", "en", or empty to follow Windows. Applied at startup.</summary>
     [ObservableProperty] private string _language = "";
 

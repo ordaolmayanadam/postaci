@@ -4,7 +4,9 @@ using ExchangeMail.ViewModels;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
+using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Navigation;
+using Windows.ApplicationModel.DataTransfer;
 using Windows.Storage.Pickers;
 using Windows.System;
 
@@ -13,8 +15,16 @@ namespace ExchangeMail.App.Views;
 /// <summary>Mail view. Cached by the shell frame, so it is initialized once per session.</summary>
 public sealed partial class MailPage : Page
 {
+    private static readonly SolidColorBrush NoBrush = new(Microsoft.UI.Colors.Transparent);
+
     private readonly HtmlViewer _body;
     private MessageDetailViewModel? _shownDetail;
+
+    /// <summary>Rows being dragged from the message list, until the drag ends.</summary>
+    private IReadOnlyList<MessageItemViewModel>? _dragged;
+
+    /// <summary>Set while the list selection is changed from the view model, so it is not echoed back.</summary>
+    private bool _syncingSelection;
 
     public MailPage()
     {
@@ -54,6 +64,11 @@ public sealed partial class MailPage : Page
 
     private void OnViewModelPropertyChanged(object? sender, PropertyChangedEventArgs e)
     {
+        if (e.PropertyName == nameof(MainViewModel.SelectedItems))
+        {
+            SyncListSelection();
+            return;
+        }
         if (e.PropertyName != nameof(MainViewModel.Current)) return;
         if (_shownDetail is not null) _shownDetail.PropertyChanged -= OnDetailPropertyChanged;
         _shownDetail = ViewModel.Current;
@@ -85,6 +100,68 @@ public sealed partial class MailPage : Page
             e.Handled = true;
             ViewModel.DeleteCommand.Execute(null);
         }
+    }
+
+    private void OnMessageSelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        if (_syncingSelection || ViewModel is null) return;
+        ViewModel.SetSelection(MessageList.SelectedItems.OfType<MessageItemViewModel>().ToList());
+    }
+
+    /// <summary>Shows a selection the view model made itself (after a delete, from a notification).</summary>
+    private void SyncListSelection()
+    {
+        var wanted = ViewModel.SelectedItems;
+        var shown = MessageList.SelectedItems.OfType<MessageItemViewModel>().ToList();
+        if (shown.Count == wanted.Count && shown.All(wanted.Contains)) return;
+
+        _syncingSelection = true;
+        try
+        {
+            MessageList.SelectedItems.Clear();
+            foreach (var item in wanted) MessageList.SelectedItems.Add(item);
+        }
+        finally
+        {
+            _syncingSelection = false;
+        }
+        if (wanted.Count > 0) MessageList.ScrollIntoView(wanted[0]);
+    }
+
+    private void OnMessagesDragStarting(object sender, DragItemsStartingEventArgs e)
+    {
+        _dragged = e.Items.OfType<MessageItemViewModel>().ToList();
+        e.Data.RequestedOperation = DataPackageOperation.Move;
+        e.Data.SetText(string.Join(Environment.NewLine, _dragged.Select(m => m.Subject)));
+    }
+
+    private void OnMessagesDragCompleted(ListViewBase sender, DragItemsCompletedEventArgs args) => _dragged = null;
+
+    private void OnFolderDragOver(object sender, DragEventArgs e)
+    {
+        if (_dragged is { Count: > 0 } && sender is Panel { DataContext: FolderViewModel folder } row && folder != ViewModel.SelectedFolder)
+        {
+            e.AcceptedOperation = DataPackageOperation.Move;
+            e.DragUIOverride.Caption = Loc.Format(Strings.Mail_MoveToFolder, folder.DisplayName);
+            row.Background = (Brush)Application.Current.Resources["SubtleFillColorSecondaryBrush"];
+        }
+        else
+        {
+            e.AcceptedOperation = DataPackageOperation.None;
+        }
+    }
+
+    private void OnFolderDragLeave(object sender, DragEventArgs e)
+    {
+        if (sender is Panel row) row.Background = NoBrush;
+    }
+
+    private async void OnFolderDrop(object sender, DragEventArgs e)
+    {
+        if (sender is not Panel { DataContext: FolderViewModel folder } row || _dragged is not { Count: > 0 } items) return;
+        row.Background = NoBrush;
+        _dragged = null;
+        await ViewModel.MoveAsync(items, folder);
     }
 
     private void OnMessageDoubleTapped(object sender, DoubleTappedRoutedEventArgs e)

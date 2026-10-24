@@ -253,6 +253,8 @@ dependency, and the exact request shape can be verified in tests. A new operatio
 | `EwsClient.Calendar.cs` | Listing/reading/creating/updating/deleting appointments, meeting responses, availability |
 | `EwsClient.Contacts.cs` | Contacts, directory search |
 | `EwsClient.AutoReply.cs` | Automatic replies (Out of Office) |
+| `EwsClient.Conversations.cs` | Conversation list and conversation messages |
+| `EwsClient.Streaming.cs` | Streaming subscription and push notifications (a long-lived connection) |
 
 If you are adding a new area (e.g. tasks), create a new partial file such as `EwsClient.Tasks.cs` and put the models
 under `Models/`.

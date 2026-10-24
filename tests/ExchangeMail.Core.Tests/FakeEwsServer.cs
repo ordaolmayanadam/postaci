@@ -16,6 +16,9 @@ internal sealed class FakeEwsServer : HttpMessageHandler
     public List<XElement> Requests { get; } = [];
     public List<XElement?> Headers { get; } = [];
 
+    /// <summary>X-AnchorMailbox HTTP header of each request (null when absent).</summary>
+    public List<string?> AnchorMailboxes { get; } = [];
+
     public IEnumerable<string> Operations => Requests.Select(r => r.Name.LocalName);
 
     public XElement Request(string operation) => Requests.Single(r => r.Name.LocalName == operation);
@@ -50,6 +53,7 @@ internal sealed class FakeEwsServer : HttpMessageHandler
         var operation = doc.Root!.Element(XName.Get("Body", "http://schemas.xmlsoap.org/soap/envelope/"))!.Elements().First();
         Requests.Add(operation);
         Headers.Add(doc.Root!.Element(XName.Get("Header", "http://schemas.xmlsoap.org/soap/envelope/")));
+        AnchorMailboxes.Add(request.Headers.TryGetValues("X-AnchorMailbox", out var anchor) ? anchor.Single() : null);
 
         var name = operation.Name.LocalName;
         if (!_responses.TryGetValue(name, out var queue) || queue.Count == 0)

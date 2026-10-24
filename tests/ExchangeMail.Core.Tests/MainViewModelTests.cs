@@ -5,6 +5,8 @@ namespace ExchangeMail.Core.Tests;
 
 public class MainViewModelTests
 {
+    private static readonly System.Xml.Linq.XNamespace Tns = FakeEwsServer.T;
+
     private const string WellKnown = """
         <m:GetFolderResponse><m:ResponseMessages>
           <m:GetFolderResponseMessage ResponseClass="Success"><m:ResponseCode>NoError</m:ResponseCode><m:Folders><t:Folder><t:FolderId Id="ROOT" /></t:Folder></m:Folders></m:GetFolderResponseMessage>
@@ -169,6 +171,74 @@ public class MainViewModelTests
         // Unlike the silent background poll, a manual check says why it failed.
         await vm.SendReceiveCommand.ExecuteAsync(null);
         Assert.StartsWith(Loc.Format(Strings.Mail_SendReceiveFailed, ""), vm.ErrorMessage);
+    }
+
+    private static string Ok(string operation, string inner = "") =>
+        $"""<m:{operation}Response><m:ResponseMessages><m:{operation}ResponseMessage ResponseClass="Success"><m:ResponseCode>NoError</m:ResponseCode>{inner}</m:{operation}ResponseMessage></m:ResponseMessages></m:{operation}Response>""";
+
+    private static async Task<(FakeEwsServer Server, MainViewModel Vm)> LoadThreeAsync(params (string Operation, string Body)[] then)
+    {
+        var server = new FakeEwsServer()
+            .On("GetFolder", WellKnown)
+            .On("FindFolder", Folders)
+            .On("FindItem", Items(("C", false), ("B", false), ("A", true)));
+        foreach (var (operation, body) in then) server.On(operation, body);
+        var vm = new MainViewModel(new MailSession(server.CreateClient(), new AccountSettings { Email = "ben@sirket.com" }));
+        await vm.InitializeAsync();
+        await WaitUntil(() => vm.Messages.Count == 3 && !vm.IsLoadingList);
+        return (server, vm);
+    }
+
+    [Fact]
+    public async Task Several_selected_messages_are_deleted_with_one_request()
+    {
+        var (server, vm) = await LoadThreeAsync(("DeleteItem", Ok("DeleteItem")));
+
+        vm.SetSelection([vm.Messages[0], vm.Messages[1]]);
+        Assert.Null(vm.SelectedMessage);
+        Assert.Null(vm.Current);
+        Assert.Equal("2 öğe seçildi", vm.PlaceholderText);
+        Assert.True(vm.DeleteCommand.CanExecute(null));
+
+        await vm.DeleteCommand.ExecuteAsync(null);
+
+        Assert.Equal(["C", "B"], server.Request("DeleteItem").Descendants(Tns + "ItemId").Select(i => (string?)i.Attribute("Id")));
+        Assert.Equal(["A"], vm.Messages.Select(m => m.Id.Id));
+        Assert.Equal(0, vm.SelectedFolder!.UnreadCount); // both deleted messages were unread
+        Assert.Same(vm.Messages[0], vm.SelectedMessage); // the next row takes the first removed row's place
+        Assert.Equal([vm.Messages[0]], vm.SelectedItems);
+    }
+
+    [Fact]
+    public async Task Dropped_messages_move_to_the_folder()
+    {
+        var (server, vm) = await LoadThreeAsync(("MoveItem", Ok("MoveItem")));
+        var archive = new FolderViewModel(new MailFolder { Id = "ARCHIVE", DisplayName = "Arşiv" }, 0);
+
+        await vm.MoveAsync([vm.Messages[1], vm.Messages[2]], archive);
+
+        var request = server.Request("MoveItem");
+        Assert.Equal("ARCHIVE", (string?)request.Descendants(Tns + "FolderId").Single().Attribute("Id"));
+        Assert.Equal(["B", "A"], request.Descendants(Tns + "ItemId").Select(i => (string?)i.Attribute("Id")));
+        Assert.Equal(["C"], vm.Messages.Select(m => m.Id.Id));
+        Assert.Equal(1, archive.UnreadCount);
+        Assert.Equal(2, archive.TotalCount);
+    }
+
+    [Fact]
+    public async Task Toggling_a_mixed_selection_marks_everything_read()
+    {
+        var (server, vm) = await LoadThreeAsync(("UpdateItem", Ok("UpdateItem",
+            """<m:Items><t:Message><t:ItemId Id="B" ChangeKey="b2" /></t:Message></m:Items></m:UpdateItemResponseMessage><m:UpdateItemResponseMessage ResponseClass="Success"><m:ResponseCode>NoError</m:ResponseCode><m:Items><t:Message><t:ItemId Id="A" ChangeKey="a2" /></t:Message></m:Items>""")));
+
+        vm.SetSelection([vm.Messages[1], vm.Messages[2]]);
+        await vm.ToggleReadCommand.ExecuteAsync(null);
+
+        Assert.Equal(2, server.Request("UpdateItem").Descendants(Tns + "ItemChange").Count());
+        Assert.True(vm.Messages[1].IsRead);
+        Assert.True(vm.Messages[2].IsRead);
+        Assert.Equal("b2", vm.Messages[1].Id.ChangeKey);
+        Assert.Equal(0, vm.SelectedFolder!.UnreadCount);
     }
 
     private static async Task WaitUntil(Func<bool> condition)

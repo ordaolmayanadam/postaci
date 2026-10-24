@@ -71,6 +71,33 @@ public static partial class MailFormat
 
     public static bool HasRemoteContent(string html) => RemoteReference().IsMatch(html);
 
+    /// <summary>
+    /// One HTML document for a conversation: each message's own text under a header with sender, date and
+    /// recipients, newest first. Header values are encoded; the bodies go through the same display policy (CSP,
+    /// no scripts) as a single message.
+    /// </summary>
+    public static string BuildThreadHtml(IEnumerable<Core.Models.ThreadMessage> messages)
+    {
+        var sb = new StringBuilder("<div>");
+        foreach (var m in messages)
+        {
+            var to = string.Join("; ", m.To.Select(a => a.Display));
+            sb.Append("<div style=\"padding:12px 0 16px;border-bottom:1px solid rgba(128,128,128,.35)\">")
+              .Append("<div style=\"font-family:'Segoe UI',sans-serif;font-size:12px;color:#6b6b6b;margin-bottom:10px\">")
+              .Append("<b style=\"color:#1a1a1a;font-size:13px\">").Append(WebUtility.HtmlEncode(m.From?.Display ?? "")).Append("</b>")
+              .Append(" · ").Append(WebUtility.HtmlEncode(LongDate(m.Received)));
+            if (to.Length > 0)
+                sb.Append("<br>").Append(WebUtility.HtmlEncode(Strings.Mail_ToLabel)).Append(' ').Append(WebUtility.HtmlEncode(to));
+            sb.Append("</div><div>");
+            if (m.Body.Length > 0)
+                sb.Append(m.IsHtml ? ExtractBodyHtml(m.Body) : WebUtility.HtmlEncode(m.Body).ReplaceLineEndings("<br>"));
+            else
+                sb.Append("<p>").Append(WebUtility.HtmlEncode(m.Preview)).Append("</p>");
+            sb.Append("</div></div>");
+        }
+        return sb.Append("</div>").ToString();
+    }
+
     public const string DefaultComposeFont = "Segoe UI";
     public const int DefaultComposeFontSize = 11;
 

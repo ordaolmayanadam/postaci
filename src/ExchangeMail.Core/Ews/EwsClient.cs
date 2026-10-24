@@ -19,15 +19,23 @@ public sealed partial class EwsClient : IDisposable
     private const int MaxBusyRetries = 2;
 
     private readonly HttpClient _http;
+    private readonly HttpMessageHandler _handler;
 
     public EwsClient(Uri ewsUrl, HttpMessageHandler handler, bool disposeHandler = true)
     {
         EwsUrl = ewsUrl;
+        _handler = handler;
         _http = new HttpClient(handler, disposeHandler) { Timeout = TimeSpan.FromSeconds(100) };
         _http.DefaultRequestHeaders.UserAgent.ParseAdd("Postaci/1.0");
     }
 
     public Uri EwsUrl { get; }
+
+    /// <summary>
+    /// Mailbox sent as X-AnchorMailbox so a multi-server Exchange routes every request (and the streaming
+    /// subscription in particular) to the server that holds the mailbox.
+    /// </summary>
+    public string? AnchorMailbox { get; set; }
 
     /// <summary>Creates a client that authenticates with NTLM/Kerberos (Negotiate) or Basic, whichever the server offers.</summary>
     public static EwsClient Create(Uri ewsUrl, ICredentials credentials) => new(ewsUrl, CreateHandler(credentials));
@@ -40,7 +48,11 @@ public sealed partial class EwsClient : IDisposable
         PooledConnectionLifetime = TimeSpan.FromMinutes(10),
     };
 
-    public void Dispose() => _http.Dispose();
+    public void Dispose()
+    {
+        _streamingHttp?.Dispose();
+        _http.Dispose();
+    }
 
     #region Folders
 
@@ -215,7 +227,8 @@ public sealed partial class EwsClient : IDisposable
                     Field("message:ToRecipients"),
                     Field("message:CcRecipients"),
                     Field("message:BccRecipients"),
-                    Field("message:IsRead"))),
+                    Field("message:IsRead"),
+                    Field("item:ItemClass"))),
             M("ItemIds", ItemIdElement(id)));
 
         var item = Single(await ExecuteAsync(request, ct)).Element(MNs + "Items")?.Elements().FirstOrDefault()
@@ -244,7 +257,8 @@ public sealed partial class EwsClient : IDisposable
             !string.Equals((string?)body?.Attribute("BodyType"), "Text", StringComparison.OrdinalIgnoreCase),
             (bool?)item.Element(TNs + "IsRead") ?? true,
             ParseImportance(item.Element(TNs + "Importance")),
-            attachments);
+            attachments,
+            (string?)item.Element(TNs + "ItemClass"));
     }
 
     /// <summary>Marks items read or unread and returns their new ids (change keys change on every update).</summary>
@@ -527,7 +541,8 @@ public sealed partial class EwsClient : IDisposable
         }
     }
 
-    private async Task<XElement> SendSoapAsync(XElement operation, CancellationToken ct, bool withTimeZone)
+    /// <summary>A POST of <paramref name="operation"/> wrapped in a SOAP envelope, with the routing header.</summary>
+    private HttpRequestMessage BuildRequest(XElement operation, bool withTimeZone)
     {
         var envelope = new XElement(Soap + "Envelope",
             new XAttribute(XNamespace.Xmlns + "soap", Soap),
@@ -538,11 +553,21 @@ public sealed partial class EwsClient : IDisposable
                 withTimeZone && TimeZoneId is not null ? T("TimeZoneContext", T("TimeZoneDefinition", new XAttribute("Id", TimeZoneId))) : null),
             new XElement(Soap + "Body", operation));
 
-        using var content = new StringContent(envelope.ToString(SaveOptions.DisableFormatting), Encoding.UTF8, "text/xml");
+        var request = new HttpRequestMessage(HttpMethod.Post, EwsUrl)
+        {
+            Content = new StringContent(envelope.ToString(SaveOptions.DisableFormatting), Encoding.UTF8, "text/xml"),
+        };
+        if (!string.IsNullOrEmpty(AnchorMailbox)) request.Headers.TryAddWithoutValidation("X-AnchorMailbox", AnchorMailbox);
+        return request;
+    }
+
+    private async Task<XElement> SendSoapAsync(XElement operation, CancellationToken ct, bool withTimeZone)
+    {
+        using var request = BuildRequest(operation, withTimeZone);
         HttpResponseMessage response;
         try
         {
-            response = await _http.PostAsync(EwsUrl, content, ct);
+            response = await _http.SendAsync(request, ct);
         }
         catch (HttpRequestException ex)
         {
@@ -569,24 +594,27 @@ public sealed partial class EwsClient : IDisposable
                 throw new EwsException(Loc.Format(Strings.Ews_UnexpectedResponse, (int)response.StatusCode, response.ReasonPhrase), null, ex);
             }
 
-            var fault = doc.Descendants(Soap + "Fault").FirstOrDefault();
-            if (fault is not null)
-            {
-                // Fault details use the .../2006/errors namespace, so match on local names.
-                var code = (string?)fault.Descendants().FirstOrDefault(e => e.Name.LocalName == "ResponseCode");
-                var text = (string?)fault.Descendants().FirstOrDefault(e => e.Name.LocalName == "Message")
-                           ?? (string?)fault.Element("faultstring") ?? Strings.Ews_SoapFault;
-                if (code == "ErrorServerBusy") throw new EwsServerBusyException(text, ParseBackOff(fault));
-                throw new EwsException(text, code);
-            }
-
+            ThrowIfFault(doc);
             if (!response.IsSuccessStatusCode)
                 throw new EwsException($"HTTP {(int)response.StatusCode} {response.ReasonPhrase}");
-
-            return doc.Root?.Element(Soap + "Body")?.Elements().FirstOrDefault()
-                   ?? throw new EwsException(Strings.Ews_EmptyResponse);
+            return BodyOf(doc);
         }
     }
+
+    private static void ThrowIfFault(XDocument doc)
+    {
+        var fault = doc.Descendants(Soap + "Fault").FirstOrDefault();
+        if (fault is null) return;
+        // Fault details use the .../2006/errors namespace, so match on local names.
+        var code = (string?)fault.Descendants().FirstOrDefault(e => e.Name.LocalName == "ResponseCode");
+        var text = (string?)fault.Descendants().FirstOrDefault(e => e.Name.LocalName == "Message")
+                   ?? (string?)fault.Element("faultstring") ?? Strings.Ews_SoapFault;
+        if (code == "ErrorServerBusy") throw new EwsServerBusyException(text, ParseBackOff(fault));
+        throw new EwsException(text, code);
+    }
+
+    private static XElement BodyOf(XDocument doc) =>
+        doc.Root?.Element(Soap + "Body")?.Elements().FirstOrDefault() ?? throw new EwsException(Strings.Ews_EmptyResponse);
 
     private static TimeSpan ParseBackOff(XElement fault)
     {

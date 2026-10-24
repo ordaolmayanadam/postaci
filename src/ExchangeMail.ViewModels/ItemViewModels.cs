@@ -59,18 +59,58 @@ public sealed partial class FolderViewModel(MailFolder folder, int depth) : Obse
     }
 }
 
+/// <summary>A row of the message list: a single message, or a conversation when <see cref="Conversation"/> is set.</summary>
 public sealed partial class MessageItemViewModel(MailSummary summary, bool showRecipients) : ObservableObject
 {
     public MailSummary Summary { get; } = summary;
 
-    /// <summary>Current id; the change key is refreshed after updates.</summary>
+    /// <summary>Current id; the change key is refreshed after updates. For a conversation, its newest item here.</summary>
     public EwsItemId Id { get; set; } = summary.ItemId;
+
+    /// <summary>The conversation this row stands for; null for a plain message.</summary>
+    public ConversationSummary? Conversation { get; private init; }
+
+    /// <summary>Every item the row covers in the current folder; actions (delete, move, read) apply to all of them.</summary>
+    public IReadOnlyList<EwsItemId> ItemIds => Conversation?.ItemIds ?? [Id];
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(IsUnread))]
     private bool _isRead = summary.IsRead;
 
     public bool IsUnread => !IsRead;
+
+    private int _conversationUnread;
+
+    /// <summary>Unread items behind the row (0 or 1 for a message).</summary>
+    public int UnreadItems => IsRead ? 0 : Conversation is null ? 1 : Math.Max(1, _conversationUnread);
+
+    /// <summary>Marks the row read or unread; a conversation marked unread counts all of its items as unread.</summary>
+    public void SetRead(bool isRead)
+    {
+        if (!isRead && Conversation is not null) _conversationUnread = ItemIds.Count;
+        IsRead = isRead;
+    }
+
+    /// <summary>Messages in the whole conversation (including sent replies); shown when more than one.</summary>
+    public string CountText => Conversation is { GlobalMessageCount: > 1 } c ? c.GlobalMessageCount.ToString() : "";
+    public bool HasCount => CountText.Length > 0;
+
+    public static MessageItemViewModel ForConversation(ConversationSummary c, bool showRecipients)
+    {
+        var people = showRecipients ? c.Recipients : c.Senders;
+        var summary = new MailSummary(
+            c.ItemIds.FirstOrDefault() ?? new EwsItemId("", null),
+            c.Topic,
+            people.Count > 0 ? new MailboxAddress(string.Join(", ", people), "") : null,
+            showRecipients ? string.Join(", ", people) : "",
+            c.LastDelivery,
+            c.UnreadCount == 0,
+            c.HasAttachments,
+            c.Importance,
+            "",
+            "IPM.Conversation");
+        return new MessageItemViewModel(summary, showRecipients) { Conversation = c, _conversationUnread = c.UnreadCount };
+    }
 
     public string Sender => showRecipients
         ? (Summary.DisplayTo.Length > 0 ? Summary.DisplayTo : Strings.Mail_NoRecipient)
@@ -104,17 +144,30 @@ public sealed partial class MessageDetailViewModel : ObservableObject
     private const long MaxInlineImageBytes = 15 * 1024 * 1024;
     private string _body;
 
-    public MessageDetailViewModel(MailDetail detail, bool allowRemoteContent = false)
+    /// <summary>The whole conversation as one document, or null for a single message.</summary>
+    private string? _threadHtml;
+
+    /// <param name="thread">The conversation's messages (newest first); with more than one, they are shown instead of
+    /// <paramref name="detail"/>'s body. <paramref name="detail"/> stays the message that replies and attachments use.</param>
+    public MessageDetailViewModel(MailDetail detail, bool allowRemoteContent = false, IReadOnlyList<ThreadMessage>? thread = null)
     {
         Detail = detail;
         _allowRemoteContent = allowRemoteContent;
         _body = detail.Body;
+        ThreadCount = thread?.Count ?? 1;
+        if (ThreadCount > 1) _threadHtml = MailFormat.BuildThreadHtml(thread!);
         Attachments = detail.Attachments
             .Where(a => !(a.IsInline && MailFormat.ReferencesContentId(detail.Body, a.ContentId)))
             .Select(a => new AttachmentViewModel(a))
             .ToList();
-        HasBlockedContent = detail.IsHtml && MailFormat.HasRemoteContent(detail.Body);
+        HasBlockedContent = _threadHtml is not null
+            ? MailFormat.HasRemoteContent(_threadHtml)
+            : detail.IsHtml && MailFormat.HasRemoteContent(detail.Body);
     }
+
+    public int ThreadCount { get; }
+    public bool IsThread => ThreadCount > 1;
+    public string ThreadText => IsThread ? Loc.Count(ThreadCount, Strings.Mail_ThreadCount_One, Strings.Mail_ThreadCount) : "";
 
     public MailDetail Detail { get; }
     public string Subject => string.IsNullOrWhiteSpace(Detail.Subject) ? Strings.Common_NoSubject : Detail.Subject;
@@ -135,7 +188,9 @@ public sealed partial class MessageDetailViewModel : ObservableObject
     public bool HasBlockedContent { get; }
     public bool ShowRemoteContentBanner => HasBlockedContent && !AllowRemoteContent;
 
-    public string DisplayHtml => MailFormat.PrepareForDisplay(_body, Detail.IsHtml, AllowRemoteContent);
+    public string DisplayHtml => _threadHtml is { } thread
+        ? MailFormat.PrepareForDisplay(thread, true, AllowRemoteContent)
+        : MailFormat.PrepareForDisplay(_body, Detail.IsHtml, AllowRemoteContent);
 
     /// <summary>Replaces cid: references with data: URIs so embedded images render.</summary>
     public async Task LoadInlineImagesAsync(EwsClient client, CancellationToken ct)
@@ -150,7 +205,9 @@ public sealed partial class MessageDetailViewModel : ObservableObject
                 var content = await client.GetAttachmentAsync(attachment, ct);
                 loaded += content.Content.Length;
                 var type = content.ContentType ?? attachment.ContentType ?? "image/png";
-                _body = MailFormat.ReplaceContentId(_body, attachment.ContentId!, $"data:{type};base64,{Convert.ToBase64String(content.Content)}");
+                var data = $"data:{type};base64,{Convert.ToBase64String(content.Content)}";
+                _body = MailFormat.ReplaceContentId(_body, attachment.ContentId!, data);
+                if (_threadHtml is not null) _threadHtml = MailFormat.ReplaceContentId(_threadHtml, attachment.ContentId!, data);
             }
             catch (EwsException)
             {

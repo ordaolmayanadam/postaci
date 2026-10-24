@@ -589,6 +589,12 @@
   <data name="Ews_SoapFault" xml:space="preserve">
     <value>SOAP error</value>
   </data>
+  <data name="Ews_StreamUnreadable" xml:space="preserve">
+    <value>Received a notification that could not be read.</value>
+  </data>
+  <data name="Ews_SubscriptionIdMissing" xml:space="preserve">
+    <value>The response has no SubscriptionId.</value>
+  </data>
   <data name="Ews_Timeout" xml:space="preserve">
     <value>The server did not respond in time.</value>
   </data>
@@ -700,6 +706,15 @@
   <data name="Mail_ClickToSave" xml:space="preserve">
     <value>Click to save</value>
   </data>
+  <data name="Mail_ConversationCount" xml:space="preserve">
+    <value>{0} conversations</value>
+  </data>
+  <data name="Mail_ConversationCount_One" xml:space="preserve">
+    <value>{0} conversation</value>
+  </data>
+  <data name="Mail_ConversationView" xml:space="preserve">
+    <value>Group by conversation</value>
+  </data>
   <data name="Mail_EditDraft" xml:space="preserve">
     <value>Edit draft</value>
   </data>
@@ -730,6 +745,9 @@
   <data name="Mail_ItemCount_One" xml:space="preserve">
     <value>{0} item</value>
   </data>
+  <data name="Mail_ItemsSelected" xml:space="preserve">
+    <value>{0} items selected</value>
+  </data>
   <data name="Mail_MarkReadFailed" xml:space="preserve">
     <value>Could not mark as read: {0}</value>
   </data>
@@ -745,6 +763,9 @@
   <data name="Mail_Move" xml:space="preserve">
     <value>Move</value>
   </data>
+  <data name="Mail_MoveToFolder" xml:space="preserve">
+    <value>Move to {0}</value>
+  </data>
   <data name="Mail_New" xml:space="preserve">
     <value>New mail</value>
   </data>
@@ -759,6 +780,9 @@
   </data>
   <data name="Mail_OpenFailed" xml:space="preserve">
     <value>Could not open the message: {0}</value>
+  </data>
+  <data name="Mail_PermanentDeleteManyQuestion" xml:space="preserve">
+    <value>{0} items will be deleted permanently. Continue?</value>
   </data>
   <data name="Mail_PermanentDeleteQuestion" xml:space="preserve">
     <value>This message will be deleted permanently. Continue?</value>
@@ -795,6 +819,12 @@
   </data>
   <data name="Mail_ShowImages" xml:space="preserve">
     <value>Show images</value>
+  </data>
+  <data name="Mail_ThreadCount" xml:space="preserve">
+    <value>{0} messages in this conversation</value>
+  </data>
+  <data name="Mail_ThreadCount_One" xml:space="preserve">
+    <value>{0} message in this conversation</value>
   </data>
   <data name="Mail_ToggleRead" xml:space="preserve">
     <value>Read / unread</value>

@@ -53,7 +53,8 @@ yapılandırılan Exchange sunucusu dışında hiçbir yere veri göndermez.
 
 ## Öne çıkanlar
 
-- **Posta:** klasör ağacı, sunucu taraflı arama, biçimli yazma, taslak düzenleme, ekler, toplantı davetlerine yanıt.
+- **Posta:** anında yeni posta, konuşma görünümü, çoklu seçim ve klasöre sürükle-bırak, sunucu taraflı arama, biçimli
+  yazma, taslak düzenleme, ekler, toplantı davetlerine yanıt.
 - **Takvim:** Outlook tarzı saat ızgarası, sürükle-bırak ile taşıma, toplantı oluşturma ve katılımcı uygunluğu.
 - **Kişiler:** kişisel kişiler ve şirket rehberi (genel adres listesi).
 - **Masaüstüne uyum:** Windows bildirimleri, sistem tepsisi, görev çubuğu rozeti, Windows açılışında başlatma.
@@ -132,8 +133,15 @@ denetlemeye devam eder. Tamamen kapatmak için tepsi simgesine sağ tıklayıp *
 - Bütün posta klasörleri hiyerarşik ve okunmamış sayılarıyla listelenir; gizli sistem klasörleri gösterilmez.
 - İleti listesi 50'şer öğe yüklenir. Okunmamış, ek, yüksek önem ve toplantı işaretleri görünür; Gönderilmiş Öğeler'de alıcı gösterilir.
 - **Arama** sunucu tarafında yapılır ve AQS sözdizimini destekler: `from:ali rapor`, `hasattachment:yes`, `subject:bütçe`.
-- **Arka planda yenileme** (varsayılan dakikada bir): yeni iletiler listenin başına eklenir, başka istemcilerde
-  (Outlook, OWA, telefon) değişen okundu durumu eşitlenir.
+- **Anında yeni posta:** Exchange değişiklikleri bir bildirim aboneliğiyle (EWS streaming) anında bildirir; yeni iletiler
+  saniyeler içinde listenin başına eklenir, başka istemcilerde (Outlook, OWA, telefon) değişen okundu durumu eşitlenir.
+  Bağlantı koparsa Postacı kendiliğinden yeniden bağlanır; bu arada ayarlardaki aralıkla (varsayılan dakikada bir)
+  yoklamaya devam eder.
+- **Konuşma görünümü:** liste başlığındaki düğmeyle iletiler konuşmalara göre gruplanır. Bir konuşma seçilince bütün
+  iletileri (Gönderilmiş Öğeler'deki yanıtlarınız dahil) okuma bölmesinde yeniden eskiye alt alta, alıntılar
+  tekrarlanmadan görünür. Yanıtla, konuşmadaki başkasından gelen en son iletiye yanıt verir.
+- **Çoklu seçim:** Ctrl/Shift ile tıklayarak veya Ctrl+A ile birden fazla ileti seçilir; sil, taşı ve okundu/okunmadı
+  hepsine birden uygulanır. İletiler **sürüklenip bir klasörün üzerine bırakılarak** taşınabilir.
 - Seçilen ileti **okundu** sayılır; Ayarlar'dan "birkaç saniye sonra" veya "hiçbir zaman" seçilebilir.
   Okundu bilgisi istenmiş iletiler için bildirim sessizce gönderilmez.
 - Yanıtla, tümünü yanıtla, ilet, sil (Silinmiş Öğeler'de onayla kalıcı silme), klasöre taşı, okundu/okunmadı.
@@ -193,7 +201,8 @@ denetlemeye devam eder. Tamamen kapatmak için tepsi simgesine sağ tıklayıp *
 | `Ctrl+R` / `Ctrl+Shift+R` | Yanıtla / Tümünü yanıtla |
 | `Ctrl+F` | İlet |
 | `Del` | Sil (ileti listesindeyken) |
-| `Ctrl+Q` | Okundu / okunmadı |
+| `Ctrl+Q` | Okundu / okunmadı (seçili iletilerin hepsi) |
+| `Ctrl+A` | İleti listesinde hepsini seç |
 | `Ctrl+E` | Ara |
 | `F5` | Yenile |
 | `F9` | Gönder/Al: yeni postaları hemen denetle |
@@ -311,8 +320,16 @@ veya var olan taslak şu sırayla gönderilir:
 4. `CreateAttachment` / `DeleteAttachment`: ekler eklenir veya kaldırılır.
 5. `SendItem`: taslak gönderilir ve Gönderilmiş Öğeler'e kaydedilir.
 
-**Yeni posta.** Ayarlardaki aralıkla klasör sayıları ve gelen kutusunun ilk sayfası yoklanır; daha önce görülmemiş
-okunmamış iletiler için bildirim gösterilir. EWS bildirim aboneliği (streaming) henüz kullanılmıyor.
+**Yeni posta.** Oturum açılınca bütün klasörlere bir EWS streaming aboneliği (`Subscribe` + `GetStreamingEvents`)
+açılır; sunucu bağlantıyı açık tutup her değişikliği anında gönderir. Posta klasörlerini ilgilendiren bir değişiklik
+gelince klasör sayıları ve görünen liste hemen yenilenir. Bağlantı 10 dakikada bir yenilenir; abonelik düşerse yeniden
+kurulur, sunucuya ulaşılamazsa 15 saniyeden 5 dakikaya kadar artan aralıklarla denenir. Yedek olarak ayarlardaki
+aralıkla yoklama sürer; daha önce görülmemiş okunmamış iletiler için bildirim gösterilir. İstekler, çok sunuculu
+kurulumlarda doğru posta kutusu sunucusuna gitmesi için `X-AnchorMailbox` başlığı taşır.
+
+**Konuşmalar.** Konuşma görünümünde liste `FindConversation` ile, seçilen konuşmanın iletileri `GetConversationItems`
+ile (Silinmiş Öğeler ve Taslaklar hariç) alınır. Her iletinin yalnızca kendi eklediği metin (`UniqueBody`) gösterilir.
+Arama sonuçları ve Taslaklar / Giden Kutusu her zaman tek tek ileti olarak listelenir.
 
 **Takvim.** Takvim isteklerine Windows saat dilimi (`TimeZoneContext`) eklenir. Böylece tüm gün etkinlikleri ve
 görünümler yerel saate göre hesaplanır. Yinelenen toplantılar `CalendarView` ile tek tek tekrarlara açılır.
@@ -344,7 +361,7 @@ Güvenlik açığı bildirimi için [SECURITY.md](SECURITY.md) dosyasına bakın
 - Görevler (Tasks) yok.
 - Yinelenen bir toplantının tüm serisini düzenleme yok; ızgarada yapılan değişiklik yalnızca o tekrarı etkiler.
 - Etkinlik süresi ızgarada kenarından çekilerek değiştirilemez; süre düzenleme penceresinden değişir.
-- Yeni posta yoklama ile denetlenir; EWS streaming notifications sonraki adım olabilir.
+- Konuşma görünümünde yalnızca en son iletinin gömülü resimleri yüklenir; eski iletilerdeki resimler için iletiyi tek başına açın.
 - Yazma penceresinde resim yapıştırma/ekleme ve tablo düzenleme yok.
 - Hybrid Modern Authentication (OAuth) yok; yalnızca Negotiate (Kerberos/NTLM) ve Basic.
 - S/MIME şifreleme/imza, paylaşılan posta kutuları ve arşiv posta kutusu yok.

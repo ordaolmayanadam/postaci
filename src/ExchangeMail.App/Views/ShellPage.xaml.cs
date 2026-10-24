@@ -14,6 +14,7 @@ public sealed partial class ShellPage : Page
 {
     private MailSession? _session;
     private DispatcherQueueTimer? _pollTimer;
+    private CancellationTokenSource? _watchCts;
 
     public ShellPage()
     {
@@ -65,6 +66,15 @@ public sealed partial class ShellPage : Page
         };
         _pollTimer.Start();
 
+        // Changes pushed by Exchange trigger the same refresh right away; the timer above stays as the fallback.
+        _watchCts = new CancellationTokenSource();
+        var watcher = new MailboxWatcher(session.Client);
+        watcher.Changed += (_, events) => DispatcherQueue.TryEnqueue(() =>
+        {
+            if (Mail.ConcernsMail(events)) RefreshNow();
+        });
+        _ = watcher.RunAsync(_watchCts.Token);
+
         Nav.SelectedItem = MailItem;
     }
 
@@ -72,6 +82,7 @@ public sealed partial class ShellPage : Page
     {
         base.OnNavigatedFrom(e);
         _pollTimer?.Stop();
+        _watchCts?.Cancel();
         App.Notifications.MessageRequested -= OnNotificationClicked;
         App.Notifications.SetBadge(0);
         App.MainWindow.SetUnreadCount(0);

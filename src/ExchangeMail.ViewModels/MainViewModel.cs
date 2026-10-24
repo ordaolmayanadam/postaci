@@ -15,10 +15,16 @@ public sealed partial class MainViewModel : ObservableObject
     private CancellationTokenSource? _detailCts;
     private int _nextOffset;
     private bool _backgroundRefreshRunning;
+    private bool _pollAgain;
+
+    /// <summary>Rows selected in the list (Ctrl/Shift-click); <see cref="SelectedMessage"/> is set only when it is one.</summary>
+    private IReadOnlyList<MessageItemViewModel> _selection = [];
+    private bool _settingSelection;
 
     public MainViewModel(MailSession session)
     {
         _session = session;
+        _isConversationView = session.Preferences.ConversationView;
         Messages.CollectionChanged += (_, _) => OnPropertyChanged(nameof(IsListEmpty));
     }
 
@@ -46,9 +52,60 @@ public sealed partial class MainViewModel : ObservableObject
     private FolderViewModel? _selectedFolder;
 
     [ObservableProperty]
-    [NotifyCanExecuteChangedFor(nameof(DeleteCommand), nameof(ToggleReadCommand), nameof(MoveToCommand), nameof(RespondToMeetingCommand))]
+    [NotifyCanExecuteChangedFor(nameof(RespondToMeetingCommand))]
     [NotifyPropertyChangedFor(nameof(IsMeetingRequest))]
     private MessageItemViewModel? _selectedMessage;
+
+    public IReadOnlyList<MessageItemViewModel> SelectedItems => _selection;
+    public bool HasSelection => _selection.Count > 0;
+    public bool IsMultiSelect => _selection.Count > 1;
+
+    /// <summary>Text of the empty reading pane.</summary>
+    public string PlaceholderText => IsMultiSelect ? Loc.Format(Strings.Mail_ItemsSelected, _selection.Count) : Strings.Mail_SelectItem;
+
+    /// <summary>Called by the view when the list selection changes.</summary>
+    public void SetSelection(IReadOnlyList<MessageItemViewModel> items)
+    {
+        _settingSelection = true;
+        try
+        {
+            _selection = items.ToList();
+            SelectedMessage = _selection.Count == 1 ? _selection[0] : null;
+        }
+        finally
+        {
+            _settingSelection = false;
+        }
+        OnSelectionChanged();
+    }
+
+    private void OnSelectionChanged()
+    {
+        OnPropertyChanged(nameof(SelectedItems));
+        OnPropertyChanged(nameof(HasSelection));
+        OnPropertyChanged(nameof(IsMultiSelect));
+        OnPropertyChanged(nameof(PlaceholderText));
+        DeleteCommand.NotifyCanExecuteChanged();
+        ToggleReadCommand.NotifyCanExecuteChanged();
+        MoveToCommand.NotifyCanExecuteChanged();
+    }
+
+    /// <summary>The list shows conversations instead of messages (saved in the preferences).</summary>
+    [ObservableProperty]
+    private bool _isConversationView;
+
+    partial void OnIsConversationViewChanged(bool value)
+    {
+        _session.Preferences.ConversationView = value;
+        _ = LoadMessagesAsync(reset: true);
+    }
+
+    /// <summary>
+    /// Conversations are listed unless searching (results are messages) or in Drafts/Outbox, whose items are edited
+    /// one by one.
+    /// </summary>
+    private bool UsesConversations =>
+        IsConversationView && !IsSearchActive && SelectedFolder?.WellKnown is not (WellKnownFolder.Drafts or WellKnownFolder.Outbox);
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(HasCurrent), nameof(ShowPlaceholder))]
@@ -58,7 +115,7 @@ public sealed partial class MainViewModel : ObservableObject
 
     /// <summary>The open message is a meeting invitation that can be accepted or declined.</summary>
     public bool IsMeetingRequest => Current is not null
-        && SelectedMessage?.Summary.ItemClass.StartsWith("IPM.Schedule.Meeting.Request", StringComparison.OrdinalIgnoreCase) == true;
+        && (Current.Detail.ItemClass ?? SelectedMessage?.Summary.ItemClass)?.StartsWith("IPM.Schedule.Meeting.Request", StringComparison.OrdinalIgnoreCase) == true;
 
     public bool HasCurrent => Current is not null;
     public bool ShowPlaceholder => Current is null && !IsLoadingMessage;
@@ -136,7 +193,16 @@ public sealed partial class MainViewModel : ObservableObject
         _ = LoadMessagesAsync(reset: true);
     }
 
-    partial void OnSelectedMessageChanged(MessageItemViewModel? value) => _ = LoadDetailAsync(value);
+    partial void OnSelectedMessageChanged(MessageItemViewModel? value)
+    {
+        // Set directly (after a delete, from a notification): the selection becomes that one row.
+        if (!_settingSelection)
+        {
+            _selection = value is null ? [] : [value];
+            OnSelectionChanged();
+        }
+        _ = LoadDetailAsync(value);
+    }
 
     private async Task LoadMessagesAsync(bool reset)
     {
@@ -153,6 +219,12 @@ public sealed partial class MainViewModel : ObservableObject
         ErrorMessage = null;
         try
         {
+            if (UsesConversations)
+            {
+                await LoadConversationsAsync(folder, reset, cts.Token);
+                return;
+            }
+
             var page = await Client.FindItemsAsync(folder.Id, reset ? 0 : _nextOffset, PageSize, ActiveQuery, cts.Token);
             if (cts.IsCancellationRequested) return;
 
@@ -183,6 +255,35 @@ public sealed partial class MainViewModel : ObservableObject
         }
     }
 
+    private async Task LoadConversationsAsync(FolderViewModel folder, bool reset, CancellationToken ct)
+    {
+        var page = await Client.FindConversationsAsync(folder.Id, reset ? 0 : _nextOffset, PageSize, ct);
+        if (ct.IsCancellationRequested) return;
+        if (reset)
+        {
+            SelectedMessage = null;
+            Messages.Clear();
+        }
+        foreach (var c in page.Items) Messages.Add(MessageItemViewModel.ForConversation(c, folder.ShowsRecipients));
+        _nextOffset = page.NextOffset;
+        HasMore = !page.IsLastPage;
+        StatusText = Loc.Count(page.TotalCount, Strings.Mail_ConversationCount_One, Strings.Mail_ConversationCount);
+    }
+
+    /// <summary>
+    /// For a conversation: all its messages (including sent replies) for the reading pane, and the message replies go
+    /// to — the newest one from someone else, as in Outlook, or simply the newest when every message is ours.
+    /// </summary>
+    private async Task<(EwsItemId Id, IReadOnlyList<ThreadMessage>? Thread)> ResolveConversationAsync(MessageItemViewModel item, CancellationToken ct)
+    {
+        if (item.Conversation is not { GlobalMessageCount: > 1 } conversation) return (item.Id, null);
+        var thread = await Client.GetConversationItemsAsync(conversation.ConversationId, ct);
+        if (thread.Count == 0) return (item.Id, null);
+        var self = _session.Account.Email;
+        var target = thread.FirstOrDefault(m => !string.Equals(m.From?.Address, self, StringComparison.OrdinalIgnoreCase)) ?? thread[0];
+        return (target.ItemId, thread);
+    }
+
     private async Task LoadDetailAsync(MessageItemViewModel? item)
     {
         _detailCts?.Cancel();
@@ -201,7 +302,8 @@ public sealed partial class MainViewModel : ObservableObject
             if (!item.IsRead && preferences.MarkAsRead == MarkAsReadMode.WhenSelected)
                 await TryMarkReadAsync(item, ct);
 
-            var detail = new MessageDetailViewModel(await Client.GetItemAsync(item.Id, ct), preferences.AlwaysShowRemoteImages);
+            var (id, thread) = await ResolveConversationAsync(item, ct);
+            var detail = new MessageDetailViewModel(await Client.GetItemAsync(id, ct), preferences.AlwaysShowRemoteImages, thread);
             await detail.LoadInlineImagesAsync(Client, ct);
             if (ct.IsCancellationRequested) return;
             Current = detail;
@@ -251,13 +353,23 @@ public sealed partial class MainViewModel : ObservableObject
         }
     }
 
-    private async Task SetReadAsync(MessageItemViewModel item, bool isRead, CancellationToken ct = default)
+    private Task SetReadAsync(MessageItemViewModel item, bool isRead, CancellationToken ct = default) => SetReadAsync([item], isRead, ct);
+
+    /// <summary>Marks rows read or unread with one request; conversations cover all their items in this folder.</summary>
+    private async Task SetReadAsync(IReadOnlyList<MessageItemViewModel> items, bool isRead, CancellationToken ct = default)
     {
-        var ids = await Client.SetReadStateAsync([item.Id], isRead, ct);
-        if (ids.Count > 0) item.Id = ids[0];
-        if (item.IsRead == isRead) return;
-        item.IsRead = isRead;
-        if (SelectedFolder is { } folder) folder.UnreadCount = Math.Max(0, folder.UnreadCount + (isRead ? -1 : 1));
+        var ids = await Client.SetReadStateAsync(items.SelectMany(i => i.ItemIds).ToList(), isRead, ct);
+        var index = 0;
+        foreach (var item in items)
+        {
+            // New change keys come back in request order; only single messages keep theirs.
+            if (item.Conversation is null && index < ids.Count) item.Id = ids[index];
+            index += item.ItemIds.Count;
+
+            var before = item.UnreadItems;
+            item.SetRead(isRead);
+            if (SelectedFolder is { } folder) folder.UnreadCount = Math.Max(0, folder.UnreadCount + item.UnreadItems - before);
+        }
     }
 
     [RelayCommand]
@@ -323,37 +435,50 @@ public sealed partial class MainViewModel : ObservableObject
     [RelayCommand(CanExecute = nameof(CanRespond))]
     private void Forward() => RequestCompose(new ComposeViewModel(_session, ComposeMode.Forward, Current!.Detail));
 
-    private bool HasSelection() => SelectedMessage is not null;
+    private bool CanActOnSelection() => _selection.Count > 0;
 
-    [RelayCommand(CanExecute = nameof(HasSelection))]
+    [RelayCommand(CanExecute = nameof(CanActOnSelection))]
     private async Task DeleteAsync()
     {
-        if (SelectedMessage is not { } item) return;
+        var items = _selection.ToList();
+        if (items.Count == 0) return;
         var permanent = SelectedFolder?.WellKnown == WellKnownFolder.DeletedItems;
         if (permanent && ConfirmAsync is not null
-            && !await ConfirmAsync(Strings.Mail_PermanentDeleteTitle, Strings.Mail_PermanentDeleteQuestion))
+            && !await ConfirmAsync(Strings.Mail_PermanentDeleteTitle,
+                items.Count == 1 ? Strings.Mail_PermanentDeleteQuestion : Loc.Format(Strings.Mail_PermanentDeleteManyQuestion, items.Count)))
             return;
 
-        await RemoveFromListAsync(item, () => Client.DeleteItemsAsync([item.Id], permanent ? DeleteMode.SoftDelete : DeleteMode.MoveToDeletedItems));
-        var deleted = Folders.FirstOrDefault(f => f.WellKnown == WellKnownFolder.DeletedItems);
-        if (deleted is not null && !permanent) deleted.TotalCount++;
+        var ids = items.SelectMany(i => i.ItemIds).ToList();
+        if (await RemoveFromListAsync(items, () => Client.DeleteItemsAsync(ids, permanent ? DeleteMode.SoftDelete : DeleteMode.MoveToDeletedItems))
+            && !permanent && Folders.FirstOrDefault(f => f.WellKnown == WellKnownFolder.DeletedItems) is { } deleted)
+            deleted.TotalCount += ids.Count;
     }
 
-    [RelayCommand(CanExecute = nameof(HasSelection))]
-    private async Task MoveToAsync(FolderViewModel? target)
+    [RelayCommand(CanExecute = nameof(CanActOnSelection))]
+    private Task MoveToAsync(FolderViewModel? target) => target is null ? Task.CompletedTask : MoveAsync(_selection.ToList(), target);
+
+    /// <summary>Moves rows to <paramref name="target"/> (Move menu, or rows dropped on a folder).</summary>
+    public async Task MoveAsync(IReadOnlyList<MessageItemViewModel> items, FolderViewModel target)
     {
-        if (SelectedMessage is not { } item || target is null || target == SelectedFolder) return;
-        await RemoveFromListAsync(item, () => Client.MoveItemsAsync([item.Id], target.Id));
-        if (!item.IsRead) target.UnreadCount++;
+        if (items.Count == 0 || target == SelectedFolder) return;
+        var ids = items.SelectMany(i => i.ItemIds).ToList();
+        var unread = items.Sum(i => i.UnreadItems);
+        if (await RemoveFromListAsync(items, () => Client.MoveItemsAsync(ids, target.Id)))
+        {
+            target.UnreadCount += unread;
+            target.TotalCount += ids.Count;
+        }
     }
 
-    [RelayCommand(CanExecute = nameof(HasSelection))]
+    /// <summary>Marks the selection read, or unread when all of it is read already.</summary>
+    [RelayCommand(CanExecute = nameof(CanActOnSelection))]
     private async Task ToggleReadAsync()
     {
-        if (SelectedMessage is not { } item) return;
+        var items = _selection.ToList();
+        if (items.Count == 0) return;
         try
         {
-            await SetReadAsync(item, !item.IsRead);
+            await SetReadAsync(items, items.Any(i => !i.IsRead));
         }
         catch (EwsException ex)
         {
@@ -361,7 +486,8 @@ public sealed partial class MainViewModel : ObservableObject
         }
     }
 
-    private async Task RemoveFromListAsync(MessageItemViewModel item, Func<Task> action)
+    /// <summary>Runs <paramref name="action"/> and, if it worked, takes the rows out of the list. False on failure.</summary>
+    private async Task<bool> RemoveFromListAsync(IReadOnlyList<MessageItemViewModel> items, Func<Task> action)
     {
         try
         {
@@ -370,24 +496,45 @@ public sealed partial class MainViewModel : ObservableObject
         catch (EwsException ex)
         {
             ErrorMessage = ex.Message;
-            return;
+            return false;
         }
 
-        var index = Messages.IndexOf(item);
-        if (index < 0) return;
-        if (!item.IsRead && SelectedFolder is { } folder) folder.UnreadCount = Math.Max(0, folder.UnreadCount - 1);
-        Messages.RemoveAt(index);
-        _nextOffset = Math.Max(0, _nextOffset - 1);
-        SelectedMessage = Messages.Count == 0 ? null : Messages[Math.Min(index, Messages.Count - 1)];
+        var first = items.Select(Messages.IndexOf).Where(i => i >= 0).DefaultIfEmpty(-1).Min();
+        foreach (var item in items)
+        {
+            if (!Messages.Remove(item)) continue;
+            if (SelectedFolder is { } folder) folder.UnreadCount = Math.Max(0, folder.UnreadCount - item.UnreadItems);
+            _nextOffset = Math.Max(0, _nextOffset - 1);
+        }
+        // Keep working down the list: select what moved into the first removed row's place.
+        if (first >= 0) SelectedMessage = Messages.Count == 0 ? null : Messages[Math.Min(first, Messages.Count - 1)];
+        return true;
     }
 
     /// <param name="response">"Accept", "Tentative" or "Decline" (from the view's CommandParameter).</param>
     [RelayCommand(CanExecute = nameof(IsMeetingRequest))]
     private async Task RespondToMeetingAsync(string? response)
     {
-        if (SelectedMessage is not { } item || !Enum.TryParse<MeetingResponse>(response, out var kind)) return;
-        // Exchange moves an answered invitation to Deleted Items, so it leaves the list.
-        await RemoveFromListAsync(item, () => Client.RespondToMeetingAsync(item.Id, kind));
+        if (SelectedMessage is not { } item || Current is not { } current || !Enum.TryParse<MeetingResponse>(response, out var kind)) return;
+        // Exchange moves an answered invitation to Deleted Items. A plain message row leaves the list; a conversation
+        // row (the invitation was one of its messages) is reloaded instead.
+        if (item.Conversation is null)
+        {
+            await RemoveFromListAsync([item], () => Client.RespondToMeetingAsync(item.Id, kind));
+        }
+        else
+        {
+            try
+            {
+                await Client.RespondToMeetingAsync(current.Detail.ItemId, kind);
+            }
+            catch (EwsException ex)
+            {
+                ErrorMessage = ex.Message;
+                return;
+            }
+            await LoadMessagesAsync(reset: true);
+        }
         StatusText = kind switch
         {
             MeetingResponse.Accept => Strings.Meeting_Accepted,
@@ -439,7 +586,13 @@ public sealed partial class MainViewModel : ObservableObject
 
     private async Task<int> PollAsync()
     {
-        if (_backgroundRefreshRunning || Folders.Count == 0) return 0;
+        if (Folders.Count == 0) return 0;
+        if (_backgroundRefreshRunning)
+        {
+            // A change was reported while a check is under way; it may have missed it, so check once more after.
+            _pollAgain = true;
+            return 0;
+        }
         _backgroundRefreshRunning = true;
         try
         {
@@ -458,9 +611,17 @@ public sealed partial class MainViewModel : ObservableObject
             var added = 0;
             if (SelectedFolder is { } folder && !IsSearchActive && !IsLoadingList)
             {
-                var page = await Client.FindItemsAsync(folder.Id, 0, 25);
-                if (folder == SelectedFolder && !IsLoadingList) added = MergeNewItems(folder, page);
-                if (folder == inbox) inboxPage = page;
+                if (UsesConversations)
+                {
+                    var conversations = await Client.FindConversationsAsync(folder.Id, 0, 25);
+                    if (folder == SelectedFolder && !IsLoadingList && UsesConversations) added = MergeConversations(folder, conversations);
+                }
+                else
+                {
+                    var page = await Client.FindItemsAsync(folder.Id, 0, 25);
+                    if (folder == SelectedFolder && !IsLoadingList) added = MergeNewItems(folder, page);
+                    if (folder == inbox) inboxPage = page;
+                }
             }
 
             if (inbox is not null)
@@ -473,7 +634,57 @@ public sealed partial class MainViewModel : ObservableObject
         finally
         {
             _backgroundRefreshRunning = false;
+            if (_pollAgain)
+            {
+                _pollAgain = false;
+                _ = BackgroundRefreshAsync();
+            }
         }
+    }
+
+    /// <summary>
+    /// Brings the first conversations up to date: new ones are inserted, ones with new activity move to the top and
+    /// get fresh counts. The selected row is kept as it is so the reading pane doesn't jump.
+    /// </summary>
+    private int MergeConversations(FolderViewModel folder, ConversationPage page)
+    {
+        var added = 0;
+        for (var i = 0; i < page.Items.Count && i <= Messages.Count; i++)
+        {
+            var fresh = page.Items[i];
+            var existing = Messages.FirstOrDefault(m => m.Conversation?.ConversationId == fresh.ConversationId);
+            if (existing is null) added++;
+
+            var row = existing is not null && (existing == SelectedMessage || Unchanged(existing.Conversation!, fresh))
+                ? existing
+                : MessageItemViewModel.ForConversation(fresh, folder.ShowsRecipients);
+            if (existing is not null && row != existing) Messages[Messages.IndexOf(existing)] = row;
+
+            var index = Messages.IndexOf(row);
+            if (index < 0) Messages.Insert(i, row);
+            else if (index != i) Messages.Move(index, i);
+        }
+        _nextOffset += added;
+        return added;
+
+        // The record holds lists, so compare what can change instead of using record equality.
+        static bool Unchanged(ConversationSummary a, ConversationSummary b) =>
+            a.LastDelivery == b.LastDelivery && a.UnreadCount == b.UnreadCount
+            && a.MessageCount == b.MessageCount && a.GlobalMessageCount == b.GlobalMessageCount;
+    }
+
+    /// <summary>
+    /// Whether streamed changes concern mail folders (and are worth a refresh). Calendar and contact changes don't;
+    /// an empty batch (reported after a reconnect) always does.
+    /// </summary>
+    public bool ConcernsMail(IReadOnlyList<MailboxEvent> events)
+    {
+        if (events.Count == 0) return true;
+        var ids = Folders.Select(f => f.Id).ToHashSet();
+        return events.Any(e => e.Kind == MailboxEventKind.NewMail
+            || (e.ParentFolderId is { } p && ids.Contains(p))
+            || (e.OldParentFolderId is { } o && ids.Contains(o))
+            || (e.FolderId is { } f && ids.Contains(f)));
     }
 
     private int MergeNewItems(FolderViewModel folder, MailPage page)
@@ -517,11 +728,12 @@ public sealed partial class MainViewModel : ObservableObject
         else if (IsSearchActive) await ClearSearchAsync();
 
         for (var i = 0; i < 100 && IsLoadingList; i++) await Task.Delay(100);
-        var item = Messages.FirstOrDefault(m => m.Id.Id == itemId);
+        MessageItemViewModel? Find() => Messages.FirstOrDefault(m => m.ItemIds.Any(i => i.Id == itemId));
+        var item = Find();
         if (item is null)
         {
             await LoadMessagesAsync(reset: true);
-            item = Messages.FirstOrDefault(m => m.Id.Id == itemId);
+            item = Find();
         }
         if (item is not null) SelectedMessage = item;
     }

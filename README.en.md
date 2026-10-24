@@ -58,7 +58,8 @@ and sends data nowhere except the Exchange server you configure.
 
 ## Highlights
 
-- **Mail:** folder tree, server-side search, rich-text compose, draft editing, attachments, meeting invitation responses.
+- **Mail:** instant new mail, conversation view, multi-select and drag-to-folder, server-side search, rich-text
+  compose, draft editing, attachments, meeting invitation responses.
 - **Calendar:** Outlook-style time grid, drag-and-drop rescheduling, meeting creation with attendee availability.
 - **Contacts:** personal contacts and the company directory (Global Address List).
 - **Desktop integration:** Windows notifications, system tray, taskbar badge, start with Windows.
@@ -138,8 +139,15 @@ for new mail. To quit completely, right-click the tray icon and choose **Exit**.
 - The message list loads 50 items at a time. Unread, attachment, high-importance and meeting indicators are shown;
   Sent Items shows the recipient.
 - **Search** runs on the server and supports AQS syntax: `from:ali report`, `hasattachment:yes`, `subject:budget`.
-- **Background refresh** (every minute by default): new messages are added to the top of the list, and read state
-  changed in other clients (Outlook, OWA, phone) is synchronized.
+- **Instant new mail:** Exchange reports changes right away through a notification subscription (EWS streaming); new
+  messages appear at the top of the list within seconds, and read state changed in other clients (Outlook, OWA, phone)
+  is synchronized. If the connection drops, Postacı reconnects by itself and meanwhile keeps polling at the interval
+  set in Settings (every minute by default).
+- **Conversation view:** the button in the list header groups messages by conversation. Selecting a conversation shows
+  all of its messages (including your replies in Sent Items) in the reading pane, newest first, without repeated
+  quotes. Reply answers the newest message from someone else in the conversation.
+- **Multi-select:** select several messages with Ctrl/Shift-click or Ctrl+A; delete, move and read/unread apply to all
+  of them. Messages can be **dragged onto a folder** to move them.
 - The selected message is marked **read**; Settings can change this to "after a few seconds" or "never".
   Read receipts requested by senders are never sent silently.
 - Reply, reply all, forward, delete (permanent delete with confirmation in Deleted Items), move to folder,
@@ -202,7 +210,8 @@ for new mail. To quit completely, right-click the tray icon and choose **Exit**.
 | `Ctrl+R` / `Ctrl+Shift+R` | Reply / Reply all |
 | `Ctrl+F` | Forward |
 | `Del` | Delete (when the message list has focus) |
-| `Ctrl+Q` | Toggle read / unread |
+| `Ctrl+Q` | Toggle read / unread (all selected messages) |
+| `Ctrl+A` | Select all in the message list |
 | `Ctrl+E` | Search |
 | `F5` | Refresh |
 | `F9` | Send/Receive: check for new mail now |
@@ -320,8 +329,17 @@ forwards, messages with attachments and existing drafts are sent in this order:
 4. `CreateAttachment` / `DeleteAttachment`: add or remove attachments.
 5. `SendItem`: send the draft and save it to Sent Items.
 
-**New mail.** Folder counts and the first page of the inbox are polled at the interval set in Settings; a
-notification is shown for unread messages not seen before. EWS streaming notifications are not used yet.
+**New mail.** After sign-in, an EWS streaming subscription (`Subscribe` + `GetStreamingEvents`) covering every folder
+is opened; the server keeps the connection open and pushes each change immediately. When a change concerns mail folders,
+the folder counts and the visible list are refreshed right away. The connection is renewed every 10 minutes; a lost
+subscription is recreated, and when the server is unreachable it retries at intervals growing from 15 seconds to 5
+minutes. As a fallback, polling continues at the interval set in Settings; a notification is shown for unread messages
+not seen before. Requests carry an `X-AnchorMailbox` header so multi-server deployments route them to the mailbox's
+server.
+
+**Conversations.** In conversation view the list comes from `FindConversation` and the selected conversation's messages
+from `GetConversationItems` (excluding Deleted Items and Drafts). Each message shows only the text it added
+(`UniqueBody`). Search results and Drafts / Outbox are always listed as individual messages.
 
 **Calendar.** Calendar requests include the Windows time zone (`TimeZoneContext`), so all-day events and views are
 computed in local time. Recurring meetings are expanded into individual occurrences with `CalendarView`.
@@ -353,7 +371,7 @@ See the [security policy](SECURITY.en.md) for reporting vulnerabilities.
 - No Tasks.
 - Editing an entire recurring series is not supported; changes made in the grid affect only that occurrence.
 - Event duration cannot be changed by dragging an edge in the grid; change it in the edit dialog.
-- New mail is detected by polling; EWS streaming notifications could be a next step.
+- In conversation view only the newest message's inline images are loaded; open an older message on its own to see its images.
 - No pasting/inserting images or table editing in the compose window.
 - No Hybrid Modern Authentication (OAuth); only Negotiate (Kerberos/NTLM) and Basic.
 - No S/MIME encryption/signing, shared mailboxes or archive mailbox.
