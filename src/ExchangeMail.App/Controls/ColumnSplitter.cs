@@ -18,7 +18,31 @@ public sealed partial class ColumnSplitter : UserControl
     private const double HandleWidth = 8;
     private const double KeyStep = 16;
 
-    private readonly Border _line = new() { Width = 2, HorizontalAlignment = HorizontalAlignment.Center, Opacity = 0 };
+    private static readonly TimeSpan FadeDuration = TimeSpan.FromMilliseconds(150);
+
+    /// <summary>Hairline along the edge, in the stroke color cards use; only visible on hover.</summary>
+    private readonly Border _line = new()
+    {
+        Width = 1,
+        HorizontalAlignment = HorizontalAlignment.Center,
+        Opacity = 0,
+        OpacityTransition = new ScalarTransition { Duration = FadeDuration },
+    };
+
+    /// <summary>Small rounded grip in the middle that says "drag me"; accent-colored while dragging.</summary>
+    private readonly Border _grip = new()
+    {
+        Width = 4,
+        Height = 32,
+        CornerRadius = new CornerRadius(2),
+        HorizontalAlignment = HorizontalAlignment.Center,
+        VerticalAlignment = VerticalAlignment.Center,
+        Opacity = 0,
+        OpacityTransition = new ScalarTransition { Duration = FadeDuration },
+    };
+
+    private Brush? _gripBrush;
+    private Brush? _accentBrush;
     private bool _dragging;
     private double _startX;
     private double _startWidth;
@@ -31,13 +55,16 @@ public sealed partial class ColumnSplitter : UserControl
         IsTabStop = true;
         UseSystemFocusVisuals = true;
         // A transparent (not null) background is what makes the empty area hit-testable.
-        Content = new Grid { Background = new SolidColorBrush(Microsoft.UI.Colors.Transparent), Children = { _line } };
+        Content = new Grid { Background = new SolidColorBrush(Microsoft.UI.Colors.Transparent), Children = { _line, _grip } };
         ProtectedCursor = InputSystemCursor.Create(InputSystemCursorShape.SizeWestEast);
         AutomationProperties.SetName(this, Strings.Common_ResizeColumn);
         Canvas.SetZIndex(this, 10);
         Loaded += (_, _) =>
         {
-            if (Application.Current.Resources.TryGetValue("AccentFillColorDefaultBrush", out var brush)) _line.Background = (Brush)brush;
+            _line.Background = Resource("ControlStrokeColorDefaultBrush");
+            _gripBrush = Resource("ControlStrongFillColorDefaultBrush");
+            _accentBrush = Resource("AccentFillColorDefaultBrush");
+            _grip.Background = _gripBrush;
         };
     }
 
@@ -58,11 +85,27 @@ public sealed partial class ColumnSplitter : UserControl
     /// <summary>Dragging right widens a column left of the handle and narrows one to its right.</summary>
     private int Direction => TargetColumn < Grid.GetColumn(this) ? 1 : -1;
 
-    protected override void OnPointerEntered(PointerRoutedEventArgs e) => _line.Opacity = 1;
+    private static Brush? Resource(string key) =>
+        Application.Current.Resources.TryGetValue(key, out var value) ? value as Brush : null;
+
+    private void ShowHandle(bool visible)
+    {
+        _line.Opacity = visible ? 1 : 0;
+        _grip.Opacity = visible ? 1 : 0;
+    }
+
+    protected override void OnPointerEntered(PointerRoutedEventArgs e) => ShowHandle(true);
 
     protected override void OnPointerExited(PointerRoutedEventArgs e)
     {
-        if (!_dragging) _line.Opacity = 0;
+        if (!_dragging) ShowHandle(false);
+    }
+
+    protected override void OnGotFocus(RoutedEventArgs e) => ShowHandle(true);
+
+    protected override void OnLostFocus(RoutedEventArgs e)
+    {
+        if (!_dragging) ShowHandle(false);
     }
 
     protected override void OnPointerPressed(PointerRoutedEventArgs e)
@@ -70,6 +113,7 @@ public sealed partial class ColumnSplitter : UserControl
         if (Target is not { } column || Host is not { } grid) return;
         if (!CapturePointer(e.Pointer)) return;
         _dragging = true;
+        _grip.Background = _accentBrush ?? _gripBrush;
         _startX = e.GetCurrentPoint(grid).Position.X;
         _startWidth = column.ActualWidth;
         e.Handled = true;
@@ -104,7 +148,8 @@ public sealed partial class ColumnSplitter : UserControl
     {
         if (!_dragging) return;
         _dragging = false;
-        _line.Opacity = 0;
+        _grip.Background = _gripBrush;
+        ShowHandle(false);
         if (Target is { } column) Resized?.Invoke(this, column.Width.Value);
     }
 
