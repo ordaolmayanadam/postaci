@@ -45,6 +45,12 @@ public sealed partial class UserPreferences : ObservableObject
 
     [ObservableProperty] private int _composeFontSize = MailFormat.DefaultComposeFontSize;
 
+    /// <summary>Pane widths in pixels set with the column splitters; 0 = the layout's default.</summary>
+    [ObservableProperty] private int _mailFolderPaneWidth;
+    [ObservableProperty] private int _mailListPaneWidth;
+    [ObservableProperty] private int _calendarSidebarWidth;
+    [ObservableProperty] private int _calendarDetailPaneWidth;
+
     /// <summary>Interface language: "tr", "en", or empty to follow Windows. Applied at startup.</summary>
     [ObservableProperty] private string _language = "";
 

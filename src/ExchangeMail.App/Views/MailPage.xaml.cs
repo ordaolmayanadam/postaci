@@ -20,6 +20,12 @@ public sealed partial class MailPage : Page
     {
         InitializeComponent();
         _body = new HtmlViewer(BodyView);
+
+        var preferences = App.Preferences;
+        Ui.RestoreWidth(FolderColumn, preferences.MailFolderPaneWidth);
+        Ui.RestoreWidth(ListColumn, preferences.MailListPaneWidth);
+        FolderSplitter.Resized += (_, width) => Ui.SaveWidth(w => preferences.MailFolderPaneWidth = w, width);
+        ListSplitter.Resized += (_, width) => Ui.SaveWidth(w => preferences.MailListPaneWidth = w, width);
     }
 
     public MainViewModel ViewModel { get; private set; } = null!;

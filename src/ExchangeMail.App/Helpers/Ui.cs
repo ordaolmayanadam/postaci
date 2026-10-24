@@ -23,6 +23,20 @@ public static class Ui
 
     public static Thickness Indent(int depth) => new(depth * 16, 0, 0, 0);
 
+    /// <summary>Applies a pane width saved from a <see cref="Controls.ColumnSplitter"/> (0 = keep the default).</summary>
+    public static void RestoreWidth(ColumnDefinition column, int saved, double? fallback = null)
+    {
+        double? width = saved > 0 ? saved : fallback;
+        if (width is { } w) column.Width = new GridLength(Math.Clamp(w, column.MinWidth, column.MaxWidth));
+    }
+
+    /// <summary>Stores a pane width chosen with a splitter in the preferences file.</summary>
+    public static void SaveWidth(Action<int> assign, double width)
+    {
+        assign((int)Math.Round(width));
+        App.SavePreferences();
+    }
+
     /// <summary>Interface text size factor chosen in Settings (1 = 100 %); code-built controls multiply by it.</summary>
     public static double TextScale { get; set; } = 1;
 

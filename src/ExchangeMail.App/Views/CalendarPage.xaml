@@ -10,9 +10,9 @@
 
     <Grid>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition x:Name="SidebarColumn" Width="316" MinWidth="200" MaxWidth="480" />
             <ColumnDefinition Width="*" MinWidth="360" />
-            <ColumnDefinition Width="400" />
+            <ColumnDefinition x:Name="DetailColumn" Width="400" MinWidth="280" MaxWidth="900" />
         </Grid.ColumnDefinitions>
 
         <!--  Month picker  -->
@@ -30,12 +30,19 @@
                     <KeyboardAccelerator Key="N" Modifiers="Control" />
                 </Button.KeyboardAccelerators>
             </Button>
-            <CalendarView
-                x:Name="MonthView"
-                Width="280"
-                IsTodayHighlighted="True"
-                SelectedDatesChanged="OnSelectedDatesChanged"
-                SelectionMode="Single" />
+            <!--
+                CalendarView has fixed-size day cells; at its natural 300 px with the standard font size it fits.
+                The Viewbox scales the whole month to the column width instead of letting it clip or wrap.
+            -->
+            <Viewbox Stretch="Uniform" StretchDirection="Both">
+                <CalendarView
+                    x:Name="MonthView"
+                    Width="300"
+                    FontSize="14"
+                    IsTodayHighlighted="True"
+                    SelectedDatesChanged="OnSelectedDatesChanged"
+                    SelectionMode="Single" />
+            </Viewbox>
         </StackPanel>
 
         <!--  Agenda  -->
@@ -261,5 +268,9 @@
                 </Border>
             </Grid>
         </Grid>
+
+        <!--  Splitters go last so they sit above the panes they overlap.  -->
+        <controls:ColumnSplitter x:Name="SidebarSplitter" Grid.Column="1" TargetColumn="0" />
+        <controls:ColumnSplitter x:Name="DetailSplitter" Grid.Column="2" TargetColumn="2" />
     </Grid>
 </Page>
