@@ -53,18 +53,20 @@
                         TextWrapping="Wrap" />
                 </StackPanel>
                 <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="12">
-                    <ComboBox MinWidth="200" SelectedIndex="{x:Bind ViewModel.MarkAsReadIndex, Mode=TwoWay}">
+                    <ComboBox MinWidth="200" VerticalAlignment="Center" SelectedIndex="{x:Bind ViewModel.MarkAsReadIndex, Mode=TwoWay}">
                         <ComboBoxItem Content="{h:L Key=Settings_MarkReadWhenSelected}" />
                         <ComboBoxItem Content="{h:L Key=Settings_MarkReadAfterDelay}" />
                         <ComboBoxItem Content="{h:L Key=Settings_MarkReadNever}" />
                     </ComboBox>
+                    <!--  Compact spin buttons keep the box as tall as the ComboBox next to it.  -->
                     <NumberBox
-                        Width="130"
+                        Width="100"
+                        VerticalAlignment="Center"
                         IsEnabled="{x:Bind ViewModel.IsDelayEnabled, Mode=OneWay}"
                         Maximum="120"
                         Minimum="1"
                         PlaceholderText="{h:L Key=Settings_SecondsShort}"
-                        SpinButtonPlacementMode="Inline"
+                        SpinButtonPlacementMode="Compact"
                         ToolTipService.ToolTip="{h:L Key=Settings_Seconds}"
                         Value="{x:Bind ViewModel.MarkAsReadDelaySeconds, Mode=TwoWay}" />
                 </StackPanel>
