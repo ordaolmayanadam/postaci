@@ -205,6 +205,7 @@ for new mail. To quit completely, right-click the tray icon and choose **Exit**.
 | `Ctrl+Q` | Toggle read / unread |
 | `Ctrl+E` | Search |
 | `F5` | Refresh |
+| `F9` | Send/Receive: check for new mail now |
 | `Ctrl+Enter` / `Ctrl+S` | Send / Save draft (in the compose window) |
 | `Ctrl+B` / `Ctrl+I` / `Ctrl+U` | Bold / Italic / Underline (in the compose window) |
 | `Ctrl` + mouse wheel | Zoom the reading pane |

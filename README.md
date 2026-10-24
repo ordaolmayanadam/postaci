@@ -196,6 +196,7 @@ denetlemeye devam eder. Tamamen kapatmak için tepsi simgesine sağ tıklayıp *
 | `Ctrl+Q` | Okundu / okunmadı |
 | `Ctrl+E` | Ara |
 | `F5` | Yenile |
+| `F9` | Gönder/Al: yeni postaları hemen denetle |
 | `Ctrl+Enter` / `Ctrl+S` | Gönder / Taslak kaydet (yazma penceresinde) |
 | `Ctrl+B` / `Ctrl+I` / `Ctrl+U` | Kalın / İtalik / Altı çizili (yazma penceresinde) |
 | `Ctrl` + fare tekerleği | Okuma bölmesinde yakınlaştırma |

@@ -784,6 +784,15 @@
   <data name="Mail_SelectItem" xml:space="preserve">
     <value>Okumak için bir öğe seçin</value>
   </data>
+  <data name="Mail_SendReceive" xml:space="preserve">
+    <value>Gönder/Al</value>
+  </data>
+  <data name="Mail_SendReceiveFailed" xml:space="preserve">
+    <value>Yeni postalar denetlenemedi: {0}</value>
+  </data>
+  <data name="Mail_SendReceiveTooltip" xml:space="preserve">
+    <value>Gönder/Al: yeni postaları şimdi denetle (F9)</value>
+  </data>
   <data name="Mail_ShowImages" xml:space="preserve">
     <value>Resimleri göster</value>
   </data>

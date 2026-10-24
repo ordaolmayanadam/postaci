@@ -146,6 +146,31 @@ public class MainViewModelTests
         Assert.Null(vm.ErrorMessage);
     }
 
+    [Fact]
+    public async Task Send_receive_checks_for_new_mail_and_reports_failures()
+    {
+        var server = new FakeEwsServer()
+            .On("GetFolder", WellKnown)
+            .On("FindFolder", Folders)
+            .On("FindItem", Items(("A", true)))
+            .On("GetFolder", Counts)
+            .On("FindItem", Items(("B", false), ("A", true)))
+            .OnRaw("GetFolder", () => new HttpResponseMessage(System.Net.HttpStatusCode.ServiceUnavailable));
+        var vm = new MainViewModel(new MailSession(server.CreateClient(), new AccountSettings { Email = "ben@sirket.com" }));
+        await vm.InitializeAsync();
+        await WaitUntil(() => vm.Messages.Count == 1 && !vm.IsLoadingList);
+
+        await vm.SendReceiveCommand.ExecuteAsync(null);
+
+        Assert.Equal(["B", "A"], vm.Messages.Select(m => m.Id.Id));
+        Assert.Equal(2, vm.SelectedFolder!.UnreadCount);
+        Assert.Null(vm.ErrorMessage);
+
+        // Unlike the silent background poll, a manual check says why it failed.
+        await vm.SendReceiveCommand.ExecuteAsync(null);
+        Assert.StartsWith(Loc.Format(Strings.Mail_SendReceiveFailed, ""), vm.ErrorMessage);
+    }
+
     private static async Task WaitUntil(Func<bool> condition)
     {
         for (var i = 0; i < 100 && !condition(); i++) await Task.Delay(20);

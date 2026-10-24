@@ -784,6 +784,15 @@
   <data name="Mail_SelectItem" xml:space="preserve">
     <value>Select an item to read</value>
   </data>
+  <data name="Mail_SendReceive" xml:space="preserve">
+    <value>Send/Receive</value>
+  </data>
+  <data name="Mail_SendReceiveFailed" xml:space="preserve">
+    <value>Could not check for new mail: {0}</value>
+  </data>
+  <data name="Mail_SendReceiveTooltip" xml:space="preserve">
+    <value>Send/Receive: check for new mail now (F9)</value>
+  </data>
   <data name="Mail_ShowImages" xml:space="preserve">
     <value>Show images</value>
   </data>

@@ -405,6 +405,40 @@ public sealed partial class MainViewModel : ObservableObject
     /// </summary>
     public async Task<int> BackgroundRefreshAsync()
     {
+        try
+        {
+            return await PollAsync();
+        }
+        catch (EwsException)
+        {
+            return 0; // transient; the next tick will try again
+        }
+    }
+
+    /// <summary>
+    /// Manual "Send/Receive": the same check as the background poll, but failures are shown. Messages are sent the
+    /// moment they are written, so there is nothing queued to send; if the folders never loaded, everything reloads.
+    /// </summary>
+    [RelayCommand]
+    private async Task SendReceiveAsync()
+    {
+        if (Folders.Count == 0)
+        {
+            await RefreshAsync();
+            return;
+        }
+        try
+        {
+            await PollAsync();
+        }
+        catch (EwsException ex)
+        {
+            ErrorMessage = Loc.Format(Strings.Mail_SendReceiveFailed, ex.Message);
+        }
+    }
+
+    private async Task<int> PollAsync()
+    {
         if (_backgroundRefreshRunning || Folders.Count == 0) return 0;
         _backgroundRefreshRunning = true;
         try
@@ -435,10 +469,6 @@ public sealed partial class MainViewModel : ObservableObject
                 DetectNewInboxMail(inboxPage);
             }
             return added;
-        }
-        catch (EwsException)
-        {
-            return 0; // transient; the next tick will try again
         }
         finally
         {
