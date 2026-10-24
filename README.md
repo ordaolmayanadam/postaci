@@ -12,6 +12,8 @@
 <p align="center">
   <a href="https://github.com/KULLANICI/DEPO/actions/workflows/ci.yml"><img src="https://github.com/KULLANICI/DEPO/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/lisans-MIT-blue" alt="Lisans: MIT"></a>
+  <a href="#yapay-zekâ-ile-geliştirme"><img src="https://img.shields.io/badge/yapay%20zek%C3%A2%20ile-geli%C5%9Ftirildi-8A2BE2" alt="Yapay zekâ ile geliştirildi"></a>
+  <a href="CONTRIBUTING.md"><img src="https://img.shields.io/badge/katk%C4%B1lar-a%C3%A7%C4%B1k-brightgreen" alt="Katkılara açık"></a>
   <a href="https://github.com/KULLANICI/DEPO/releases/latest"><img src="https://img.shields.io/github/v/release/KULLANICI/DEPO?include_prereleases&label=s%C3%BCr%C3%BCm" alt="Son sürüm"></a>
 </p>
 
@@ -20,6 +22,13 @@
 Postacı, kurum içinde barındırılan **Exchange Server 2016, 2019 ve Subscription Edition** posta kutularına
 **Exchange Web Services (EWS)** üzerinden bağlanır. Kurulum gerektirmez, yönetici yetkisi istemez ve
 yapılandırılan Exchange sunucusu dışında hiçbir yere veri göndermez.
+
+> [!NOTE]
+> **Yapay zekâ ile geliştirilmiş, kişisel ve açık kaynaklı bir proje.**
+> Postacı bir şirket ürünü değildir; bağımsız bir kişisel projedir ve herkesin geliştirmesine açıktır.
+> Kodun, testlerin, belgelerin ve simgenin büyük bölümü Anthropic'in yapay zekâ asistanı **Claude** (Claude Code)
+> ile, proje sahibinin yönlendirmesi ve gözden geçirmesiyle yazıldı. Neyin doğrulandığını ve neyin henüz
+> doğrulanmadığını [Yapay zekâ ile geliştirme](#yapay-zekâ-ile-geliştirme) bölümünde bulabilirsiniz.
 
 ## İçindekiler
 
@@ -34,6 +43,7 @@ yapılandırılan Exchange sunucusu dışında hiçbir yere veri göndermez.
 - [Mimari](#mimari)
 - [Veriler, gizlilik ve güvenlik](#veriler-gizlilik-ve-güvenlik)
 - [Bilinen sınırlamalar ve yol haritası](#bilinen-sınırlamalar-ve-yol-haritası)
+- [Yapay zekâ ile geliştirme](#yapay-zekâ-ile-geliştirme)
 - [Katkıda bulunma](#katkıda-bulunma)
 - [Lisans](#lisans)
 
@@ -335,10 +345,36 @@ Güvenlik açığı bildirimi için [SECURITY.md](SECURITY.md) dosyasına bakın
 
 Öneriler için [özellik isteği](.github/ISSUE_TEMPLATE/feature_request.yml) açabilirsiniz.
 
+## Yapay zekâ ile geliştirme
+
+Postacı, bir kişinin yapay zekâ asistanıyla birlikte geliştirdiği bir projedir ve bunu açıkça belirtmek istiyoruz:
+
+- **Nasıl yazıldı?** Özellikler proje sahibi tarafından tarif edildi, hatalar kullanıcı gözüyle bildirildi; kod,
+  testler, CI iş akışları, belgeler ve simge büyük ölçüde **Claude (Anthropic)** tarafından Claude Code ile üretildi.
+  Yapay zekâ yardımıyla oluşturulan commit'ler `Co-Authored-By: Claude …` satırı taşır; geçmişte hangi değişikliğin
+  bu şekilde yapıldığını `git log` ile görebilirsiniz.
+- **Ne doğrulandı?** Exchange ile konuşan kodun tamamı ve ViewModel davranışları, sahte bir EWS sunucusuna karşı
+  çalışan otomatik testlerle denetlenir. Testler ve uygulamanın Windows derlemesi her değişiklikte GitHub Actions'ta
+  çalışır.
+- **Ne henüz doğrulanmadı?** Özelliklerin hepsi gerçek bir Exchange sunucusunda ve farklı Windows sürümlerinde
+  denenmedi; kod bağımsız bir güvenlik denetiminden geçmedi. Yapay zekânın ürettiği kod da insan yazımı kod gibi
+  hata içerebilir.
+- **Ne öneriyoruz?** Postacı'yı bir iş posta kutusuna bağlamadan önce kurumunuzun BT birimine danışın, önemli
+  işlemlerden (silme, gönderme, otomatik yanıt) önce davranışı bir test hesabında deneyin ve bulduğunuz her hatayı
+  [issue](../../issues) olarak bildirin.
+
+Yapay zekâ araçlarıyla hazırlanmış katkılar da kabul edilir; kuralları
+[CONTRIBUTING.md](CONTRIBUTING.md#yapay-zekâ-araçlarıyla-katkı) içindedir.
+
 ## Katkıda bulunma
 
-Katkılar memnuniyetle karşılanır. Geliştirme ortamı, katman kuralları, yeni bir EWS işleminin nasıl ekleneceği,
-test yazma ve PR süreci için [CONTRIBUTING.md](CONTRIBUTING.md) dosyasını okuyun.
+Postacı herkesin geliştirmesine açıktır: ilk kez açık kaynağa katkı veriyor olun ya da deneyimli bir geliştirici
+olun, hata bildirimleri, öneriler, belge düzeltmeleri, çeviriler, testler ve kod katkıları memnuniyetle karşılanır.
+Gerçek bir Exchange sunucusunda deneyip sonucu paylaşmak bile çok değerlidir.
+
+Geliştirme ortamı, katman kuralları, yeni bir EWS işleminin nasıl ekleneceği, test yazma ve PR süreci için
+[CONTRIBUTING.md](CONTRIBUTING.md) dosyasını okuyun. Topluluk içinde birbirimize nasıl davrandığımız
+[CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md) dosyasında yazılıdır.
 
 ## Lisans
 
@@ -349,5 +385,8 @@ garanti olmadan sunulur.
 Kullanılan başlıca bileşenler de açık kaynak lisanslıdır: .NET ve Windows App SDK (MIT),
 CommunityToolkit.Mvvm (MIT), xUnit (Apache 2.0). Microsoft Edge WebView2 Runtime işletim sistemiyle gelir ve
 uygulamayla birlikte dağıtılmaz.
+
+Microsoft, Exchange, Outlook ve Windows, Microsoft Corporation'ın ticari markalarıdır. Postacı bağımsız bir
+projedir; Microsoft ile bağlantılı değildir, Microsoft tarafından desteklenmez veya onaylanmaz.
 
 Simge kaynakları ve yeniden üretme betikleri [`assets/icon/`](assets/icon/) altındadır.

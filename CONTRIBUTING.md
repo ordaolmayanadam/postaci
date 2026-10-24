@@ -1,7 +1,12 @@
 # Postacı'ya katkıda bulunma
 
-Postacı'yı geliştirmeye ayıracağınız zaman için teşekkürler. Bu rehber; geliştirme ortamını kurmayı, kodun nasıl
-düzenlendiğini, yeni bir Exchange işlemi eklemeyi, test yazmayı ve pull request sürecini anlatır.
+Postacı'yı geliştirmeye ayıracağınız zaman için teşekkürler. Postacı bir şirket ürünü değil, **herkesin
+geliştirmesine açık kişisel bir açık kaynak projesidir** ve büyük bölümü yapay zekâ yardımıyla yazılmıştır
+(ayrıntılar [README'de](README.md#yapay-zekâ-ile-geliştirme)). İlk katkınız olsa bile çekinmeyin; nereden
+başlayacağınızı bilmiyorsanız bir issue açıp sormanız yeterli.
+
+Bu rehber; geliştirme ortamını kurmayı, kodun nasıl düzenlendiğini, yeni bir Exchange işlemi eklemeyi, test
+yazmayı, yapay zekâ araçlarıyla katkı kurallarını ve pull request sürecini anlatır.
 
 Kısa yol: [Ortam](#geliştirme-ortamı) → [Derle ve test et](#derleme-ve-test) → [Değişikliği yap](#katman-kuralları)
 → [Test ekle](#test-yazma) → [PR aç](#pull-request-süreci).
@@ -10,6 +15,7 @@ Kısa yol: [Ortam](#geliştirme-ortamı) → [Derle ve test et](#derleme-ve-test
 
 - [Başlamadan önce](#başlamadan-önce)
 - [Gizlilik kuralı](#gizlilik-kuralı)
+- [Yapay zekâ araçlarıyla katkı](#yapay-zekâ-araçlarıyla-katkı)
 - [Geliştirme ortamı](#geliştirme-ortamı)
 - [Derleme ve test](#derleme-ve-test)
 - [Depo yapısı](#depo-yapısı)
@@ -25,6 +31,10 @@ Kısa yol: [Ortam](#geliştirme-ortamı) → [Derle ve test et](#derleme-ve-test
 - [Sık karşılaşılan sorunlar](#sık-karşılaşılan-sorunlar)
 
 ## Başlamadan önce
+
+- Katkı türü fark etmez: hata bildirimi, öneri, belge ve yazım düzeltmesi, test, gerçek sunucuda deneme raporu,
+  kod. **`iyi ilk issue`** etiketli konular yeni başlayanlar için seçilmiştir.
+- Topluluk kurallarımız [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md) dosyasındadır; katılan herkes bunlara uyar.
 
 - **Hata bildirimi** ve **özellik önerisi** için [issue şablonlarını](.github/ISSUE_TEMPLATE) kullanın. Önce aynı
   konuda açık bir issue olup olmadığına bakın.
@@ -52,6 +62,27 @@ içerikleri değiştirin.
 
 Yanlışlıkla gizli veri paylaşıldığını fark ederseniz hemen bakımcılara haber verin.
 **Şüpheli durum 24 saat içinde Yönetim birimine bildirmesi gerekmektedir.**
+
+## Yapay zekâ araçlarıyla katkı
+
+Proje zaten yapay zekâ yardımıyla geliştirildiği için Claude, Copilot, ChatGPT gibi araçlarla hazırlanmış katkılar
+da memnuniyetle kabul edilir. Tek koşul, şeffaflık ve sorumluluktur:
+
+1. **Belirtin.** PR şablonundaki "Yapay zekâ kullanımı" bölümünde hangi aracı ve neyin için kullandığınızı kısaca
+   yazın. Commit'e `Co-Authored-By:` satırı eklemeniz önerilir ama zorunlu değildir.
+2. **Sahiplenin.** Gönderdiğiniz her satırı okuyun ve anlayın; inceleme sırasında "neden böyle?" sorusuna sizin
+   yanıt verebilmeniz gerekir. "Yapay zekâ böyle yazdı" geçerli bir gerekçe değildir.
+3. **Doğrulayın.** Testleri yerelde çalıştırın, arayüz değişikliğini Windows'ta açıp deneyin. Yapay zekânın var
+   olmayan bir EWS öğesi, özniteliği veya API'si "uydurması" sık görülür; Microsoft belgeleriyle karşılaştırın.
+4. **Küçük tutun.** İncelenmemiş, yüzlerce satırlık toplu üretimler yerine tek konulu, incelenebilir PR'lar açın.
+5. **Gizli veri vermeyin.** Yapay zekâ aracına parola, token, gerçek posta içeriği, kurum içi sunucu adı veya
+   başka bir şirketin kaynak kodunu yapıştırmayın. [Gizlilik kuralı](#gizlilik-kuralı) burada da geçerlidir.
+6. **Lisansa dikkat edin.** Başka bir projeden birebir alındığını düşündüğünüz uzun kod parçalarını göndermeyin;
+   katkınızın MIT lisansıyla yayımlanabilir olması gerekir.
+7. **Issue'lar için de geçerli.** Yapay zekâya yazdırdığınız hata raporlarını göndermeden önce gerçekten
+   yeniden üretebildiğinizi kontrol edin.
+
+İnceleme, katkı yapay zekâ ile hazırlanmış olsun ya da olmasın aynı ölçütlerle yapılır.
 
 ## Geliştirme ortamı
 
@@ -399,6 +430,7 @@ await WaitUntil(() => vm.Messages.Count == 2 && !vm.IsLoadingList);
 - [ ] Açık/koyu tema ve büyütülmüş yazı boyutu ile arayüz bozulmuyor
 - [ ] WebView2 güvenlik ayarlarına dokunulmamış (veya dokunulduysa gerekçesi yazılmış)
 - [ ] Gerçek kişi, adres, sunucu adı veya posta içeriği yok
+- [ ] Yapay zekâ kullanıldıysa PR'da belirtilmiş ve kod yazar tarafından anlaşılmış/denenmiş
 
 ## Sürüm yayınlama (bakımcılar için)
 

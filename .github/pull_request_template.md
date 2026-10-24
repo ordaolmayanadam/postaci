@@ -9,6 +9,14 @@
 - [ ] Arayüz değişikliği Windows'ta çalıştırılarak denendi (açık ve koyu tema)
 - [ ] Gerçek bir Exchange sunucusunda denendi (sürüm: ...)
 
+## Yapay zekâ kullanımı
+
+<!-- Yapay zekâ araçlarıyla hazırlanan katkılar kabul edilir; yalnızca belirtin. -->
+
+- [ ] Kullanılmadı
+- [ ] Kullanıldı — araç: ..., hangi kısımlar için: ...
+- [ ] Yapay zekânın ürettiği her satırı okudum, anladım ve denedim
+
 ## Kontrol listesi
 
 - [ ] Katman kuralları korundu (Core ve ViewModels WinUI'ye bağımlı değil)
