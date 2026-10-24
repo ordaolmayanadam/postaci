@@ -10,11 +10,11 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/KULLANICI/DEPO/actions/workflows/ci.yml"><img src="https://github.com/KULLANICI/DEPO/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
+  <a href="https://github.com/ordaolmayanadam/postaci/actions/workflows/ci.yml"><img src="https://github.com/ordaolmayanadam/postaci/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue" alt="License: MIT"></a>
   <a href="#built-with-ai"><img src="https://img.shields.io/badge/built%20with-AI-8A2BE2" alt="Built with AI"></a>
   <a href="CONTRIBUTING.en.md"><img src="https://img.shields.io/badge/contributions-welcome-brightgreen" alt="Contributions welcome"></a>
-  <a href="https://github.com/KULLANICI/DEPO/releases/latest"><img src="https://img.shields.io/github/v/release/KULLANICI/DEPO?include_prereleases&label=release" alt="Latest release"></a>
+  <a href="https://github.com/ordaolmayanadam/postaci/releases/latest"><img src="https://img.shields.io/github/v/release/ordaolmayanadam/postaci?include_prereleases&label=release" alt="Latest release"></a>
 </p>
 
 <p align="center">
@@ -71,7 +71,7 @@ and sends data nowhere except the Exchange server you configure.
 
 ### Prebuilt release
 
-1. Download the file matching your processor from the [Releases](https://github.com/KULLANICI/DEPO/releases/latest) page:
+1. Download the file matching your processor from the [Releases](https://github.com/ordaolmayanadam/postaci/releases/latest) page:
    - `Postaci-<version>-win-x64.zip`: Intel/AMD PCs
    - `Postaci-<version>-win-arm64.zip`: ARM PCs (e.g. Snapdragon)
 2. Optionally verify the download against `SHA256SUMS.txt`:

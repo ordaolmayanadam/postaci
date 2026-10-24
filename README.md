@@ -10,11 +10,11 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/KULLANICI/DEPO/actions/workflows/ci.yml"><img src="https://github.com/KULLANICI/DEPO/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
+  <a href="https://github.com/ordaolmayanadam/postaci/actions/workflows/ci.yml"><img src="https://github.com/ordaolmayanadam/postaci/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/lisans-MIT-blue" alt="Lisans: MIT"></a>
   <a href="#yapay-zekâ-ile-geliştirme"><img src="https://img.shields.io/badge/yapay%20zek%C3%A2%20ile-geli%C5%9Ftirildi-8A2BE2" alt="Yapay zekâ ile geliştirildi"></a>
   <a href="CONTRIBUTING.md"><img src="https://img.shields.io/badge/katk%C4%B1lar-a%C3%A7%C4%B1k-brightgreen" alt="Katkılara açık"></a>
-  <a href="https://github.com/KULLANICI/DEPO/releases/latest"><img src="https://img.shields.io/github/v/release/KULLANICI/DEPO?include_prereleases&label=s%C3%BCr%C3%BCm" alt="Son sürüm"></a>
+  <a href="https://github.com/ordaolmayanadam/postaci/releases/latest"><img src="https://img.shields.io/github/v/release/ordaolmayanadam/postaci?include_prereleases&label=s%C3%BCr%C3%BCm" alt="Son sürüm"></a>
 </p>
 
 <p align="center">
@@ -66,7 +66,7 @@ yapılandırılan Exchange sunucusu dışında hiçbir yere veri göndermez.
 
 ### Hazır sürüm
 
-1. [Sürümler (Releases)](https://github.com/KULLANICI/DEPO/releases/latest) sayfasından işlemcinize uygun dosyayı indirin:
+1. [Sürümler (Releases)](https://github.com/ordaolmayanadam/postaci/releases/latest) sayfasından işlemcinize uygun dosyayı indirin:
    - `Postaci-<sürüm>-win-x64.zip`: Intel/AMD işlemcili bilgisayarlar
    - `Postaci-<sürüm>-win-arm64.zip`: ARM işlemcili bilgisayarlar (ör. Snapdragon)
 2. İsterseniz dosyanın bütünlüğünü `SHA256SUMS.txt` ile doğrulayın:
