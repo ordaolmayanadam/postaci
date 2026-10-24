@@ -60,10 +60,10 @@ public sealed partial class MessageItemViewModel(MailSummary summary, bool showR
     public bool IsUnread => !IsRead;
 
     public string Sender => showRecipients
-        ? (Summary.DisplayTo.Length > 0 ? Summary.DisplayTo : "(alıcı yok)")
-        : Summary.From?.Display ?? "(gönderen yok)";
+        ? (Summary.DisplayTo.Length > 0 ? Summary.DisplayTo : Strings.Mail_NoRecipient)
+        : Summary.From?.Display ?? Strings.Mail_NoSender;
 
-    public string Subject => string.IsNullOrWhiteSpace(Summary.Subject) ? "(Konu yok)" : Summary.Subject;
+    public string Subject => string.IsNullOrWhiteSpace(Summary.Subject) ? Strings.Common_NoSubject : Summary.Subject;
     public string Preview => Summary.Preview.ReplaceLineEndings(" ");
     public string DateText => MailFormat.ListDate(Summary.Received);
     public bool HasAttachments => Summary.HasAttachments;
@@ -104,7 +104,7 @@ public sealed partial class MessageDetailViewModel : ObservableObject
     }
 
     public MailDetail Detail { get; }
-    public string Subject => string.IsNullOrWhiteSpace(Detail.Subject) ? "(Konu yok)" : Detail.Subject;
+    public string Subject => string.IsNullOrWhiteSpace(Detail.Subject) ? Strings.Common_NoSubject : Detail.Subject;
     public string FromName => Detail.From?.Display ?? "";
     public string FromAddress => Detail.From?.Address ?? "";
     public string ToText => string.Join("; ", Detail.To.Select(m => m.Display));

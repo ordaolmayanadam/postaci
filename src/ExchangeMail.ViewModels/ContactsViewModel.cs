@@ -30,7 +30,7 @@ public sealed partial class ContactsViewModel : ObservableObject
 
     public bool IsDirectory => SourceIndex == 1;
 
-    public string SearchPlaceholder => IsDirectory ? "Şirket rehberinde ara (ad, soyad, e-posta)" : "Kişilerimde ara";
+    public string SearchPlaceholder => IsDirectory ? Strings.Contacts_SearchDirectoryPlaceholder : Strings.Contacts_SearchMinePlaceholder;
 
     [ObservableProperty] private string _searchText = "";
 
@@ -56,8 +56,8 @@ public sealed partial class ContactsViewModel : ObservableObject
     public bool IsEmpty => Contacts.Count == 0 && !IsLoading;
 
     public string EmptyText => IsDirectory && string.IsNullOrWhiteSpace(SearchText)
-        ? "Şirket rehberinde aramak için yukarıya bir ad yazıp Enter'a basın."
-        : "Kişi bulunamadı.";
+        ? Strings.Contacts_DirectoryHint
+        : Strings.Contacts_NoneFound;
 
     /// <summary>Asks the user a yes/no question; supplied by the view.</summary>
     public Func<string, string, Task<bool>>? ConfirmAsync { get; set; }
@@ -95,7 +95,8 @@ public sealed partial class ContactsViewModel : ObservableObject
             {
                 items = await _session.Client.SearchDirectoryAsync(SearchText, cts.Token);
                 HasMore = false;
-                StatusText = items.Count >= 100 ? "İlk 100 sonuç gösteriliyor; aramayı daraltın." : items.Count > 0 ? $"{items.Count} sonuç" : "";
+                StatusText = items.Count >= 100 ? Strings.Contacts_First100
+                    : items.Count > 0 ? Loc.Count(items.Count, Strings.Common_ResultCount_One, Strings.Common_ResultCount) : "";
             }
             else
             {
@@ -103,7 +104,7 @@ public sealed partial class ContactsViewModel : ObservableObject
                 items = page.Items;
                 _nextOffset = page.NextOffset;
                 HasMore = !page.IsLastPage;
-                StatusText = $"{page.TotalCount} kişi";
+                StatusText = Loc.Count(page.TotalCount, Strings.Contacts_Count_One, Strings.Contacts_Count);
             }
             if (cts.IsCancellationRequested) return;
 
@@ -119,7 +120,7 @@ public sealed partial class ContactsViewModel : ObservableObject
         }
         catch (EwsException ex)
         {
-            ErrorMessage = "Kişiler yüklenemedi: " + ex.Message;
+            ErrorMessage = Loc.Format(Strings.Contacts_LoadFailed, ex.Message);
         }
         finally
         {
@@ -154,7 +155,7 @@ public sealed partial class ContactsViewModel : ObservableObject
     private async Task DeleteAsync()
     {
         if (Selected is not { Contact.ItemId: { } id } contact) return;
-        if (ConfirmAsync is not null && !await ConfirmAsync("Kişiyi sil", $"{contact.DisplayName} kişilerinizden silinecek. Devam edilsin mi?"))
+        if (ConfirmAsync is not null && !await ConfirmAsync(Strings.Contacts_DeleteTitle, Loc.Format(Strings.Contacts_DeleteQuestion, contact.DisplayName)))
             return;
         try
         {
@@ -164,7 +165,7 @@ public sealed partial class ContactsViewModel : ObservableObject
         }
         catch (EwsException ex)
         {
-            ErrorMessage = "Kişi silinemedi: " + ex.Message;
+            ErrorMessage = Loc.Format(Strings.Contacts_DeleteFailed, ex.Message);
         }
     }
 
@@ -183,12 +184,12 @@ public sealed partial class ContactsViewModel : ObservableObject
             var selectedId = id.Id;
             await LoadAsync(reset: true);
             Selected = Contacts.FirstOrDefault(c => c.Contact.ItemId?.Id == selectedId);
-            StatusText = "Kişi güncellendi.";
+            StatusText = Strings.Contacts_Updated;
             return true;
         }
         catch (Exception ex) when (ex is EwsException or ArgumentException)
         {
-            ErrorMessage = "Kişi güncellenemedi: " + ex.Message;
+            ErrorMessage = Loc.Format(Strings.Contacts_UpdateFailed, ex.Message);
             return false;
         }
     }
@@ -212,7 +213,7 @@ public sealed partial class ContactsViewModel : ObservableObject
             BusinessPhone = c.Contact.BusinessPhone ?? "",
             MobilePhone = c.Contact.MobilePhone ?? "",
         }, reload: false);
-        if (created) StatusText = $"{c.DisplayName} kişilerinize eklendi.";
+        if (created) StatusText = Loc.Format(Strings.Contacts_AddedFormat, c.DisplayName);
     }
 
     /// <summary>Creates a personal contact from the editor dialog.</summary>
@@ -226,7 +227,7 @@ public sealed partial class ContactsViewModel : ObservableObject
         }
         catch (Exception ex) when (ex is EwsException or ArgumentException)
         {
-            ErrorMessage = "Kişi kaydedilemedi: " + ex.Message;
+            ErrorMessage = Loc.Format(Strings.Contacts_SaveFailed, ex.Message);
             return false;
         }
     }
@@ -235,7 +236,7 @@ public sealed partial class ContactsViewModel : ObservableObject
 public sealed class ContactItemViewModel(ContactInfo contact)
 {
     public ContactInfo Contact { get; } = contact;
-    public string DisplayName => string.IsNullOrWhiteSpace(Contact.DisplayName) ? Contact.Email ?? "(adsız)" : Contact.DisplayName;
+    public string DisplayName => string.IsNullOrWhiteSpace(Contact.DisplayName) ? Contact.Email ?? Strings.Contacts_Unnamed : Contact.DisplayName;
     public string? Email => Contact.Email;
     public bool HasEmail => !string.IsNullOrWhiteSpace(Contact.Email);
     public bool IsDirectoryEntry => Contact.IsDirectoryEntry;
@@ -243,7 +244,7 @@ public sealed class ContactItemViewModel(ContactInfo contact)
     public string Subtitle => string.Join(" · ", new[] { Contact.JobTitle, Contact.Department, Contact.Company }
         .Where(s => !string.IsNullOrWhiteSpace(s)));
 
-    public string ListSecondLine => Contact.IsDistributionList ? "Dağıtım listesi" : Email ?? Subtitle;
+    public string ListSecondLine => Contact.IsDistributionList ? Strings.Contacts_DistributionList : Email ?? Subtitle;
     public string BusinessPhone => Contact.BusinessPhone ?? "";
     public string MobilePhone => Contact.MobilePhone ?? "";
     public bool HasBusinessPhone => !string.IsNullOrWhiteSpace(Contact.BusinessPhone);

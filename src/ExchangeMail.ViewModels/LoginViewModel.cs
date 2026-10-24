@@ -28,7 +28,7 @@ public sealed partial class LoginViewModel : ObservableObject
 
         CanAutoConnect = settings.Exists && saved.Email.Length > 0 && (saved.UseWindowsAuth || Password.Length > 0);
         if (settings.Exists && !saved.UseWindowsAuth && saved.RememberPassword && Password.Length == 0)
-            _errorMessage = "Kayıtlı parola bulunamadı. Parolanızı girip bağlanın; bir sonraki açılışta tekrar sorulmayacak.";
+            _errorMessage = Strings.Login_SavedPasswordMissing;
     }
 
     [ObservableProperty]
@@ -76,7 +76,7 @@ public sealed partial class LoginViewModel : ObservableObject
         ErrorMessage = null;
         if (!UseWindowsAuth && Password.Length == 0)
         {
-            ErrorMessage = "Parola girin veya Windows oturum bilgilerini kullanın.";
+            ErrorMessage = Strings.Login_PasswordRequired;
             return;
         }
 
@@ -99,19 +99,19 @@ public sealed partial class LoginViewModel : ObservableObject
             {
                 if (!Uri.TryCreate(account.EwsUrl, UriKind.Absolute, out ewsUri!) || ewsUri.Scheme != Uri.UriSchemeHttps)
                 {
-                    ErrorMessage = "EWS adresi https:// ile başlayan tam bir adres olmalı (ör. https://mail.sirket.com/EWS/Exchange.asmx).";
+                    ErrorMessage = Strings.Login_EwsUrlInvalid;
                     return;
                 }
             }
             else
             {
-                StatusText = "Autodiscover ile sunucu aranıyor…";
+                StatusText = Strings.Login_Autodiscovering;
                 ewsUri = await Autodiscover.DiscoverEwsUrlAsync(account.Email, credentials, ct);
                 account.EwsUrl = ewsUri.ToString();
                 EwsUrl = account.EwsUrl;
             }
 
-            StatusText = $"{ewsUri.Host} sunucusuna bağlanılıyor…";
+            StatusText = Loc.Format(Strings.Login_ConnectingFormat, ewsUri.Host);
             client = EwsClient.Create(ewsUri, credentials);
             await client.GetWellKnownFolderIdsAsync(ct); // verifies credentials and mailbox access
 
@@ -126,7 +126,7 @@ public sealed partial class LoginViewModel : ObservableObject
             catch (Exception ex)
             {
                 // Not fatal: the user is signed in, they will just be asked again next time.
-                System.Diagnostics.Debug.WriteLine("Parola kaydedilemedi: " + ex);
+                System.Diagnostics.Debug.WriteLine("Could not save the password: " + ex);
             }
 
             var session = new MailSession(client, account, _preferences ?? _settings.LoadPreferences());

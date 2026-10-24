@@ -26,7 +26,7 @@ internal static class Xml
 
     public static EwsItemId ParseItemId(XElement? el) =>
         el is null
-            ? throw new EwsException("Yanıtta ItemId bulunamadı.")
+            ? throw new EwsException(Strings.Ews_ItemIdMissing)
             : new EwsItemId((string)el.Attribute("Id")!, (string?)el.Attribute("ChangeKey"));
 
     public static MailboxAddress? ParseMailbox(XElement? mailbox)

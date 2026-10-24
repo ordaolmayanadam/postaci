@@ -14,4 +14,7 @@
   <ItemGroup>
     <Using Include="Xunit" />
   </ItemGroup>
+  <ItemGroup>
+    <Using Include="ExchangeMail.Core.Localization" />
+  </ItemGroup>
 </Project>

@@ -23,7 +23,7 @@
 
     <ScrollViewer VerticalScrollBarVisibility="Auto">
         <StackPanel MaxWidth="820" Padding="32,8,32,32" HorizontalAlignment="Stretch" Spacing="6">
-            <TextBlock Text="Ayarlar" Style="{StaticResource TitleTextBlockStyle}" />
+            <TextBlock Text="{h:L Key=Nav_Settings}" Style="{StaticResource TitleTextBlockStyle}" />
 
             <InfoBar
                 Severity="Error"
@@ -37,7 +37,7 @@
                 IsClosable="False" />
 
             <!--  Mail  -->
-            <TextBlock Text="Posta" Style="{StaticResource SectionStyle}" />
+            <TextBlock Text="{h:L Key=Nav_Mail}" Style="{StaticResource SectionStyle}" />
 
             <Grid Style="{StaticResource CardStyle}">
                 <Grid.ColumnDefinitions>
@@ -45,27 +45,27 @@
                     <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
                 <StackPanel VerticalAlignment="Center">
-                    <TextBlock Text="İletiyi okundu olarak işaretle" />
+                    <TextBlock Text="{h:L Key=Settings_MarkRead}" />
                     <TextBlock
-                        Text="Okuma bölmesinde açılan okunmamış ileti ne zaman okundu sayılsın?"
+                        Text="{h:L Key=Settings_MarkReadHint}"
                         Style="{StaticResource CaptionTextBlockStyle}"
                         Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                         TextWrapping="Wrap" />
                 </StackPanel>
                 <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="12">
                     <ComboBox MinWidth="200" SelectedIndex="{x:Bind ViewModel.MarkAsReadIndex, Mode=TwoWay}">
-                        <ComboBoxItem Content="Seçildiğinde" />
-                        <ComboBoxItem Content="Birkaç saniye sonra" />
-                        <ComboBoxItem Content="Hiçbir zaman (elle)" />
+                        <ComboBoxItem Content="{h:L Key=Settings_MarkReadWhenSelected}" />
+                        <ComboBoxItem Content="{h:L Key=Settings_MarkReadAfterDelay}" />
+                        <ComboBoxItem Content="{h:L Key=Settings_MarkReadNever}" />
                     </ComboBox>
                     <NumberBox
                         Width="130"
                         IsEnabled="{x:Bind ViewModel.IsDelayEnabled, Mode=OneWay}"
                         Maximum="120"
                         Minimum="1"
-                        PlaceholderText="sn"
+                        PlaceholderText="{h:L Key=Settings_SecondsShort}"
                         SpinButtonPlacementMode="Inline"
-                        ToolTipService.ToolTip="Saniye"
+                        ToolTipService.ToolTip="{h:L Key=Settings_Seconds}"
                         Value="{x:Bind ViewModel.MarkAsReadDelaySeconds, Mode=TwoWay}" />
                 </StackPanel>
             </Grid>
@@ -76,18 +76,18 @@
                     <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
                 <StackPanel VerticalAlignment="Center">
-                    <TextBlock Text="Yeni posta denetimi" />
+                    <TextBlock Text="{h:L Key=Settings_RefreshInterval}" />
                     <TextBlock
-                        Text="Gelen kutusu ve klasör sayıları bu aralıkla yenilenir."
+                        Text="{h:L Key=Settings_RefreshIntervalHint}"
                         Style="{StaticResource CaptionTextBlockStyle}"
                         Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                 </StackPanel>
                 <ComboBox Grid.Column="1" MinWidth="200" SelectedIndex="{x:Bind ViewModel.RefreshIndex, Mode=TwoWay}">
-                    <ComboBoxItem Content="30 saniyede bir" />
-                    <ComboBoxItem Content="Dakikada bir" />
-                    <ComboBoxItem Content="2 dakikada bir" />
-                    <ComboBoxItem Content="5 dakikada bir" />
-                    <ComboBoxItem Content="15 dakikada bir" />
+                    <ComboBoxItem Content="{h:L Key=Settings_Every30Seconds}" />
+                    <ComboBoxItem Content="{h:L Key=Settings_EveryMinute}" />
+                    <ComboBoxItem Content="{h:L Key=Settings_Every2Minutes}" />
+                    <ComboBoxItem Content="{h:L Key=Settings_Every5Minutes}" />
+                    <ComboBoxItem Content="{h:L Key=Settings_Every15Minutes}" />
                 </ComboBox>
             </Grid>
 
@@ -97,9 +97,9 @@
                     <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
                 <StackPanel VerticalAlignment="Center">
-                    <TextBlock Text="Uzak resimleri her zaman göster" />
+                    <TextBlock Text="{h:L Key=Settings_RemoteImages}" />
                     <TextBlock
-                        Text="Kapalıyken izleme piksellerine karşı dış kaynaklı resimler engellenir."
+                        Text="{h:L Key=Settings_RemoteImagesHint}"
                         Style="{StaticResource CaptionTextBlockStyle}"
                         Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                         TextWrapping="Wrap" />
@@ -108,8 +108,8 @@
                     Grid.Column="1"
                     MinWidth="0"
                     IsOn="{x:Bind ViewModel.AlwaysShowRemoteImages, Mode=TwoWay}"
-                    OffContent="Kapalı"
-                    OnContent="Açık" />
+                    OffContent="{h:L Key=Common_Off}"
+                    OnContent="{h:L Key=Common_On}" />
             </Grid>
 
             <Grid Style="{StaticResource CardStyle}" RowSpacing="8">
@@ -119,16 +119,16 @@
                     <RowDefinition Height="Auto" />
                 </Grid.RowDefinitions>
                 <StackPanel>
-                    <TextBlock Text="İmza" />
+                    <TextBlock Text="{h:L Key=Settings_Signature}" />
                     <TextBlock
-                        Text="Yeni iletilerin, yanıtların ve iletmelerin sonuna eklenir."
+                        Text="{h:L Key=Settings_SignatureHint}"
                         Style="{StaticResource CaptionTextBlockStyle}"
                         Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                 </StackPanel>
                 <controls:HtmlEditor x:Name="SignatureEditor" Grid.Row="1" Height="200" />
                 <Button
                     Grid.Row="2"
-                    Content="İmzayı kaydet"
+                    Content="{h:L Key=Settings_SaveSignature}"
                     Click="OnSaveSignature" />
             </Grid>
 
@@ -138,9 +138,9 @@
                     <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
                 <StackPanel VerticalAlignment="Center">
-                    <TextBlock Text="Yeni posta bildirimleri" />
+                    <TextBlock Text="{h:L Key=Settings_Notifications}" />
                     <TextBlock
-                        Text="Gelen kutusuna yeni ileti düştüğünde Windows bildirimi gösterilir. Okunmamış sayısı görev çubuğu simgesinde görünür."
+                        Text="{h:L Key=Settings_NotificationsHint}"
                         Style="{StaticResource CaptionTextBlockStyle}"
                         Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                         TextWrapping="Wrap" />
@@ -149,12 +149,12 @@
                     Grid.Column="1"
                     MinWidth="0"
                     IsOn="{x:Bind ViewModel.ShowNotifications, Mode=TwoWay}"
-                    OffContent="Kapalı"
-                    OnContent="Açık" />
+                    OffContent="{h:L Key=Common_Off}"
+                    OnContent="{h:L Key=Common_On}" />
             </Grid>
 
             <!--  Automatic replies  -->
-            <TextBlock Text="Otomatik yanıtlar (ofis dışında)" Style="{StaticResource SectionStyle}" />
+            <TextBlock Text="{h:L Key=Settings_AutoReplies}" Style="{StaticResource SectionStyle}" />
             <Grid Style="{StaticResource CardStyle}" RowSpacing="12">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto" />
@@ -166,25 +166,25 @@
                     <RowDefinition Height="Auto" />
                 </Grid.RowDefinitions>
                 <ToggleSwitch
-                    Header="Otomatik yanıt gönder"
+                    Header="{h:L Key=Settings_SendAutoReplies}"
                     IsOn="{x:Bind ViewModel.AutoReply.IsEnabled, Mode=TwoWay}"
-                    OffContent="Kapalı"
-                    OnContent="Açık" />
+                    OffContent="{h:L Key=Common_Off}"
+                    OnContent="{h:L Key=Common_On}" />
                 <StackPanel Grid.Row="1" Spacing="8" Visibility="{x:Bind ViewModel.AutoReply.IsEnabled, Mode=OneWay}">
-                    <CheckBox Content="Yalnızca bu zaman aralığında gönder" IsChecked="{x:Bind ViewModel.AutoReply.IsScheduled, Mode=TwoWay}" />
+                    <CheckBox Content="{h:L Key=Settings_OnlyDuringRange}" IsChecked="{x:Bind ViewModel.AutoReply.IsScheduled, Mode=TwoWay}" />
                     <StackPanel
                         Orientation="Horizontal"
                         Spacing="8"
                         Visibility="{x:Bind ViewModel.AutoReply.CanEditSchedule, Mode=OneWay}">
-                        <CalendarDatePicker Header="Başlangıç" Date="{x:Bind ViewModel.AutoReply.StartDate, Mode=TwoWay}" />
+                        <CalendarDatePicker Header="{h:L Key=Common_Start}" Date="{x:Bind ViewModel.AutoReply.StartDate, Mode=TwoWay}" />
                         <TimePicker
-                            Header="Saat"
+                            Header="{h:L Key=Common_Time}"
                             ClockIdentifier="24HourClock"
                             MinuteIncrement="30"
                             Time="{x:Bind ViewModel.AutoReply.StartTime, Mode=TwoWay}" />
-                        <CalendarDatePicker Margin="16,0,0,0" Header="Bitiş" Date="{x:Bind ViewModel.AutoReply.EndDate, Mode=TwoWay}" />
+                        <CalendarDatePicker Margin="16,0,0,0" Header="{h:L Key=Common_End}" Date="{x:Bind ViewModel.AutoReply.EndDate, Mode=TwoWay}" />
                         <TimePicker
-                            Header="Saat"
+                            Header="{h:L Key=Common_Time}"
                             ClockIdentifier="24HourClock"
                             MinuteIncrement="30"
                             Time="{x:Bind ViewModel.AutoReply.EndTime, Mode=TwoWay}" />
@@ -194,25 +194,25 @@
                     Grid.Row="2"
                     MinHeight="90"
                     AcceptsReturn="True"
-                    Header="Kuruluşumdaki kişilere gönderilecek yanıt"
-                    PlaceholderText="Ör. 1-5 Kasım arasında izindeyim. Acil konular için Ali Veli'ye (ali.veli@sirket.com.tr) yazabilirsiniz."
+                    Header="{h:L Key=Settings_InternalReply}"
+                    PlaceholderText="{h:L Key=Settings_InternalReplyPlaceholder}"
                     Text="{x:Bind ViewModel.AutoReply.InternalMessage, Mode=TwoWay}"
                     TextWrapping="Wrap" />
-                <CheckBox Grid.Row="3" Content="Kuruluşum dışındaki kişilere de yanıt gönder" IsChecked="{x:Bind ViewModel.AutoReply.ReplyToExternal, Mode=TwoWay}" />
+                <CheckBox Grid.Row="3" Content="{h:L Key=Settings_ReplyExternal}" IsChecked="{x:Bind ViewModel.AutoReply.ReplyToExternal, Mode=TwoWay}" />
                 <StackPanel Grid.Row="4" Spacing="8" Visibility="{x:Bind ViewModel.AutoReply.CanEditExternal, Mode=OneWay}">
                     <RadioButtons MaxColumns="2" SelectedIndex="{x:Bind ViewModel.AutoReply.ExternalAudienceIndex, Mode=TwoWay}">
-                        <x:String>Yalnızca kişilerime</x:String>
-                        <x:String>Herkese</x:String>
+                        <RadioButton Content="{h:L Key=Settings_ExternalContactsOnly}" />
+                        <RadioButton Content="{h:L Key=Settings_ExternalEveryone}" />
                     </RadioButtons>
                     <TextBox
                         MinHeight="90"
                         AcceptsReturn="True"
-                        Header="Kuruluş dışına gönderilecek yanıt"
+                        Header="{h:L Key=Settings_ExternalReply}"
                         Text="{x:Bind ViewModel.AutoReply.ExternalMessage, Mode=TwoWay}"
                         TextWrapping="Wrap" />
                 </StackPanel>
                 <StackPanel Grid.Row="5" Orientation="Horizontal" Spacing="12">
-                    <Button Content="Otomatik yanıtları kaydet" Command="{x:Bind ViewModel.AutoReply.SaveCommand}" Style="{StaticResource AccentButtonStyle}" />
+                    <Button Content="{h:L Key=Settings_SaveAutoReplies}" Command="{x:Bind ViewModel.AutoReply.SaveCommand}" Style="{StaticResource AccentButtonStyle}" />
                     <ProgressRing Width="20" Height="20" IsActive="{x:Bind ViewModel.AutoReply.IsBusy, Mode=OneWay}" />
                 </StackPanel>
                 <StackPanel Grid.Row="6" Spacing="4">
@@ -230,16 +230,16 @@
             </Grid>
 
             <!--  Application  -->
-            <TextBlock Text="Uygulama" Style="{StaticResource SectionStyle}" />
+            <TextBlock Text="{h:L Key=Settings_Application}" Style="{StaticResource SectionStyle}" />
             <Grid Style="{StaticResource CardStyle}">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*" />
                     <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
                 <StackPanel VerticalAlignment="Center">
-                    <TextBlock Text="Kapatınca sistem tepsisine küçült" />
+                    <TextBlock Text="{h:L Key=Settings_MinimizeToTray}" />
                     <TextBlock
-                        Text="Pencereyi kapattığınızda Postacı arka planda yeni postaları denetlemeye ve bildirim göstermeye devam eder. Tamamen kapatmak için tepsi simgesine sağ tıklayıp Çıkış'ı seçin."
+                        Text="{h:L Key=Settings_MinimizeToTrayHint}"
                         Style="{StaticResource CaptionTextBlockStyle}"
                         Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                         TextWrapping="Wrap" />
@@ -248,8 +248,8 @@
                     Grid.Column="1"
                     MinWidth="0"
                     IsOn="{x:Bind ViewModel.MinimizeToTray, Mode=TwoWay}"
-                    OffContent="Kapalı"
-                    OnContent="Açık" />
+                    OffContent="{h:L Key=Common_Off}"
+                    OnContent="{h:L Key=Common_On}" />
             </Grid>
             <Grid Style="{StaticResource CardStyle}" Visibility="{x:Bind ViewModel.CanStartWithWindows}">
                 <Grid.ColumnDefinitions>
@@ -257,9 +257,9 @@
                     <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
                 <StackPanel VerticalAlignment="Center">
-                    <TextBlock Text="Windows açılışında başlat" />
+                    <TextBlock Text="{h:L Key=Settings_StartWithWindows}" />
                     <TextBlock
-                        Text="Windows'a giriş yaptığınızda Postacı sistem tepsisinde başlar ve kayıtlı hesapla bağlanır."
+                        Text="{h:L Key=Settings_StartWithWindowsHint}"
                         Style="{StaticResource CaptionTextBlockStyle}"
                         Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                         TextWrapping="Wrap" />
@@ -268,27 +268,63 @@
                     Grid.Column="1"
                     MinWidth="0"
                     IsOn="{x:Bind ViewModel.StartWithWindows, Mode=TwoWay}"
-                    OffContent="Kapalı"
-                    OnContent="Açık" />
+                    OffContent="{h:L Key=Common_Off}"
+                    OnContent="{h:L Key=Common_On}" />
             </Grid>
 
             <!--  Appearance  -->
-            <TextBlock Text="Görünüm" Style="{StaticResource SectionStyle}" />
+            <TextBlock Text="{h:L Key=Settings_Appearance}" Style="{StaticResource SectionStyle}" />
             <Grid Style="{StaticResource CardStyle}">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*" />
                     <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
-                <TextBlock VerticalAlignment="Center" Text="Tema" />
+                <TextBlock VerticalAlignment="Center" Text="{h:L Key=Settings_Theme}" />
                 <ComboBox Grid.Column="1" MinWidth="200" SelectedIndex="{x:Bind ViewModel.ThemeIndex, Mode=TwoWay}">
-                    <ComboBoxItem Content="Windows ayarını kullan" />
-                    <ComboBoxItem Content="Açık" />
-                    <ComboBoxItem Content="Koyu" />
+                    <ComboBoxItem Content="{h:L Key=Settings_UseWindowsSetting}" />
+                    <ComboBoxItem Content="{h:L Key=Settings_ThemeLight}" />
+                    <ComboBoxItem Content="{h:L Key=Settings_ThemeDark}" />
                 </ComboBox>
             </Grid>
 
+            <Grid Style="{StaticResource CardStyle}" RowSpacing="10">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+                <StackPanel VerticalAlignment="Center">
+                    <TextBlock Text="{h:L Key=Settings_Language}" />
+                    <TextBlock
+                        Text="{h:L Key=Settings_LanguageHint}"
+                        Style="{StaticResource CaptionTextBlockStyle}"
+                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                        TextWrapping="Wrap" />
+                </StackPanel>
+                <!--  Language names are shown in their own language so they can be found from either one.  -->
+                <ComboBox Grid.Column="1" MinWidth="200" SelectedIndex="{x:Bind ViewModel.LanguageIndex, Mode=TwoWay}">
+                    <ComboBoxItem Content="{h:L Key=Settings_UseWindowsSetting}" />
+                    <ComboBoxItem Content="Türkçe" />
+                    <ComboBoxItem Content="English" />
+                </ComboBox>
+                <InfoBar
+                    Grid.Row="1"
+                    Grid.ColumnSpan="2"
+                    IsClosable="False"
+                    IsOpen="{x:Bind ViewModel.IsLanguageRestartNeeded, Mode=OneWay}"
+                    Message="{h:L Key=Settings_LanguageRestartNeeded}"
+                    Severity="Informational">
+                    <InfoBar.ActionButton>
+                        <Button Content="{h:L Key=Settings_RestartNow}" Command="{x:Bind ViewModel.RestartCommand}" />
+                    </InfoBar.ActionButton>
+                </InfoBar>
+            </Grid>
+
             <!--  Fonts  -->
-            <TextBlock Text="Yazı tipleri" Style="{StaticResource SectionStyle}" />
+            <TextBlock Text="{h:L Key=Settings_Fonts}" Style="{StaticResource SectionStyle}" />
 
             <Grid Style="{StaticResource CardStyle}" RowSpacing="10">
                 <Grid.ColumnDefinitions>
@@ -301,9 +337,9 @@
                     <RowDefinition Height="Auto" />
                 </Grid.RowDefinitions>
                 <StackPanel VerticalAlignment="Center">
-                    <TextBlock Text="Arayüz" />
+                    <TextBlock Text="{h:L Key=Settings_Interface}" />
                     <TextBlock
-                        Text="Menüler, listeler ve düğmeler. Uygulama yeniden başlatılınca uygulanır."
+                        Text="{h:L Key=Settings_InterfaceHint}"
                         Style="{StaticResource CaptionTextBlockStyle}"
                         Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                         TextWrapping="Wrap" />
@@ -311,20 +347,20 @@
                 <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8">
                     <ComboBox
                         Width="220"
-                        Header="Yazı tipi"
+                        Header="{h:L Key=Settings_Font}"
                         ItemsSource="{x:Bind ViewModel.FontChoices}"
                         SelectedItem="{x:Bind ViewModel.UiFontChoice, Mode=TwoWay}" />
-                    <ComboBox Width="150" Header="Boyut" SelectedIndex="{x:Bind ViewModel.UiTextScaleIndex, Mode=TwoWay}">
-                        <ComboBoxItem Content="Küçük (%90)" />
-                        <ComboBoxItem Content="Normal" />
-                        <ComboBoxItem Content="Büyük (%115)" />
-                        <ComboBoxItem Content="Çok büyük (%130)" />
+                    <ComboBox Width="150" Header="{h:L Key=Settings_Size}" SelectedIndex="{x:Bind ViewModel.UiTextScaleIndex, Mode=TwoWay}">
+                        <ComboBoxItem Content="{h:L Key=Settings_SizeSmall}" />
+                        <ComboBoxItem Content="{h:L Key=Settings_SizeNormal}" />
+                        <ComboBoxItem Content="{h:L Key=Settings_SizeLarge}" />
+                        <ComboBoxItem Content="{h:L Key=Settings_SizeExtraLarge}" />
                     </ComboBox>
                 </StackPanel>
                 <TextBlock
                     Grid.Row="1"
                     Grid.ColumnSpan="2"
-                    Text="Örnek: Gelen Kutusu · Yanıtla · Toplantı 14:30"
+                    Text="{h:L Key=Settings_InterfaceSample}"
                     FontFamily="{x:Bind h:Ui.Font(ViewModel.UiFontChoice), Mode=OneWay}"
                     FontSize="{x:Bind h:Ui.UiPreviewSize(ViewModel.UiTextScaleIndex), Mode=OneWay}" />
                 <InfoBar
@@ -332,10 +368,10 @@
                     Grid.ColumnSpan="2"
                     IsClosable="False"
                     IsOpen="{x:Bind ViewModel.IsRestartNeeded, Mode=OneWay}"
-                    Message="Arayüz yazı tipi değişikliği uygulama yeniden başlatılınca görünür."
+                    Message="{h:L Key=Settings_FontRestartNeeded}"
                     Severity="Informational">
                     <InfoBar.ActionButton>
-                        <Button Content="Şimdi yeniden başlat" Command="{x:Bind ViewModel.RestartCommand}" />
+                        <Button Content="{h:L Key=Settings_RestartNow}" Command="{x:Bind ViewModel.RestartCommand}" />
                     </InfoBar.ActionButton>
                 </InfoBar>
             </Grid>
@@ -351,9 +387,9 @@
                     <RowDefinition Height="Auto" />
                 </Grid.RowDefinitions>
                 <StackPanel VerticalAlignment="Center">
-                    <TextBlock Text="İleti okuma" />
+                    <TextBlock Text="{h:L Key=Settings_Reading}" />
                     <TextBlock
-                        Text="Okuma bölmesi ve takvim ayrıntıları. Okurken Ctrl + fare tekerleği ile de yakınlaştırabilirsiniz."
+                        Text="{h:L Key=Settings_ReadingHint}"
                         Style="{StaticResource CaptionTextBlockStyle}"
                         Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                         TextWrapping="Wrap" />
@@ -361,10 +397,10 @@
                 <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8">
                     <ComboBox
                         Width="220"
-                        Header="Varsayılan yazı tipi"
+                        Header="{h:L Key=Settings_DefaultFontHeader}"
                         ItemsSource="{x:Bind ViewModel.FontChoices}"
                         SelectedItem="{x:Bind ViewModel.ReadingFontChoice, Mode=TwoWay}" />
-                    <ComboBox Width="150" Header="Yakınlaştırma" SelectedIndex="{x:Bind ViewModel.ReadingZoomIndex, Mode=TwoWay}">
+                    <ComboBox Width="150" Header="{h:L Key=Settings_Zoom}" SelectedIndex="{x:Bind ViewModel.ReadingZoomIndex, Mode=TwoWay}">
                         <ComboBoxItem Content="%80" />
                         <ComboBoxItem Content="%90" />
                         <ComboBoxItem Content="%100" />
@@ -378,12 +414,12 @@
                 <CheckBox
                     Grid.Row="1"
                     Grid.ColumnSpan="2"
-                    Content="İletilerin kendi yazı tiplerini de bu yazı tipiyle değiştir"
+                    Content="{h:L Key=Settings_OverrideFonts}"
                     IsChecked="{x:Bind ViewModel.ReadingFontOverride, Mode=TwoWay}" />
                 <TextBlock
                     Grid.Row="2"
                     Grid.ColumnSpan="2"
-                    Text="Merhaba, toplantı notlarını ekte bulabilirsiniz. İyi çalışmalar."
+                    Text="{h:L Key=Settings_ReadingSample}"
                     FontFamily="{x:Bind h:Ui.Font(ViewModel.ReadingFontChoice), Mode=OneWay}"
                     FontSize="{x:Bind h:Ui.ReadingPreviewSize(ViewModel.ReadingZoomIndex), Mode=OneWay}"
                     TextWrapping="Wrap" />
@@ -399,9 +435,9 @@
                     <RowDefinition Height="Auto" />
                 </Grid.RowDefinitions>
                 <StackPanel VerticalAlignment="Center">
-                    <TextBlock Text="Yeni ileti yazma" />
+                    <TextBlock Text="{h:L Key=Settings_Compose}" />
                     <TextBlock
-                        Text="Yazma penceresi ve imza düzenleyicisi. Alıcılar iletiyi bu yazı tipi ve boyutta görür."
+                        Text="{h:L Key=Settings_ComposeHint}"
                         Style="{StaticResource CaptionTextBlockStyle}"
                         Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                         TextWrapping="Wrap" />
@@ -409,10 +445,10 @@
                 <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8">
                     <ComboBox
                         Width="220"
-                        Header="Yazı tipi"
+                        Header="{h:L Key=Settings_Font}"
                         ItemsSource="{x:Bind ViewModel.FontChoices}"
                         SelectedItem="{x:Bind ViewModel.ComposeFontChoice, Mode=TwoWay}" />
-                    <ComboBox Width="150" Header="Boyut" SelectedIndex="{x:Bind ViewModel.ComposeFontSizeIndex, Mode=TwoWay}">
+                    <ComboBox Width="150" Header="{h:L Key=Settings_Size}" SelectedIndex="{x:Bind ViewModel.ComposeFontSizeIndex, Mode=TwoWay}">
                         <ComboBoxItem Content="9 pt" />
                         <ComboBoxItem Content="10 pt" />
                         <ComboBoxItem Content="11 pt" />
@@ -425,14 +461,14 @@
                 <TextBlock
                     Grid.Row="1"
                     Grid.ColumnSpan="2"
-                    Text="Merhaba Ayşe Hanım, yarınki toplantı için gündemi paylaşıyorum."
+                    Text="{h:L Key=Settings_ComposeSample}"
                     FontFamily="{x:Bind h:Ui.Font(ViewModel.ComposeFontChoice), Mode=OneWay}"
                     FontSize="{x:Bind h:Ui.ComposePreviewSize(ViewModel.ComposeFontSizeIndex), Mode=OneWay}"
                     TextWrapping="Wrap" />
             </Grid>
 
             <!--  Account  -->
-            <TextBlock Text="Hesap" Style="{StaticResource SectionStyle}" />
+            <TextBlock Text="{h:L Key=Settings_Account}" Style="{StaticResource SectionStyle}" />
             <Grid Style="{StaticResource CardStyle}" RowSpacing="10">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto" />
@@ -444,37 +480,37 @@
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="Auto" />
                 </Grid.RowDefinitions>
-                <TextBlock Text="E-posta" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                <TextBlock Text="{h:L Key=Common_Email}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                 <TextBlock Grid.Column="1" Text="{x:Bind ViewModel.AccountEmail}" IsTextSelectionEnabled="True" />
-                <TextBlock Grid.Row="1" Text="Sunucu (EWS)" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                <TextBlock Grid.Row="1" Text="{h:L Key=Settings_Server}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                 <TextBlock Grid.Row="1" Grid.Column="1" Text="{x:Bind ViewModel.ServerUrl}" IsTextSelectionEnabled="True" TextWrapping="Wrap" />
-                <TextBlock Grid.Row="2" Text="Oturum açma" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                <TextBlock Grid.Row="2" Text="{h:L Key=Settings_SignIn}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                 <TextBlock Grid.Row="2" Grid.Column="1" Text="{x:Bind ViewModel.SignInText}" />
                 <StackPanel Grid.Row="3" Grid.ColumnSpan="2" Margin="0,8,0,0" Orientation="Horizontal" Spacing="8">
-                    <Button Content="Kayıtlı parolayı sil" Command="{x:Bind ViewModel.ForgetPasswordCommand}" />
+                    <Button Content="{h:L Key=Settings_ForgetPassword}" Command="{x:Bind ViewModel.ForgetPasswordCommand}" />
                     <Button Command="{x:Bind ViewModel.SignOutCommand}">
                         <StackPanel Orientation="Horizontal" Spacing="8">
                             <FontIcon Glyph="&#xF3B1;" FontSize="14" />
-                            <TextBlock Text="Oturumu kapat" />
+                            <TextBlock Text="{h:L Key=Settings_SignOut}" />
                         </StackPanel>
                     </Button>
                 </StackPanel>
             </Grid>
             <TextBlock
                 Margin="4,0"
-                Text="Uygulamayı pencereden kapatmak oturumu kapatmaz; bir sonraki açılışta otomatik bağlanılır. &quot;Oturumu kapat&quot; kayıtlı parolayı da siler."
+                Text="{h:L Key=Settings_SignOutHint}"
                 Style="{StaticResource CaptionTextBlockStyle}"
                 Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                 TextWrapping="Wrap" />
 
             <!--  About  -->
-            <TextBlock Text="Hakkında" Style="{StaticResource SectionStyle}" />
+            <TextBlock Text="{h:L Key=Settings_About}" Style="{StaticResource SectionStyle}" />
             <Grid Style="{StaticResource CardStyle}">
                 <StackPanel Spacing="4">
                     <TextBlock Text="Postacı" Style="{StaticResource BodyStrongTextBlockStyle}" />
                     <TextBlock Text="{x:Bind ViewModel.AppVersion}" Style="{StaticResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                     <TextBlock
-                        Text="Veriler yalnızca yapılandırılan Exchange sunucusuna gönderilir; uygulama telemetri toplamaz."
+                        Text="{h:L Key=Settings_PrivacyNote}"
                         Style="{StaticResource CaptionTextBlockStyle}"
                         Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                         TextWrapping="Wrap" />

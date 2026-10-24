@@ -31,7 +31,7 @@ public sealed partial class EwsClient
             string.IsNullOrWhiteSpace(query) ? null : M("QueryString", query.Trim()));
 
         var root = Single(await ExecuteAsync(request, ct)).Element(MNs + "RootFolder")
-                   ?? throw new EwsException("FindItem yanıtında RootFolder yok.");
+                   ?? throw new EwsException(Strings.Ews_RootFolderMissing);
 
         var items = root.Element(TNs + "Items")?.Elements().Select(ParseContact).ToList() ?? [];
         return new ContactPage(
@@ -76,7 +76,7 @@ public sealed partial class EwsClient
     public async Task<EwsItemId> CreateContactAsync(NewContact contact, CancellationToken ct = default)
     {
         var displayName = $"{contact.GivenName} {contact.Surname}".Trim();
-        if (displayName.Length == 0) throw new ArgumentException("Ad veya soyad girin.", nameof(contact));
+        if (displayName.Length == 0) throw new ArgumentException(Strings.Contacts_NameRequired, nameof(contact));
 
         var phones = new[] { ("BusinessPhone", contact.BusinessPhone), ("MobilePhone", contact.MobilePhone) }
             .Where(p => !string.IsNullOrWhiteSpace(p.Item2)).ToList();
@@ -107,7 +107,7 @@ public sealed partial class EwsClient
     public async Task UpdateContactAsync(EwsItemId id, NewContact contact, CancellationToken ct = default)
     {
         var displayName = $"{contact.GivenName} {contact.Surname}".Trim();
-        if (displayName.Length == 0) throw new ArgumentException("Ad veya soyad girin.", nameof(contact));
+        if (displayName.Length == 0) throw new ArgumentException(Strings.Contacts_NameRequired, nameof(contact));
 
         var updates = new List<XElement> { SetContactField(Field("contacts:DisplayName"), T("DisplayName", displayName)) };
         foreach (var (uri, name, value) in new[]

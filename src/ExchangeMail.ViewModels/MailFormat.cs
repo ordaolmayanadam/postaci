@@ -19,6 +19,14 @@ public static partial class MailFormat
     public static string LongDate(DateTimeOffset? value) =>
         value?.ToLocalTime().ToString("f", CultureInfo.CurrentCulture) ?? "";
 
+    /// <summary>Day and month in the culture's order: "3 Mart", "3 March" or "March 3".</summary>
+    public static string DayMonth(DateTime value) => value.ToString("M", CultureInfo.CurrentCulture);
+
+    /// <summary><see cref="DayMonth"/> with the year: "3 Mart 2026" or "March 3, 2026".</summary>
+    public static string DayMonthYear(DateTime value) =>
+        value.ToString(CultureInfo.CurrentCulture.DateTimeFormat.MonthDayPattern.StartsWith('d') ? "d MMMM yyyy" : "MMMM d, yyyy",
+            CultureInfo.CurrentCulture);
+
     public static string FileSize(long bytes) => bytes switch
     {
         < 1024 => $"{bytes} B",

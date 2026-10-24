@@ -16,7 +16,7 @@ public sealed partial class ContactDialog : ContentDialog
     /// <summary>Edits an existing personal contact.</summary>
     public ContactDialog(ContactInfo existing) : this()
     {
-        Title = "Kişiyi düzenle";
+        Title = Strings.Contacts_Edit;
         var (given, surname) = (existing.GivenName, existing.Surname);
         if (string.IsNullOrWhiteSpace(given) && string.IsNullOrWhiteSpace(surname))
         {
@@ -42,9 +42,9 @@ public sealed partial class ContactDialog : ContentDialog
     {
         string? error = null;
         if (string.IsNullOrWhiteSpace(GivenNameBox.Text) && string.IsNullOrWhiteSpace(SurnameBox.Text))
-            error = "Ad veya soyad girin.";
+            error = Strings.Contacts_NameRequired;
         else if (!string.IsNullOrWhiteSpace(EmailBox.Text) && RecipientParser.Parse(EmailBox.Text, out _).Count != 1)
-            error = "Geçerli bir e-posta adresi girin.";
+            error = Strings.Common_InvalidEmail;
 
         if (error is not null)
         {

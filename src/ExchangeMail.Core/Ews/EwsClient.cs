@@ -49,7 +49,7 @@ public sealed partial class EwsClient : IDisposable
     {
         var wellKnown = await GetWellKnownFolderIdsAsync(ct);
         if (!wellKnown.TryGetValue("msgfolderroot", out var rootId))
-            throw new EwsException("Posta kutusu kök klasörü bulunamadı.");
+            throw new EwsException(Strings.Ews_MailboxRootNotFound);
 
         var request = M("FindFolder", new XAttribute("Traversal", "Deep"),
             M("FolderShape",
@@ -188,7 +188,7 @@ public sealed partial class EwsClient : IDisposable
             string.IsNullOrWhiteSpace(query) ? null : M("QueryString", query.Trim()));
 
         var root = Single(await ExecuteAsync(request, ct)).Element(MNs + "RootFolder")
-                   ?? throw new EwsException("FindItem yanıtında RootFolder yok.");
+                   ?? throw new EwsException(Strings.Ews_RootFolderMissing);
 
         var items = root.Element(TNs + "Items")?.Elements().Select(ParseSummary).ToList() ?? [];
         var total = (int?)root.Attribute("TotalItemsInView") ?? items.Count;
@@ -219,7 +219,7 @@ public sealed partial class EwsClient : IDisposable
             M("ItemIds", ItemIdElement(id)));
 
         var item = Single(await ExecuteAsync(request, ct)).Element(MNs + "Items")?.Elements().FirstOrDefault()
-                   ?? throw new EwsException("İleti bulunamadı.", "ErrorItemNotFound");
+                   ?? throw new EwsException(Strings.Ews_MessageNotFound, "ErrorItemNotFound");
 
         var body = item.Element(TNs + "Body");
         var attachments = item.Element(TNs + "Attachments")?.Elements().Select(a => new AttachmentInfo(
@@ -291,12 +291,12 @@ public sealed partial class EwsClient : IDisposable
             M("AttachmentIds", T("AttachmentId", new XAttribute("Id", attachment.Id))));
 
         var el = Single(await ExecuteAsync(request, ct)).Element(MNs + "Attachments")?.Elements().FirstOrDefault()
-                 ?? throw new EwsException("Ek bulunamadı.", "ErrorAttachmentNotFound");
+                 ?? throw new EwsException(Strings.Ews_AttachmentNotFound, "ErrorAttachmentNotFound");
 
         if (el.Name == TNs + "ItemAttachment")
         {
             var mime = el.Elements().FirstOrDefault(e => e.Element(TNs + "MimeContent") is not null)?.Element(TNs + "MimeContent")?.Value
-                       ?? throw new EwsException("Ekli ileti indirilemedi.");
+                       ?? throw new EwsException(Strings.Ews_AttachedMessageDownloadFailed);
             var name = (string?)el.Element(TNs + "Name") ?? "ileti";
             return new AttachmentContent(SafeFileName(name) + ".eml", "message/rfc822", Convert.FromBase64String(mime));
         }
@@ -386,9 +386,9 @@ public sealed partial class EwsClient : IDisposable
     private static void Validate(OutgoingMessage message, bool requireRecipients)
     {
         if (message.Mode != ComposeMode.New && message.ReferenceItemId is null && message.ExistingDraftId is null)
-            throw new ArgumentException("Yanıt ve iletme için ReferenceItemId gerekli.", nameof(message));
+            throw new ArgumentException(Strings.Ews_ReferenceItemRequired, nameof(message));
         if (requireRecipients && message.To.Count + message.Cc.Count + message.Bcc.Count == 0)
-            throw new ArgumentException("En az bir alıcı gerekli.", nameof(message));
+            throw new ArgumentException(Strings.Ews_RecipientRequired, nameof(message));
     }
 
     private static XElement BuildMessage(OutgoingMessage message) =>
@@ -546,17 +546,17 @@ public sealed partial class EwsClient : IDisposable
         }
         catch (HttpRequestException ex)
         {
-            throw new EwsException($"Sunucuya ulaşılamadı: {ex.Message}", null, ex);
+            throw new EwsException(Loc.Format(Strings.Ews_ServerUnreachable, ex.Message), null, ex);
         }
         catch (TaskCanceledException ex) when (!ct.IsCancellationRequested)
         {
-            throw new EwsException("Sunucu zamanında yanıt vermedi.", null, ex);
+            throw new EwsException(Strings.Ews_Timeout, null, ex);
         }
 
         using (response)
         {
             if (response.StatusCode == HttpStatusCode.Unauthorized)
-                throw new EwsAuthenticationException("Kimlik doğrulama başarısız. Kullanıcı adı ve parolayı kontrol edin.");
+                throw new EwsAuthenticationException(Strings.Ews_AuthFailed);
 
             XDocument doc;
             try
@@ -566,7 +566,7 @@ public sealed partial class EwsClient : IDisposable
             }
             catch (XmlException ex)
             {
-                throw new EwsException($"Sunucudan beklenmeyen yanıt alındı (HTTP {(int)response.StatusCode} {response.ReasonPhrase}). EWS adresini kontrol edin.", null, ex);
+                throw new EwsException(Loc.Format(Strings.Ews_UnexpectedResponse, (int)response.StatusCode, response.ReasonPhrase), null, ex);
             }
 
             var fault = doc.Descendants(Soap + "Fault").FirstOrDefault();
@@ -575,7 +575,7 @@ public sealed partial class EwsClient : IDisposable
                 // Fault details use the .../2006/errors namespace, so match on local names.
                 var code = (string?)fault.Descendants().FirstOrDefault(e => e.Name.LocalName == "ResponseCode");
                 var text = (string?)fault.Descendants().FirstOrDefault(e => e.Name.LocalName == "Message")
-                           ?? (string?)fault.Element("faultstring") ?? "SOAP hatası";
+                           ?? (string?)fault.Element("faultstring") ?? Strings.Ews_SoapFault;
                 if (code == "ErrorServerBusy") throw new EwsServerBusyException(text, ParseBackOff(fault));
                 throw new EwsException(text, code);
             }
@@ -584,7 +584,7 @@ public sealed partial class EwsClient : IDisposable
                 throw new EwsException($"HTTP {(int)response.StatusCode} {response.ReasonPhrase}");
 
             return doc.Root?.Element(Soap + "Body")?.Elements().FirstOrDefault()
-                   ?? throw new EwsException("Boş SOAP yanıtı alındı.");
+                   ?? throw new EwsException(Strings.Ews_EmptyResponse);
         }
     }
 
@@ -599,13 +599,13 @@ public sealed partial class EwsClient : IDisposable
         response.Element(MNs + "ResponseMessages")?.Elements() ?? [];
 
     private static XElement Single(XElement response) =>
-        Ok(ResponseMessages(response).FirstOrDefault() ?? throw new EwsException("Yanıtta ResponseMessage yok."));
+        Ok(ResponseMessages(response).FirstOrDefault() ?? throw new EwsException(Strings.Ews_NoResponseMessage));
 
     private static XElement Ok(XElement message)
     {
         if ((string?)message.Attribute("ResponseClass") != "Error") return message;
         var code = (string?)message.Element(MNs + "ResponseCode");
-        var text = (string?)message.Element(MNs + "MessageText") ?? code ?? "Bilinmeyen EWS hatası";
+        var text = (string?)message.Element(MNs + "MessageText") ?? code ?? Strings.Ews_UnknownError;
         throw new EwsException(text, code);
     }
 

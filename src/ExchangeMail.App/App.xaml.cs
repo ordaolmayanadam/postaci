@@ -42,7 +42,7 @@ public partial class App : Application
     /// <summary>The interface font chosen in Settings, or null for the Windows default.</summary>
     public static FontFamily? InterfaceFontFamily { get; private set; }
 
-    /// <summary>Starts a new instance and closes this one (interface fonts only change at startup).</summary>
+    /// <summary>Starts a new instance and closes this one (interface fonts and language only change at startup).</summary>
     public static void Restart()
     {
         try
@@ -51,7 +51,7 @@ public partial class App : Application
         }
         catch (Exception ex) when (ex is System.ComponentModel.Win32Exception or InvalidOperationException)
         {
-            Debug.WriteLine("Yeniden başlatılamadı: " + ex);
+            Debug.WriteLine("Could not restart: " + ex);
             return;
         }
         MainWindow.Exit();
@@ -91,9 +91,25 @@ public partial class App : Application
         }
     }
 
+    /// <summary>Built-in WinUI texts (date pickers, context menus, ...) come from MRT, which has its own language list.</summary>
+    private static void ApplyControlLanguage()
+    {
+        try
+        {
+            Microsoft.Windows.Globalization.ApplicationLanguages.PrimaryLanguageOverride = System.Globalization.CultureInfo.CurrentCulture.Name;
+        }
+        catch (Exception ex) when (ex is System.Runtime.InteropServices.COMException or ArgumentException)
+        {
+            Debug.WriteLine("Could not set the control language: " + ex); // controls then follow Windows
+        }
+    }
+
     protected override void OnLaunched(LaunchActivatedEventArgs args)
     {
         Preferences = Settings.LoadPreferences();
+        // Before any window exists: XAML reads its texts once, when it is loaded.
+        Loc.Apply(Loc.Resolve(Preferences.Language, System.Globalization.CultureInfo.CurrentUICulture));
+        ApplyControlLanguage();
         StartedInTray = Environment.GetCommandLineArgs().Contains(RegistryStartupService.TrayArgument, StringComparer.OrdinalIgnoreCase);
 
         ApplyInterfaceFonts();

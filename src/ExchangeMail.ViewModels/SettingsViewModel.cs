@@ -14,11 +14,15 @@ public sealed partial class SettingsViewModel : ObservableObject
     public static readonly int[] ReadingZooms = [80, 90, 100, 110, 125, 150, 175, 200];
     public static readonly int[] ComposeFontSizes = [9, 10, 11, 12, 14, 16, 18];
 
+    /// <summary>Stored values of the language choices, in the order shown (System, Türkçe, English).</summary>
+    public static readonly string[] Languages = ["", Loc.Turkish, Loc.English];
+
     /// <summary>First entry of the font lists; stands for "don't override".</summary>
-    public const string DefaultFontLabel = "Varsayılan";
+    public static string DefaultFontLabel => Strings.Settings_DefaultFont;
 
     private readonly string _startUiFont;
     private readonly int _startUiScale;
+    private readonly string _startLanguage;
 
     private readonly MailSession _session;
     private readonly SettingsStore _store;
@@ -32,6 +36,7 @@ public sealed partial class SettingsViewModel : ObservableObject
         Preferences.PropertyChanged += OnPreferenceChanged;
         _startUiFont = Preferences.UiFontFamily;
         _startUiScale = Preferences.UiTextScale;
+        _startLanguage = Preferences.Language;
         _hasSavedPassword = !Account.UseWindowsAuth && credentials.GetPassword(Account.EffectiveUserName) is not null;
     }
 
@@ -64,7 +69,7 @@ public sealed partial class SettingsViewModel : ObservableObject
             }
             catch (Exception ex) when (ex is UnauthorizedAccessException or IOException or System.Security.SecurityException)
             {
-                ErrorMessage = "Başlangıç ayarı değiştirilemedi: " + ex.Message;
+                ErrorMessage = Loc.Format(Strings.Settings_StartupChangeFailed, ex.Message);
             }
             OnPropertyChanged();
         }
@@ -73,8 +78,8 @@ public sealed partial class SettingsViewModel : ObservableObject
 
     public string AccountEmail => Account.Email;
     public string ServerUrl => _session.Client.EwsUrl.ToString();
-    public string SignInText => Account.UseWindowsAuth ? "Windows oturumu (tek oturum açma)" : Account.EffectiveUserName;
-    public string AppVersion => "Sürüm " + (Assembly.GetEntryAssembly()?.GetName().Version?.ToString(3) ?? "1.0.0");
+    public string SignInText => Account.UseWindowsAuth ? Strings.Settings_WindowsSignIn : Account.EffectiveUserName;
+    public string AppVersion => Loc.Format(Strings.Settings_VersionFormat, Assembly.GetEntryAssembly()?.GetName().Version?.ToString(3) ?? "1.0.0");
 
     public int MarkAsReadIndex
     {
@@ -110,7 +115,7 @@ public sealed partial class SettingsViewModel : ObservableObject
         {
             Preferences.SignatureHtml = IsBlankHtml(value) ? "" : value;
             Preferences.Signature = "";
-            InfoMessage = "İmza kaydedildi.";
+            InfoMessage = Strings.Settings_SignatureSaved;
         }
     }
 
@@ -126,6 +131,13 @@ public sealed partial class SettingsViewModel : ObservableObject
     {
         get => (int)Preferences.Theme;
         set => Preferences.Theme = (AppTheme)Math.Clamp(value, 0, 2);
+    }
+
+    /// <summary>Index into <see cref="Languages"/>; unknown stored values count as "follow Windows".</summary>
+    public int LanguageIndex
+    {
+        get => Math.Max(0, Array.IndexOf(Languages, Preferences.Language));
+        set => Preferences.Language = Languages[Math.Clamp(value, 0, Languages.Length - 1)];
     }
 
     /// <summary>Installed font families, supplied by the app. The list starts with <see cref="DefaultFontLabel"/>.</summary>
@@ -153,6 +165,9 @@ public sealed partial class SettingsViewModel : ObservableObject
 
     /// <summary>The interface font or size differs from what this run started with.</summary>
     public bool IsRestartNeeded => Preferences.UiFontFamily != _startUiFont || Preferences.UiTextScale != _startUiScale;
+
+    /// <summary>The interface language differs from what this run started with.</summary>
+    public bool IsLanguageRestartNeeded => Preferences.Language != _startLanguage;
 
     public string ReadingFontChoice
     {
@@ -190,7 +205,7 @@ public sealed partial class SettingsViewModel : ObservableObject
         set => Preferences.ComposeFontSize = ComposeFontSizes[Math.Clamp(value, 0, ComposeFontSizes.Length - 1)];
     }
 
-    /// <summary>Asks the app to restart so interface font changes take effect.</summary>
+    /// <summary>Asks the app to restart so interface font and language changes take effect.</summary>
     public event EventHandler? RestartRequested;
 
     [RelayCommand]
@@ -242,6 +257,10 @@ public sealed partial class SettingsViewModel : ObservableObject
             case nameof(UserPreferences.ComposeFontFamily): OnPropertyChanged(nameof(ComposeFontChoice)); break;
             case nameof(UserPreferences.ComposeFontSize): OnPropertyChanged(nameof(ComposeFontSizeIndex)); break;
             case nameof(UserPreferences.Theme): OnPropertyChanged(nameof(ThemeIndex)); break;
+            case nameof(UserPreferences.Language):
+                OnPropertyChanged(nameof(LanguageIndex));
+                OnPropertyChanged(nameof(IsLanguageRestartNeeded));
+                break;
         }
 
         try
@@ -251,7 +270,7 @@ public sealed partial class SettingsViewModel : ObservableObject
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
         {
-            ErrorMessage = "Ayarlar kaydedilemedi: " + ex.Message;
+            ErrorMessage = Loc.Format(Strings.Settings_SaveFailed, ex.Message);
         }
     }
 
@@ -260,7 +279,7 @@ public sealed partial class SettingsViewModel : ObservableObject
     {
         _credentials.RemovePassword(Account.EffectiveUserName);
         HasSavedPassword = false;
-        InfoMessage = "Kayıtlı parola silindi. Bir sonraki açılışta parola sorulacak.";
+        InfoMessage = Strings.Settings_PasswordForgotten;
     }
 
     /// <summary>Signs out: forgets the stored password so the next start shows the sign-in page.</summary>

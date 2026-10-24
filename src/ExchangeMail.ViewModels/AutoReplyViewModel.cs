@@ -56,10 +56,10 @@ public sealed partial class AutoReplyViewModel(MailSession session) : Observable
         get
         {
             if (ServerState is not { } s) return "";
-            var culture = CultureInfo.CurrentCulture;
             return s.State == AutoReplyState.Scheduled && s.End is { } end
-                ? $"Otomatik yanıtlar {end.ToLocalTime().ToString("d MMMM HH:mm", culture)} tarihine kadar gönderiliyor."
-                : "Otomatik yanıtlar açık. Size gelen iletilere otomatik yanıt gönderiliyor.";
+                ? Loc.Format(Strings.AutoReply_ActiveUntil,
+                    $"{MailFormat.DayMonth(end.LocalDateTime)} {end.LocalDateTime.ToString("t", CultureInfo.CurrentCulture)}")
+                : Strings.AutoReply_Active;
         }
     }
 
@@ -74,7 +74,7 @@ public sealed partial class AutoReplyViewModel(MailSession session) : Observable
         }
         catch (EwsException ex)
         {
-            ErrorMessage = "Otomatik yanıt ayarları okunamadı: " + ex.Message;
+            ErrorMessage = Loc.Format(Strings.AutoReply_LoadFailed, ex.Message);
         }
         finally
         {
@@ -115,20 +115,20 @@ public sealed partial class AutoReplyViewModel(MailSession session) : Observable
         {
             if (StartDate is not { } sd || EndDate is not { } ed)
             {
-                ErrorMessage = "Başlangıç ve bitiş tarihini seçin.";
+                ErrorMessage = Strings.AutoReply_PickDates;
                 return;
             }
             start = new DateTimeOffset(DateTime.SpecifyKind(sd.Date + StartTime, DateTimeKind.Local));
             end = new DateTimeOffset(DateTime.SpecifyKind(ed.Date + EndTime, DateTimeKind.Local));
             if (end <= start)
             {
-                ErrorMessage = "Bitiş zamanı başlangıçtan sonra olmalı.";
+                ErrorMessage = Strings.Common_EndBeforeStart;
                 return;
             }
         }
         if (IsEnabled && string.IsNullOrWhiteSpace(InternalMessage))
         {
-            ErrorMessage = "Kuruluş içindekilere gidecek yanıt metnini yazın.";
+            ErrorMessage = Strings.AutoReply_InternalRequired;
             return;
         }
 
@@ -139,7 +139,7 @@ public sealed partial class AutoReplyViewModel(MailSession session) : Observable
             MailFormat.PlainTextToHtml(InternalMessage),
             MailFormat.PlainTextToHtml(ReplyToExternal ? ExternalMessage : ""),
             !ReplyToExternal ? ExternalAudience.None : ExternalAudienceIndex == 0 ? ExternalAudience.Known : ExternalAudience.All);
-        await SaveCoreAsync(settings, settings.State == AutoReplyState.Disabled ? "Otomatik yanıtlar kapatıldı." : "Otomatik yanıtlar kaydedildi.");
+        await SaveCoreAsync(settings, settings.State == AutoReplyState.Disabled ? Strings.AutoReply_TurnedOff : Strings.AutoReply_Saved);
     }
 
     /// <summary>The banner's "Kapat" button.</summary>
@@ -148,7 +148,7 @@ public sealed partial class AutoReplyViewModel(MailSession session) : Observable
     {
         IsEnabled = false;
         var current = ServerState ?? new AutoReplySettings(AutoReplyState.Disabled, null, null, "", "", ExternalAudience.None);
-        return SaveCoreAsync(current with { State = AutoReplyState.Disabled }, "Otomatik yanıtlar kapatıldı.");
+        return SaveCoreAsync(current with { State = AutoReplyState.Disabled }, Strings.AutoReply_TurnedOff);
     }
 
     private async Task SaveCoreAsync(AutoReplySettings settings, string doneText)
@@ -162,7 +162,7 @@ public sealed partial class AutoReplyViewModel(MailSession session) : Observable
         }
         catch (Exception ex) when (ex is EwsException or ArgumentException)
         {
-            ErrorMessage = "Otomatik yanıtlar kaydedilemedi: " + ex.Message;
+            ErrorMessage = Loc.Format(Strings.AutoReply_SaveFailed, ex.Message);
         }
         finally
         {

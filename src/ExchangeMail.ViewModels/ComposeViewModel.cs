@@ -21,7 +21,7 @@ public sealed partial class ComposeViewModel : ObservableObject
     public ComposeViewModel(MailSession session, ComposeMode mode, MailDetail? original)
     {
         if (mode != ComposeMode.New && original is null)
-            throw new ArgumentNullException(nameof(original), "Yanıt ve iletme için özgün ileti gerekli.");
+            throw new ArgumentNullException(nameof(original), "Replies and forwards need the original message.");
 
         _session = session;
         Mode = mode;
@@ -36,16 +36,16 @@ public sealed partial class ComposeViewModel : ObservableObject
         {
             case ComposeMode.Reply:
                 _to = Join(original!.From is null ? [] : [original.From]);
-                _subject = Prefixed("YNT: ", original.Subject, ReplyPrefixes);
+                _subject = Prefixed(Strings.Compose_ReplyPrefix, original.Subject, ReplyPrefixes);
                 break;
             case ComposeMode.ReplyAll:
                 var to = (original!.From is null ? [] : new[] { original.From }).Concat(original.To.Where(NotSelf));
                 _to = Join(to.DistinctBy(m => m.Address.ToLowerInvariant()));
                 _cc = Join(original.Cc.Where(NotSelf));
-                _subject = Prefixed("YNT: ", original.Subject, ReplyPrefixes);
+                _subject = Prefixed(Strings.Compose_ReplyPrefix, original.Subject, ReplyPrefixes);
                 break;
             case ComposeMode.Forward:
-                _subject = Prefixed("İLT: ", original!.Subject, ForwardPrefixes);
+                _subject = Prefixed(Strings.Compose_ForwardPrefix, original!.Subject, ForwardPrefixes);
                 break;
         }
         OriginalSummary = original is null ? "" : $"{original.From?.Display} · {MailFormat.LongDate(original.Received ?? original.Sent)} · {original.Subject}";
@@ -78,12 +78,12 @@ public sealed partial class ComposeViewModel : ObservableObject
 
     public bool IsEditingDraft { get; private init; }
 
-    public string WindowTitle => (IsEditingDraft ? "Taslak" : Mode switch
+    public string WindowTitle => (IsEditingDraft ? Strings.Compose_TitleDraft : Mode switch
     {
-        ComposeMode.Reply => "Yanıtla",
-        ComposeMode.ReplyAll => "Tümünü yanıtla",
-        ComposeMode.Forward => "İlet",
-        _ => "Yeni ileti",
+        ComposeMode.Reply => Strings.Compose_TitleReply,
+        ComposeMode.ReplyAll => Strings.Compose_TitleReplyAll,
+        ComposeMode.Forward => Strings.Compose_TitleForward,
+        _ => Strings.Compose_TitleNew,
     }) + (string.IsNullOrWhiteSpace(Subject) ? "" : " – " + Subject);
 
     /// <summary>A reply/forward whose quoted original Exchange has not added to the body yet.</summary>
@@ -178,7 +178,7 @@ public sealed partial class ComposeViewModel : ObservableObject
         if (message is null) return;
 
         if (string.IsNullOrWhiteSpace(Subject) && ConfirmAsync is not null
-            && !await ConfirmAsync("Konu yok", "Bu iletinin konusu yok. Yine de gönderilsin mi?"))
+            && !await ConfirmAsync(Strings.Compose_NoSubjectTitle, Strings.Compose_NoSubjectQuestion))
             return;
 
         await RunAsync(async () =>
@@ -213,7 +213,7 @@ public sealed partial class ComposeViewModel : ObservableObject
                 BodyReplaced?.Invoke(this, saved.IsHtml ? MailFormat.ExtractBodyHtml(saved.Body) : MailFormat.PlainTextToHtml(saved.Body));
             }
 
-            InfoMessage = $"Taslak kaydedildi ({DateTime.Now:HH:mm}).";
+            InfoMessage = Loc.Format(Strings.Compose_DraftSavedAt, DateTime.Now.ToString("t", System.Globalization.CultureInfo.CurrentCulture));
             DraftSaved?.Invoke(this, EventArgs.Empty);
         });
     }
@@ -228,12 +228,12 @@ public sealed partial class ComposeViewModel : ObservableObject
         var invalid = badTo.Concat(badCc).Concat(badBcc).ToList();
         if (invalid.Count > 0)
         {
-            ErrorMessage = "Geçersiz adres: " + string.Join(", ", invalid) + ". Ad yazdıysanız listeden bir kişi seçin.";
+            ErrorMessage = Loc.Format(Strings.Compose_InvalidAddresses, string.Join(", ", invalid));
             return null;
         }
         if (requireRecipients && to.Count + cc.Count + bcc.Count == 0)
         {
-            ErrorMessage = "En az bir alıcı girin.";
+            ErrorMessage = Strings.Compose_RecipientRequired;
             return null;
         }
 

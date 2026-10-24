@@ -12,4 +12,7 @@
   <ItemGroup>
     <InternalsVisibleTo Include="ExchangeMail.Core.Tests" />
   </ItemGroup>
+  <ItemGroup>
+    <Using Include="ExchangeMail.Core.Localization" />
+  </ItemGroup>
 </Project>

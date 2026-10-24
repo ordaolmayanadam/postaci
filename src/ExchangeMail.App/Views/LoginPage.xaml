@@ -22,48 +22,48 @@
                         <Image Width="40" Height="40" Source="ms-appx:///Assets/Postaci-256.png" />
                         <TextBlock VerticalAlignment="Center" Text="Postacı" Style="{StaticResource TitleTextBlockStyle}" />
                     </StackPanel>
-                    <TextBlock Text="Exchange hesabına bağlan" Style="{StaticResource SubtitleTextBlockStyle}" />
+                    <TextBlock Text="{h:L Key=Login_Title}" Style="{StaticResource SubtitleTextBlockStyle}" />
                     <TextBlock
-                        Text="Şirket içi Exchange Server 2016 / 2019 / SE (Exchange Web Services)"
+                        Text="{h:L Key=Login_Subtitle}"
                         Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                         TextWrapping="Wrap" />
                 </StackPanel>
 
                 <TextBox
-                    Header="E-posta adresi"
-                    PlaceholderText="ad.soyad@sirket.com.tr"
+                    Header="{h:L Key=Login_EmailAddress}"
+                    PlaceholderText="{h:L Key=Login_EmailPlaceholder}"
                     InputScope="EmailSmtpAddress"
                     Text="{x:Bind ViewModel.Email, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
 
                 <ToggleSwitch
-                    Header="Kimlik doğrulama"
-                    OnContent="Windows oturumumu kullan (tek oturum açma)"
-                    OffContent="Kullanıcı adı ve parola"
+                    Header="{h:L Key=Login_Authentication}"
+                    OnContent="{h:L Key=Login_UseWindows}"
+                    OffContent="{h:L Key=Login_UserPassword}"
                     IsOn="{x:Bind ViewModel.UseWindowsAuth, Mode=TwoWay}" />
 
                 <StackPanel Spacing="16" Visibility="{x:Bind ViewModel.IsPasswordLogin, Mode=OneWay}">
                     <TextBox
-                        Header="Kullanıcı adı"
-                        PlaceholderText="ŞİRKET\kullanici (boş bırakılırsa e-posta adresi)"
+                        Header="{h:L Key=Login_UserName}"
+                        PlaceholderText="{h:L Key=Login_UserNamePlaceholder}"
                         Text="{x:Bind ViewModel.UserName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
                     <PasswordBox
                         x:Name="PasswordInput"
-                        Header="Parola"
+                        Header="{h:L Key=Login_Password}"
                         KeyDown="OnPasswordKeyDown"
                         PasswordChanged="OnPasswordChanged" />
                     <CheckBox
-                        Content="Parolayı Windows Kimlik Bilgisi Yöneticisi'nde sakla"
+                        Content="{h:L Key=Login_RememberPassword}"
                         IsChecked="{x:Bind ViewModel.RememberPassword, Mode=TwoWay}" />
                 </StackPanel>
 
                 <Expander
-                    Header="Gelişmiş"
+                    Header="{h:L Key=Login_Advanced}"
                     HorizontalAlignment="Stretch"
                     HorizontalContentAlignment="Stretch">
                     <TextBox
-                        Header="EWS adresi"
-                        PlaceholderText="https://mail.sirket.com.tr/EWS/Exchange.asmx"
-                        Description="Boş bırakılırsa Autodiscover ile bulunur."
+                        Header="{h:L Key=Login_EwsUrl}"
+                        PlaceholderText="{h:L Key=Login_EwsUrlPlaceholder}"
+                        Description="{h:L Key=Login_EwsUrlHint}"
                         Text="{x:Bind ViewModel.EwsUrl, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
                 </Expander>
 
@@ -76,7 +76,7 @@
                 <StackPanel Orientation="Horizontal" Spacing="12">
                     <Button
                         MinWidth="120"
-                        Content="Bağlan"
+                        Content="{h:L Key=Login_Connect}"
                         Style="{StaticResource AccentButtonStyle}"
                         Command="{x:Bind ViewModel.ConnectCommand}" />
                     <ProgressRing Width="20" Height="20" IsActive="{x:Bind ViewModel.IsBusy, Mode=OneWay}" />

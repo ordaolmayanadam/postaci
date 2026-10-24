@@ -79,8 +79,8 @@ public sealed partial class CalendarViewModel : ObservableObject
             return Range switch
             {
                 CalendarRange.Day => start.ToString("D", culture),
-                CalendarRange.Month => start.ToString("MMMM yyyy", culture),
-                _ => $"{start.ToString("d MMMM", culture)} – {end.AddDays(-1).ToString("d MMMM yyyy", culture)}",
+                CalendarRange.Month => start.ToString("Y", culture),
+                _ => $"{MailFormat.DayMonth(start)} – {MailFormat.DayMonthYear(end.AddDays(-1))}",
             };
         }
     }
@@ -163,7 +163,7 @@ public sealed partial class CalendarViewModel : ObservableObject
                 lastDay = day;
             }
             SelectedEvent = Events.FirstOrDefault(e => e.Event.ItemId.Id == selectedId);
-            StatusText = events.Count == 0 ? "" : $"{events.Count} etkinlik";
+            StatusText = events.Count == 0 ? "" : Loc.Count(events.Count, Strings.Calendar_EventCount_One, Strings.Calendar_EventCount);
             EventsReloaded?.Invoke(this, EventArgs.Empty);
         }
         catch (OperationCanceledException)
@@ -171,7 +171,7 @@ public sealed partial class CalendarViewModel : ObservableObject
         }
         catch (EwsException ex)
         {
-            ErrorMessage = "Takvim yüklenemedi: " + ex.Message;
+            ErrorMessage = Loc.Format(Strings.Calendar_LoadFailed, ex.Message);
         }
         finally
         {
@@ -204,7 +204,7 @@ public sealed partial class CalendarViewModel : ObservableObject
             if (!cts.IsCancellationRequested)
             {
                 Detail = null;
-                ErrorMessage = "Etkinlik açılamadı: " + ex.Message;
+                ErrorMessage = Loc.Format(Strings.Calendar_OpenFailed, ex.Message);
             }
         }
         finally
@@ -220,15 +220,15 @@ public sealed partial class CalendarViewModel : ObservableObject
         {
             await _session.Client.CreateAppointmentAsync(appointment);
             StatusText = appointment.RequiredAttendees.Count + appointment.OptionalAttendees.Count > 0
-                ? "Toplantı oluşturuldu ve davetler gönderildi."
-                : "Etkinlik oluşturuldu.";
+                ? Strings.Calendar_MeetingCreated
+                : Strings.Calendar_EventCreated;
             AnchorDate = appointment.Start.LocalDateTime.Date;
             await LoadAsync();
             return true;
         }
         catch (Exception ex) when (ex is EwsException or ArgumentException)
         {
-            ErrorMessage = "Etkinlik oluşturulamadı: " + ex.Message;
+            ErrorMessage = Loc.Format(Strings.Calendar_CreateFailed, ex.Message);
             return false;
         }
     }
@@ -248,14 +248,14 @@ public sealed partial class CalendarViewModel : ObservableObject
         try
         {
             await _session.Client.UpdateAppointmentAsync(original.Event.ItemId, changes, bodyChanged, attendeesChanged, notify);
-            StatusText = notify ? "Toplantı güncellendi; katılımcılara bildirildi." : "Etkinlik güncellendi.";
+            StatusText = notify ? Strings.Calendar_MeetingUpdated : Strings.Calendar_EventUpdated;
             await LoadAsync();
             if (SelectedEvent is { } selected) await LoadDetailAsync(selected);
             return true;
         }
         catch (Exception ex) when (ex is EwsException or ArgumentException)
         {
-            ErrorMessage = "Etkinlik güncellenemedi: " + ex.Message;
+            ErrorMessage = Loc.Format(Strings.Calendar_UpdateFailed, ex.Message);
             return false;
         }
     }
@@ -269,7 +269,8 @@ public sealed partial class CalendarViewModel : ObservableObject
         if (start == e.Start) return;
 
         if (e.IsMeeting && ConfirmAsync is not null
-            && !await ConfirmAsync("Toplantıyı taşı", $"Toplantı {start:dd.MM.yyyy HH:mm} saatine taşınacak ve katılımcılara güncelleme gönderilecek. Devam edilsin mi?"))
+            && !await ConfirmAsync(Strings.Calendar_MoveMeetingTitle,
+                Loc.Format(Strings.Calendar_MoveMeetingQuestion, start.LocalDateTime.ToString("g", CultureInfo.CurrentCulture))))
         {
             EventsReloaded?.Invoke(this, EventArgs.Empty); // put the dragged block back
             return;
@@ -278,11 +279,11 @@ public sealed partial class CalendarViewModel : ObservableObject
         try
         {
             await _session.Client.MoveAppointmentAsync(e.ItemId, start, start + (e.End - e.Start), notifyAttendees: e.IsMeeting);
-            StatusText = "Etkinlik taşındı.";
+            StatusText = Strings.Calendar_EventMoved;
         }
         catch (EwsException ex)
         {
-            ErrorMessage = "Etkinlik taşınamadı: " + ex.Message;
+            ErrorMessage = Loc.Format(Strings.Calendar_MoveFailed, ex.Message);
         }
         await LoadAsync();
     }
@@ -304,9 +305,9 @@ public sealed partial class CalendarViewModel : ObservableObject
         if (Detail is not { } detail) return;
         var cancelMeeting = detail.IsOrganizer && detail.Event.IsMeeting && !detail.Event.IsCancelled;
         var question = cancelMeeting
-            ? "Toplantı iptal edilecek ve katılımcılara iptal bildirimi gönderilecek. Devam edilsin mi?"
-            : "Bu etkinlik takvimden silinecek. Devam edilsin mi?";
-        if (ConfirmAsync is not null && !await ConfirmAsync(cancelMeeting ? "Toplantıyı iptal et" : "Etkinliği sil", question))
+            ? Strings.Calendar_CancelMeetingQuestion
+            : Strings.Calendar_DeleteEventQuestion;
+        if (ConfirmAsync is not null && !await ConfirmAsync(cancelMeeting ? Strings.Calendar_CancelMeetingTitle : Strings.Calendar_DeleteEventTitle, question))
             return;
 
         try
@@ -317,7 +318,7 @@ public sealed partial class CalendarViewModel : ObservableObject
         }
         catch (EwsException ex)
         {
-            ErrorMessage = "Silinemedi: " + ex.Message;
+            ErrorMessage = Loc.Format(Strings.Common_DeleteFailed, ex.Message);
         }
     }
 
@@ -333,15 +334,15 @@ public sealed partial class CalendarViewModel : ObservableObject
             await _session.Client.RespondToMeetingAsync(detail.Event.ItemId, kind);
             StatusText = kind switch
             {
-                MeetingResponse.Accept => "Toplantı kabul edildi.",
-                MeetingResponse.Tentative => "Belki yanıtı gönderildi.",
-                _ => "Toplantı reddedildi.",
+                MeetingResponse.Accept => Strings.Meeting_Accepted,
+                MeetingResponse.Tentative => Strings.Meeting_TentativeSent,
+                _ => Strings.Meeting_Declined,
             };
             await LoadAsync();
         }
         catch (EwsException ex)
         {
-            ErrorMessage = "Yanıt gönderilemedi: " + ex.Message;
+            ErrorMessage = Loc.Format(Strings.Meeting_ResponseFailed, ex.Message);
         }
     }
 }
@@ -355,18 +356,18 @@ public sealed class CalendarEntryViewModel(CalendarEvent e, DateTime day, bool s
     {
         get
         {
-            var text = day.ToString("dddd, d MMMM", CultureInfo.CurrentCulture);
-            if (day == DateTime.Today) return "Bugün · " + text;
-            if (day == DateTime.Today.AddDays(1)) return "Yarın · " + text;
+            var text = day.ToString("dddd", CultureInfo.CurrentCulture) + ", " + MailFormat.DayMonth(day);
+            if (day == DateTime.Today) return Strings.Calendar_Today + " · " + text;
+            if (day == DateTime.Today.AddDays(1)) return Strings.Calendar_Tomorrow + " · " + text;
             return text;
         }
     }
 
     public string TimeText => Event.IsAllDay
-        ? "Tüm gün"
-        : $"{Event.Start.ToLocalTime():HH:mm} – {Event.End.ToLocalTime():HH:mm}";
+        ? Strings.Calendar_AllDay
+        : $"{Event.Start.LocalDateTime.ToString("t", CultureInfo.CurrentCulture)} – {Event.End.LocalDateTime.ToString("t", CultureInfo.CurrentCulture)}";
 
-    public string Subject => (Event.IsCancelled ? "İptal edildi: " : "") + (string.IsNullOrWhiteSpace(Event.Subject) ? "(Konu yok)" : Event.Subject);
+    public string Subject => (Event.IsCancelled ? Strings.Calendar_CancelledPrefix : "") + (string.IsNullOrWhiteSpace(Event.Subject) ? Strings.Common_NoSubject : Event.Subject);
     public string Location => Event.Location;
     public bool HasLocation => !string.IsNullOrWhiteSpace(Event.Location);
     public string ResponseText => CalendarFormat.Response(Event);
@@ -390,7 +391,7 @@ public sealed partial class CalendarDetailViewModel(CalendarEventDetail detail, 
     public CalendarEventDetail Source => detail;
     public CalendarEvent Event => detail.Event;
     public bool CanEdit => IsOrganizer && !Event.IsCancelled;
-    public string Subject => string.IsNullOrWhiteSpace(Event.Subject) ? "(Konu yok)" : Event.Subject;
+    public string Subject => string.IsNullOrWhiteSpace(Event.Subject) ? Strings.Common_NoSubject : Event.Subject;
 
     public string WhenText
     {
@@ -404,18 +405,18 @@ public sealed partial class CalendarDetailViewModel(CalendarEventDetail detail, 
                 var firstDay = start.Date;
                 var lastDay = end.Date.AddDays(-1);
                 return lastDay <= firstDay
-                    ? firstDay.ToString("D", culture) + " · Tüm gün"
-                    : $"{firstDay.ToString("d MMMM", culture)} – {lastDay.ToString("D", culture)} · Tüm gün";
+                    ? firstDay.ToString("D", culture) + " · " + Strings.Calendar_AllDay
+                    : $"{MailFormat.DayMonth(firstDay)} – {lastDay.ToString("D", culture)} · {Strings.Calendar_AllDay}";
             }
             return start.Date == end.Date
-                ? $"{start.ToString("D", culture)} · {start:HH:mm} – {end:HH:mm}"
+                ? $"{start.ToString("D", culture)} · {start.ToString("t", culture)} – {end.ToString("t", culture)}"
                 : $"{start.ToString("f", culture)} – {end.ToString("f", culture)}";
         }
     }
 
     public string Location => Event.Location;
     public bool HasLocation => !string.IsNullOrWhiteSpace(Event.Location);
-    public string OrganizerText => Event.Organizer is { } o ? "Düzenleyen: " + o.Display : "";
+    public string OrganizerText => Event.Organizer is { } o ? Loc.Format(Strings.Calendar_OrganizerFormat, o.Display) : "";
     public bool IsOrganizer => Event.MyResponse == ResponseType.Organizer || !Event.IsMeeting;
     public string ResponseText => CalendarFormat.Response(Event);
 
@@ -437,11 +438,11 @@ public static class CalendarFormat
 {
     public static string Response(CalendarEvent e) => !e.IsMeeting ? "" : e.MyResponse switch
     {
-        ResponseType.Organizer => "Düzenleyen sizsiniz",
-        ResponseType.Accept => "Kabul edildi",
-        ResponseType.Tentative => "Belki",
-        ResponseType.Decline => "Reddedildi",
-        _ => "Yanıt bekleniyor",
+        ResponseType.Organizer => Strings.Response_Organizer,
+        ResponseType.Accept => Strings.Response_Accepted,
+        ResponseType.Tentative => Strings.Response_Tentative,
+        ResponseType.Decline => Strings.Response_Declined,
+        _ => Strings.Response_NotResponded,
     };
 
     public static string Attendee(Attendee a) => a.Mailbox.Display + a.Response switch

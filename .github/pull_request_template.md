@@ -24,7 +24,8 @@
 ## Kontrol listesi / Checklist
 
 - [ ] Katman kuralları korundu (Core ve ViewModels WinUI'ye bağımlı değil) / Layering rules respected (Core and ViewModels don't depend on WinUI)
-- [ ] Kullanıcıya görünen metinler Türkçe / User-facing text is in Turkish
+- [ ] Yeni metinler `Strings.resx` ve `Strings.en.resx` dosyalarına eklendi / New texts added to `Strings.resx` and `Strings.en.resx`
+- [ ] Arayüz iki dilde de denendi / UI checked in both languages
 - [ ] README / CONTRIBUTING gerekiyorsa güncellendi / README / CONTRIBUTING updated if needed
 - [ ] Eklenen kod kendi yazdığım ya da MIT ile uyumlu lisanslı (kaynağı belirtildi) / Added code is my own or MIT-compatible (source named)
 - [ ] Ekran görüntülerinde ve test verilerinde gerçek kişi, adres veya posta içeriği yok / No real people, addresses or mail content in screenshots or test data

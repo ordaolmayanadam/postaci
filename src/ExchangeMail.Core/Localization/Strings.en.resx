@@ -1,0 +1,1096 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="Appointment_Attendees" xml:space="preserve">
+    <value>Attendees</value>
+  </data>
+  <data name="Appointment_AttendeesHint" xml:space="preserve">
+    <value>Entering addresses sends a meeting invitation. Separate multiple addresses with ;.</value>
+  </data>
+  <data name="Appointment_AttendeesPlaceholder" xml:space="preserve">
+    <value>first.last@company.com; ...</value>
+  </data>
+  <data name="Appointment_AvailabilityFailed" xml:space="preserve">
+    <value>Could not get availability: {0}</value>
+  </data>
+  <data name="Appointment_AvailabilityHint" xml:space="preserve">
+    <value>Busy times for you and the attendees on the selected day</value>
+  </data>
+  <data name="Appointment_Description" xml:space="preserve">
+    <value>Description</value>
+  </data>
+  <data name="Appointment_EditEvent" xml:space="preserve">
+    <value>Edit event</value>
+  </data>
+  <data name="Appointment_EditMeeting" xml:space="preserve">
+    <value>Edit meeting</value>
+  </data>
+  <data name="Appointment_EndDate" xml:space="preserve">
+    <value>End date</value>
+  </data>
+  <data name="Appointment_InvalidAttendees" xml:space="preserve">
+    <value>Invalid attendee address: {0}</value>
+  </data>
+  <data name="Appointment_Location" xml:space="preserve">
+    <value>Location</value>
+  </data>
+  <data name="Appointment_LocationPlaceholder" xml:space="preserve">
+    <value>Meeting room or address</value>
+  </data>
+  <data name="Appointment_Reminder" xml:space="preserve">
+    <value>Reminder</value>
+  </data>
+  <data name="Appointment_Reminder1440" xml:space="preserve">
+    <value>1 day before</value>
+  </data>
+  <data name="Appointment_Reminder15" xml:space="preserve">
+    <value>15 minutes before</value>
+  </data>
+  <data name="Appointment_Reminder30" xml:space="preserve">
+    <value>30 minutes before</value>
+  </data>
+  <data name="Appointment_Reminder5" xml:space="preserve">
+    <value>5 minutes before</value>
+  </data>
+  <data name="Appointment_Reminder60" xml:space="preserve">
+    <value>1 hour before</value>
+  </data>
+  <data name="Appointment_ReminderNone" xml:space="preserve">
+    <value>None</value>
+  </data>
+  <data name="Appointment_ShowAs" xml:space="preserve">
+    <value>Show as</value>
+  </data>
+  <data name="Appointment_ShowAvailability" xml:space="preserve">
+    <value>Show availability</value>
+  </data>
+  <data name="Appointment_StartDate" xml:space="preserve">
+    <value>Start date</value>
+  </data>
+  <data name="Appointment_SubjectRequired" xml:space="preserve">
+    <value>Enter a subject.</value>
+  </data>
+  <data name="Autodiscover_AuthFailed" xml:space="preserve">
+    <value>Autodiscover authentication failed. Check the user name and password.</value>
+  </data>
+  <data name="Autodiscover_NoEwsUrl" xml:space="preserve">
+    <value>The response has no EwsUrl</value>
+  </data>
+  <data name="Autodiscover_NotFound" xml:space="preserve">
+    <value>Autodiscover could not find the EWS URL. Enter the EWS URL manually (e.g. https://mail.company.com/EWS/Exchange.asmx).</value>
+  </data>
+  <data name="Autodiscover_ResponseWithoutUrl" xml:space="preserve">
+    <value>response without an EWS URL</value>
+  </data>
+  <data name="AutoReply_Active" xml:space="preserve">
+    <value>Automatic replies are on. Messages sent to you get an automatic reply.</value>
+  </data>
+  <data name="AutoReply_ActiveUntil" xml:space="preserve">
+    <value>Automatic replies are being sent until {0}.</value>
+  </data>
+  <data name="AutoReply_InternalRequired" xml:space="preserve">
+    <value>Write the reply for people inside your organization.</value>
+  </data>
+  <data name="AutoReply_LoadFailed" xml:space="preserve">
+    <value>Could not read the automatic reply settings: {0}</value>
+  </data>
+  <data name="AutoReply_PickDates" xml:space="preserve">
+    <value>Choose a start and end date.</value>
+  </data>
+  <data name="AutoReply_Saved" xml:space="preserve">
+    <value>Automatic replies saved.</value>
+  </data>
+  <data name="AutoReply_SaveFailed" xml:space="preserve">
+    <value>Could not save automatic replies: {0}</value>
+  </data>
+  <data name="AutoReply_TurnedOff" xml:space="preserve">
+    <value>Automatic replies turned off.</value>
+  </data>
+  <data name="AutoReply_TurnOff" xml:space="preserve">
+    <value>Turn off</value>
+  </data>
+  <data name="Availability_NoInfo" xml:space="preserve">
+    <value>No information</value>
+  </data>
+  <data name="Availability_WorkingElsewhere" xml:space="preserve">
+    <value>Working elsewhere</value>
+  </data>
+  <data name="Calendar_AllDay" xml:space="preserve">
+    <value>All day</value>
+  </data>
+  <data name="Calendar_AttendeesLabel" xml:space="preserve">
+    <value>Attendees: </value>
+  </data>
+  <data name="Calendar_CancelledPrefix" xml:space="preserve">
+    <value>Cancelled: </value>
+  </data>
+  <data name="Calendar_CancelMeetingQuestion" xml:space="preserve">
+    <value>The meeting will be cancelled and a cancellation will be sent to the attendees. Continue?</value>
+  </data>
+  <data name="Calendar_CancelMeetingTitle" xml:space="preserve">
+    <value>Cancel meeting</value>
+  </data>
+  <data name="Calendar_CreateFailed" xml:space="preserve">
+    <value>Could not create the event: {0}</value>
+  </data>
+  <data name="Calendar_Day" xml:space="preserve">
+    <value>Day</value>
+  </data>
+  <data name="Calendar_DeleteEventQuestion" xml:space="preserve">
+    <value>This event will be deleted from your calendar. Continue?</value>
+  </data>
+  <data name="Calendar_DeleteEventTitle" xml:space="preserve">
+    <value>Delete event</value>
+  </data>
+  <data name="Calendar_DeleteOrCancel" xml:space="preserve">
+    <value>Delete / cancel</value>
+  </data>
+  <data name="Calendar_EventCount" xml:space="preserve">
+    <value>{0} events</value>
+  </data>
+  <data name="Calendar_EventCount_One" xml:space="preserve">
+    <value>{0} event</value>
+  </data>
+  <data name="Calendar_EventCreated" xml:space="preserve">
+    <value>Event created.</value>
+  </data>
+  <data name="Calendar_EventMoved" xml:space="preserve">
+    <value>Event moved.</value>
+  </data>
+  <data name="Calendar_EventUpdated" xml:space="preserve">
+    <value>Event updated.</value>
+  </data>
+  <data name="Calendar_LoadFailed" xml:space="preserve">
+    <value>Could not load the calendar: {0}</value>
+  </data>
+  <data name="Calendar_MeetingCreated" xml:space="preserve">
+    <value>Meeting created and invitations sent.</value>
+  </data>
+  <data name="Calendar_MeetingUpdated" xml:space="preserve">
+    <value>Meeting updated; attendees were notified.</value>
+  </data>
+  <data name="Calendar_Month" xml:space="preserve">
+    <value>Month</value>
+  </data>
+  <data name="Calendar_MoveFailed" xml:space="preserve">
+    <value>Could not move the event: {0}</value>
+  </data>
+  <data name="Calendar_MoveMeetingQuestion" xml:space="preserve">
+    <value>The meeting will be moved to {0} and an update will be sent to the attendees. Continue?</value>
+  </data>
+  <data name="Calendar_MoveMeetingTitle" xml:space="preserve">
+    <value>Move meeting</value>
+  </data>
+  <data name="Calendar_NewEvent" xml:space="preserve">
+    <value>New event</value>
+  </data>
+  <data name="Calendar_Next" xml:space="preserve">
+    <value>Next</value>
+  </data>
+  <data name="Calendar_NoEvents" xml:space="preserve">
+    <value>No events in this range</value>
+  </data>
+  <data name="Calendar_OpenFailed" xml:space="preserve">
+    <value>Could not open the event: {0}</value>
+  </data>
+  <data name="Calendar_OptionalLabel" xml:space="preserve">
+    <value>Optional: </value>
+  </data>
+  <data name="Calendar_OrganizerFormat" xml:space="preserve">
+    <value>Organizer: {0}</value>
+  </data>
+  <data name="Calendar_Previous" xml:space="preserve">
+    <value>Previous</value>
+  </data>
+  <data name="Calendar_SelectEvent" xml:space="preserve">
+    <value>Select an event to see its details</value>
+  </data>
+  <data name="Calendar_Today" xml:space="preserve">
+    <value>Today</value>
+  </data>
+  <data name="Calendar_Tomorrow" xml:space="preserve">
+    <value>Tomorrow</value>
+  </data>
+  <data name="Calendar_UpdateFailed" xml:space="preserve">
+    <value>Could not update the event: {0}</value>
+  </data>
+  <data name="Calendar_WebViewFailed" xml:space="preserve">
+    <value>Could not start WebView2: {0}</value>
+  </data>
+  <data name="Calendar_Week" xml:space="preserve">
+    <value>Week</value>
+  </data>
+  <data name="Common_Cancel" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="Common_Delete" xml:space="preserve">
+    <value>Delete</value>
+  </data>
+  <data name="Common_DeleteFailed" xml:space="preserve">
+    <value>Could not delete: {0}</value>
+  </data>
+  <data name="Common_Edit" xml:space="preserve">
+    <value>Edit</value>
+  </data>
+  <data name="Common_Email" xml:space="preserve">
+    <value>Email</value>
+  </data>
+  <data name="Common_End" xml:space="preserve">
+    <value>End</value>
+  </data>
+  <data name="Common_EndBeforeStart" xml:space="preserve">
+    <value>The end time must be after the start time.</value>
+  </data>
+  <data name="Common_InvalidEmail" xml:space="preserve">
+    <value>Enter a valid email address.</value>
+  </data>
+  <data name="Common_LoadMore" xml:space="preserve">
+    <value>Load more</value>
+  </data>
+  <data name="Common_No" xml:space="preserve">
+    <value>No</value>
+  </data>
+  <data name="Common_NoSubject" xml:space="preserve">
+    <value>(No subject)</value>
+  </data>
+  <data name="Common_Off" xml:space="preserve">
+    <value>Off</value>
+  </data>
+  <data name="Common_On" xml:space="preserve">
+    <value>On</value>
+  </data>
+  <data name="Common_Refresh" xml:space="preserve">
+    <value>Refresh</value>
+  </data>
+  <data name="Common_RefreshF5" xml:space="preserve">
+    <value>Refresh (F5)</value>
+  </data>
+  <data name="Common_Remove" xml:space="preserve">
+    <value>Remove</value>
+  </data>
+  <data name="Common_ResultCount" xml:space="preserve">
+    <value>{0} results</value>
+  </data>
+  <data name="Common_ResultCount_One" xml:space="preserve">
+    <value>{0} result</value>
+  </data>
+  <data name="Common_Save" xml:space="preserve">
+    <value>Save</value>
+  </data>
+  <data name="Common_Start" xml:space="preserve">
+    <value>Start</value>
+  </data>
+  <data name="Common_Subject" xml:space="preserve">
+    <value>Subject</value>
+  </data>
+  <data name="Common_Time" xml:space="preserve">
+    <value>Time</value>
+  </data>
+  <data name="Common_Yes" xml:space="preserve">
+    <value>Yes</value>
+  </data>
+  <data name="Compose_Attach" xml:space="preserve">
+    <value>Attach file</value>
+  </data>
+  <data name="Compose_AttachFailed" xml:space="preserve">
+    <value>Could not attach {0}: {1}</value>
+  </data>
+  <data name="Compose_AttachmentsTotal" xml:space="preserve">
+    <value>Attachments · total</value>
+  </data>
+  <data name="Compose_Bcc" xml:space="preserve">
+    <value>Bcc</value>
+  </data>
+  <data name="Compose_Cc" xml:space="preserve">
+    <value>Cc</value>
+  </data>
+  <data name="Compose_DiscardQuestion" xml:space="preserve">
+    <value>What you wrote will be lost. Close the window? (To keep it, use "Save draft" first.)</value>
+  </data>
+  <data name="Compose_DiscardTitle" xml:space="preserve">
+    <value>Message not sent</value>
+  </data>
+  <data name="Compose_DraftSavedAt" xml:space="preserve">
+    <value>Draft saved ({0}).</value>
+  </data>
+  <data name="Compose_DropCaption" xml:space="preserve">
+    <value>Attach</value>
+  </data>
+  <data name="Compose_DropHint" xml:space="preserve">
+    <value>· you can drag and drop files onto the window</value>
+  </data>
+  <data name="Compose_EditorFailed" xml:space="preserve">
+    <value>Could not start the editor (is the WebView2 Runtime installed?): {0}</value>
+  </data>
+  <data name="Compose_ForwardPrefix" xml:space="preserve">
+    <value>FW: </value>
+  </data>
+  <data name="Compose_InvalidAddresses" xml:space="preserve">
+    <value>Invalid address: {0}. If you typed a name, pick a person from the list.</value>
+  </data>
+  <data name="Compose_NoSubjectQuestion" xml:space="preserve">
+    <value>This message has no subject. Send it anyway?</value>
+  </data>
+  <data name="Compose_NoSubjectTitle" xml:space="preserve">
+    <value>No subject</value>
+  </data>
+  <data name="Compose_OriginalAppended" xml:space="preserve">
+    <value>The original message will be added below when sent:</value>
+  </data>
+  <data name="Compose_RecipientRequired" xml:space="preserve">
+    <value>Enter at least one recipient.</value>
+  </data>
+  <data name="Compose_RecipientsPlaceholder" xml:space="preserve">
+    <value>Type a name and pick from the list, or enter addresses (separate with ;)</value>
+  </data>
+  <data name="Compose_RemoveFromDraft" xml:space="preserve">
+    <value>Remove from draft</value>
+  </data>
+  <data name="Compose_ReplyPrefix" xml:space="preserve">
+    <value>RE: </value>
+  </data>
+  <data name="Compose_SaveDraft" xml:space="preserve">
+    <value>Save draft</value>
+  </data>
+  <data name="Compose_Send" xml:space="preserve">
+    <value>Send</value>
+  </data>
+  <data name="Compose_TitleDraft" xml:space="preserve">
+    <value>Draft</value>
+  </data>
+  <data name="Compose_TitleForward" xml:space="preserve">
+    <value>Forward</value>
+  </data>
+  <data name="Compose_TitleNew" xml:space="preserve">
+    <value>New message</value>
+  </data>
+  <data name="Compose_TitleReply" xml:space="preserve">
+    <value>Reply</value>
+  </data>
+  <data name="Compose_TitleReplyAll" xml:space="preserve">
+    <value>Reply all</value>
+  </data>
+  <data name="Compose_To" xml:space="preserve">
+    <value>To</value>
+  </data>
+  <data name="Contacts_AddedFormat" xml:space="preserve">
+    <value>{0} was added to your contacts.</value>
+  </data>
+  <data name="Contacts_AddToMine" xml:space="preserve">
+    <value>Add to my contacts</value>
+  </data>
+  <data name="Contacts_BusinessPhone" xml:space="preserve">
+    <value>Business phone</value>
+  </data>
+  <data name="Contacts_Company" xml:space="preserve">
+    <value>Company</value>
+  </data>
+  <data name="Contacts_Count" xml:space="preserve">
+    <value>{0} contacts</value>
+  </data>
+  <data name="Contacts_Count_One" xml:space="preserve">
+    <value>{0} contact</value>
+  </data>
+  <data name="Contacts_DeleteFailed" xml:space="preserve">
+    <value>Could not delete the contact: {0}</value>
+  </data>
+  <data name="Contacts_DeleteQuestion" xml:space="preserve">
+    <value>{0} will be deleted from your contacts. Continue?</value>
+  </data>
+  <data name="Contacts_DeleteTitle" xml:space="preserve">
+    <value>Delete contact</value>
+  </data>
+  <data name="Contacts_Department" xml:space="preserve">
+    <value>Department</value>
+  </data>
+  <data name="Contacts_Directory" xml:space="preserve">
+    <value>Company directory</value>
+  </data>
+  <data name="Contacts_DirectoryHint" xml:space="preserve">
+    <value>To search the company directory, type a name above and press Enter.</value>
+  </data>
+  <data name="Contacts_DistributionList" xml:space="preserve">
+    <value>Distribution list</value>
+  </data>
+  <data name="Contacts_Edit" xml:space="preserve">
+    <value>Edit contact</value>
+  </data>
+  <data name="Contacts_First100" xml:space="preserve">
+    <value>Showing the first 100 results; narrow your search.</value>
+  </data>
+  <data name="Contacts_GivenName" xml:space="preserve">
+    <value>First name</value>
+  </data>
+  <data name="Contacts_JobTitle" xml:space="preserve">
+    <value>Job title</value>
+  </data>
+  <data name="Contacts_LoadFailed" xml:space="preserve">
+    <value>Could not load contacts: {0}</value>
+  </data>
+  <data name="Contacts_Mine" xml:space="preserve">
+    <value>My contacts</value>
+  </data>
+  <data name="Contacts_MobilePhone" xml:space="preserve">
+    <value>Mobile phone</value>
+  </data>
+  <data name="Contacts_NameRequired" xml:space="preserve">
+    <value>Enter a first or last name.</value>
+  </data>
+  <data name="Contacts_New" xml:space="preserve">
+    <value>New contact</value>
+  </data>
+  <data name="Contacts_NewTooltip" xml:space="preserve">
+    <value>New contact (Ctrl+N)</value>
+  </data>
+  <data name="Contacts_NoneFound" xml:space="preserve">
+    <value>No contacts found.</value>
+  </data>
+  <data name="Contacts_SaveFailed" xml:space="preserve">
+    <value>Could not save the contact: {0}</value>
+  </data>
+  <data name="Contacts_SearchDirectoryPlaceholder" xml:space="preserve">
+    <value>Search the company directory (name, surname, email)</value>
+  </data>
+  <data name="Contacts_SearchMinePlaceholder" xml:space="preserve">
+    <value>Search my contacts</value>
+  </data>
+  <data name="Contacts_SelectContact" xml:space="preserve">
+    <value>Select a contact to see the details</value>
+  </data>
+  <data name="Contacts_SendEmail" xml:space="preserve">
+    <value>Send email</value>
+  </data>
+  <data name="Contacts_Surname" xml:space="preserve">
+    <value>Last name</value>
+  </data>
+  <data name="Contacts_Unnamed" xml:space="preserve">
+    <value>(no name)</value>
+  </data>
+  <data name="Contacts_Updated" xml:space="preserve">
+    <value>Contact updated.</value>
+  </data>
+  <data name="Contacts_UpdateFailed" xml:space="preserve">
+    <value>Could not update the contact: {0}</value>
+  </data>
+  <data name="Credentials_WriteFailed" xml:space="preserve">
+    <value>Could not write the password to Credential Manager (error {0}).</value>
+  </data>
+  <data name="Editor_Black" xml:space="preserve">
+    <value>Black</value>
+  </data>
+  <data name="Editor_Blue" xml:space="preserve">
+    <value>Blue</value>
+  </data>
+  <data name="Editor_Bold" xml:space="preserve">
+    <value>Bold (Ctrl+B)</value>
+  </data>
+  <data name="Editor_BulletList" xml:space="preserve">
+    <value>Bulleted list</value>
+  </data>
+  <data name="Editor_ClearFormatting" xml:space="preserve">
+    <value>Clear formatting</value>
+  </data>
+  <data name="Editor_Gray" xml:space="preserve">
+    <value>Grey</value>
+  </data>
+  <data name="Editor_Green" xml:space="preserve">
+    <value>Green</value>
+  </data>
+  <data name="Editor_Insert" xml:space="preserve">
+    <value>Insert</value>
+  </data>
+  <data name="Editor_InsertLink" xml:space="preserve">
+    <value>Insert link</value>
+  </data>
+  <data name="Editor_Italic" xml:space="preserve">
+    <value>Italic (Ctrl+I)</value>
+  </data>
+  <data name="Editor_NumberedList" xml:space="preserve">
+    <value>Numbered list</value>
+  </data>
+  <data name="Editor_Orange" xml:space="preserve">
+    <value>Orange</value>
+  </data>
+  <data name="Editor_Red" xml:space="preserve">
+    <value>Red</value>
+  </data>
+  <data name="Editor_SizeHuge" xml:space="preserve">
+    <value>Huge</value>
+  </data>
+  <data name="Editor_SizeLarge" xml:space="preserve">
+    <value>Large</value>
+  </data>
+  <data name="Editor_SizeNormal" xml:space="preserve">
+    <value>Normal</value>
+  </data>
+  <data name="Editor_SizeSmall" xml:space="preserve">
+    <value>Small</value>
+  </data>
+  <data name="Editor_TextColor" xml:space="preserve">
+    <value>Text color</value>
+  </data>
+  <data name="Editor_TextSize" xml:space="preserve">
+    <value>Text size</value>
+  </data>
+  <data name="Editor_Underline" xml:space="preserve">
+    <value>Underline (Ctrl+U)</value>
+  </data>
+  <data name="Ews_AttachedMessageDownloadFailed" xml:space="preserve">
+    <value>The attached message could not be downloaded.</value>
+  </data>
+  <data name="Ews_AttachmentNotFound" xml:space="preserve">
+    <value>Attachment not found.</value>
+  </data>
+  <data name="Ews_AuthFailed" xml:space="preserve">
+    <value>Authentication failed. Check the user name and password.</value>
+  </data>
+  <data name="Ews_AutoReplySettingsMissing" xml:space="preserve">
+    <value>The response has no automatic reply settings.</value>
+  </data>
+  <data name="Ews_AvailabilityUnavailable" xml:space="preserve">
+    <value>Availability information could not be retrieved.</value>
+  </data>
+  <data name="Ews_EmptyResponse" xml:space="preserve">
+    <value>Received an empty SOAP response.</value>
+  </data>
+  <data name="Ews_EventNotFound" xml:space="preserve">
+    <value>Event not found.</value>
+  </data>
+  <data name="Ews_ItemIdMissing" xml:space="preserve">
+    <value>The response has no ItemId.</value>
+  </data>
+  <data name="Ews_MailboxRootNotFound" xml:space="preserve">
+    <value>The mailbox root folder was not found.</value>
+  </data>
+  <data name="Ews_MessageNotFound" xml:space="preserve">
+    <value>Message not found.</value>
+  </data>
+  <data name="Ews_NoResponseMessage" xml:space="preserve">
+    <value>The response has no ResponseMessage.</value>
+  </data>
+  <data name="Ews_RecipientRequired" xml:space="preserve">
+    <value>At least one recipient is required.</value>
+  </data>
+  <data name="Ews_ReferenceItemRequired" xml:space="preserve">
+    <value>Replies and forwards need a ReferenceItemId.</value>
+  </data>
+  <data name="Ews_RootFolderMissing" xml:space="preserve">
+    <value>The FindItem response has no RootFolder.</value>
+  </data>
+  <data name="Ews_ServerUnreachable" xml:space="preserve">
+    <value>Could not reach the server: {0}</value>
+  </data>
+  <data name="Ews_SoapFault" xml:space="preserve">
+    <value>SOAP error</value>
+  </data>
+  <data name="Ews_Timeout" xml:space="preserve">
+    <value>The server did not respond in time.</value>
+  </data>
+  <data name="Ews_UnexpectedResponse" xml:space="preserve">
+    <value>Unexpected response from the server (HTTP {0} {1}). Check the EWS URL.</value>
+  </data>
+  <data name="Ews_UnknownError" xml:space="preserve">
+    <value>Unknown EWS error</value>
+  </data>
+  <data name="FreeBusy_Away" xml:space="preserve">
+    <value>Away</value>
+  </data>
+  <data name="FreeBusy_Busy" xml:space="preserve">
+    <value>Busy</value>
+  </data>
+  <data name="FreeBusy_Free" xml:space="preserve">
+    <value>Free</value>
+  </data>
+  <data name="Login_Advanced" xml:space="preserve">
+    <value>Advanced</value>
+  </data>
+  <data name="Login_Authentication" xml:space="preserve">
+    <value>Authentication</value>
+  </data>
+  <data name="Login_Autodiscovering" xml:space="preserve">
+    <value>Looking for the server with Autodiscover…</value>
+  </data>
+  <data name="Login_Connect" xml:space="preserve">
+    <value>Connect</value>
+  </data>
+  <data name="Login_ConnectingFormat" xml:space="preserve">
+    <value>Connecting to {0}…</value>
+  </data>
+  <data name="Login_EmailAddress" xml:space="preserve">
+    <value>Email address</value>
+  </data>
+  <data name="Login_EmailPlaceholder" xml:space="preserve">
+    <value>first.last@company.com</value>
+  </data>
+  <data name="Login_EwsUrl" xml:space="preserve">
+    <value>EWS URL</value>
+  </data>
+  <data name="Login_EwsUrlHint" xml:space="preserve">
+    <value>If left empty, it is found with Autodiscover.</value>
+  </data>
+  <data name="Login_EwsUrlInvalid" xml:space="preserve">
+    <value>The EWS URL must be a full address starting with https:// (e.g. https://mail.company.com/EWS/Exchange.asmx).</value>
+  </data>
+  <data name="Login_EwsUrlPlaceholder" xml:space="preserve">
+    <value>https://mail.company.com/EWS/Exchange.asmx</value>
+  </data>
+  <data name="Login_Password" xml:space="preserve">
+    <value>Password</value>
+  </data>
+  <data name="Login_PasswordRequired" xml:space="preserve">
+    <value>Enter a password or use your Windows session.</value>
+  </data>
+  <data name="Login_RememberPassword" xml:space="preserve">
+    <value>Save the password in Windows Credential Manager</value>
+  </data>
+  <data name="Login_SavedPasswordMissing" xml:space="preserve">
+    <value>No saved password was found. Enter your password and connect; you won't be asked again next time.</value>
+  </data>
+  <data name="Login_Subtitle" xml:space="preserve">
+    <value>On-premises Exchange Server 2016 / 2019 / SE (Exchange Web Services)</value>
+  </data>
+  <data name="Login_Title" xml:space="preserve">
+    <value>Connect to your Exchange account</value>
+  </data>
+  <data name="Login_UserName" xml:space="preserve">
+    <value>User name</value>
+  </data>
+  <data name="Login_UserNamePlaceholder" xml:space="preserve">
+    <value>DOMAIN\user (email address if left empty)</value>
+  </data>
+  <data name="Login_UserPassword" xml:space="preserve">
+    <value>User name and password</value>
+  </data>
+  <data name="Login_UseWindows" xml:space="preserve">
+    <value>Use my Windows session (single sign-on)</value>
+  </data>
+  <data name="Mail_AttachmentSaveFailed" xml:space="preserve">
+    <value>Could not save the attachment: {0}</value>
+  </data>
+  <data name="Mail_CcLabel" xml:space="preserve">
+    <value>Cc:</value>
+  </data>
+  <data name="Mail_ClearSearch" xml:space="preserve">
+    <value>Clear search</value>
+  </data>
+  <data name="Mail_ClickToSave" xml:space="preserve">
+    <value>Click to save</value>
+  </data>
+  <data name="Mail_EditDraft" xml:space="preserve">
+    <value>Edit draft</value>
+  </data>
+  <data name="Mail_Empty" xml:space="preserve">
+    <value>There are no items in this view</value>
+  </data>
+  <data name="Mail_FileType" xml:space="preserve">
+    <value>File</value>
+  </data>
+  <data name="Mail_FileTypeFormat" xml:space="preserve">
+    <value>{0} file</value>
+  </data>
+  <data name="Mail_FoldersLoadFailed" xml:space="preserve">
+    <value>Could not load folders: {0}</value>
+  </data>
+  <data name="Mail_Forward" xml:space="preserve">
+    <value>Forward</value>
+  </data>
+  <data name="Mail_HasAttachment" xml:space="preserve">
+    <value>Has attachments</value>
+  </data>
+  <data name="Mail_HighImportance" xml:space="preserve">
+    <value>High importance</value>
+  </data>
+  <data name="Mail_ItemCount" xml:space="preserve">
+    <value>{0} items</value>
+  </data>
+  <data name="Mail_ItemCount_One" xml:space="preserve">
+    <value>{0} item</value>
+  </data>
+  <data name="Mail_MarkReadFailed" xml:space="preserve">
+    <value>Could not mark as read: {0}</value>
+  </data>
+  <data name="Mail_Meeting" xml:space="preserve">
+    <value>Meeting</value>
+  </data>
+  <data name="Mail_MeetingInvitation" xml:space="preserve">
+    <value>Meeting invitation</value>
+  </data>
+  <data name="Mail_MeetingInvitationHint" xml:space="preserve">
+    <value>Your response is sent to the organizer and the meeting is added to your calendar.</value>
+  </data>
+  <data name="Mail_Move" xml:space="preserve">
+    <value>Move</value>
+  </data>
+  <data name="Mail_New" xml:space="preserve">
+    <value>New mail</value>
+  </data>
+  <data name="Mail_NewTooltip" xml:space="preserve">
+    <value>New mail (Ctrl+N)</value>
+  </data>
+  <data name="Mail_NoRecipient" xml:space="preserve">
+    <value>(no recipient)</value>
+  </data>
+  <data name="Mail_NoSender" xml:space="preserve">
+    <value>(no sender)</value>
+  </data>
+  <data name="Mail_OpenFailed" xml:space="preserve">
+    <value>Could not open the message: {0}</value>
+  </data>
+  <data name="Mail_PermanentDeleteQuestion" xml:space="preserve">
+    <value>This message will be deleted permanently. Continue?</value>
+  </data>
+  <data name="Mail_PermanentDeleteTitle" xml:space="preserve">
+    <value>Delete permanently</value>
+  </data>
+  <data name="Mail_RemoteImagesBlocked" xml:space="preserve">
+    <value>To protect your privacy, remote images in this message were blocked.</value>
+  </data>
+  <data name="Mail_Reply" xml:space="preserve">
+    <value>Reply</value>
+  </data>
+  <data name="Mail_ReplyAll" xml:space="preserve">
+    <value>Reply all</value>
+  </data>
+  <data name="Mail_SavedTo" xml:space="preserve">
+    <value>Saved: {0}</value>
+  </data>
+  <data name="Mail_SearchPlaceholder" xml:space="preserve">
+    <value>Search (e.g. report, from:ali, hasattachment:yes)</value>
+  </data>
+  <data name="Mail_SelectItem" xml:space="preserve">
+    <value>Select an item to read</value>
+  </data>
+  <data name="Mail_ShowImages" xml:space="preserve">
+    <value>Show images</value>
+  </data>
+  <data name="Mail_ToggleRead" xml:space="preserve">
+    <value>Read / unread</value>
+  </data>
+  <data name="Mail_ToLabel" xml:space="preserve">
+    <value>To:</value>
+  </data>
+  <data name="Mail_WebViewFailed" xml:space="preserve">
+    <value>Could not start WebView2 (is the Microsoft Edge WebView2 Runtime installed?): {0}</value>
+  </data>
+  <data name="Meeting_Accept" xml:space="preserve">
+    <value>Accept</value>
+  </data>
+  <data name="Meeting_Accepted" xml:space="preserve">
+    <value>Meeting accepted.</value>
+  </data>
+  <data name="Meeting_Decline" xml:space="preserve">
+    <value>Decline</value>
+  </data>
+  <data name="Meeting_Declined" xml:space="preserve">
+    <value>Meeting declined.</value>
+  </data>
+  <data name="Meeting_ResponseFailed" xml:space="preserve">
+    <value>Could not send the response: {0}</value>
+  </data>
+  <data name="Meeting_TentativeSent" xml:space="preserve">
+    <value>Tentative response sent.</value>
+  </data>
+  <data name="Nav_Calendar" xml:space="preserve">
+    <value>Calendar</value>
+  </data>
+  <data name="Nav_Contacts" xml:space="preserve">
+    <value>Contacts</value>
+  </data>
+  <data name="Nav_Mail" xml:space="preserve">
+    <value>Mail</value>
+  </data>
+  <data name="Nav_Settings" xml:space="preserve">
+    <value>Settings</value>
+  </data>
+  <data name="Notification_NewMessage" xml:space="preserve">
+    <value>New message</value>
+  </data>
+  <data name="Notification_NewMessages" xml:space="preserve">
+    <value>{0} new messages</value>
+  </data>
+  <data name="Notification_NewMessages_One" xml:space="preserve">
+    <value>{0} new message</value>
+  </data>
+  <data name="Response_Accepted" xml:space="preserve">
+    <value>Accepted</value>
+  </data>
+  <data name="Response_Declined" xml:space="preserve">
+    <value>Declined</value>
+  </data>
+  <data name="Response_NotResponded" xml:space="preserve">
+    <value>Awaiting response</value>
+  </data>
+  <data name="Response_Organizer" xml:space="preserve">
+    <value>You are the organizer</value>
+  </data>
+  <data name="Response_Tentative" xml:space="preserve">
+    <value>Tentative</value>
+  </data>
+  <data name="Settings_About" xml:space="preserve">
+    <value>About</value>
+  </data>
+  <data name="Settings_Account" xml:space="preserve">
+    <value>Account</value>
+  </data>
+  <data name="Settings_Appearance" xml:space="preserve">
+    <value>Appearance</value>
+  </data>
+  <data name="Settings_Application" xml:space="preserve">
+    <value>Application</value>
+  </data>
+  <data name="Settings_AutoReplies" xml:space="preserve">
+    <value>Automatic replies (out of office)</value>
+  </data>
+  <data name="Settings_Compose" xml:space="preserve">
+    <value>Writing new messages</value>
+  </data>
+  <data name="Settings_ComposeHint" xml:space="preserve">
+    <value>The compose window and signature editor. Recipients see the message in this font and size.</value>
+  </data>
+  <data name="Settings_ComposeSample" xml:space="preserve">
+    <value>Hello Jane, here is the agenda for tomorrow's meeting.</value>
+  </data>
+  <data name="Settings_DefaultFont" xml:space="preserve">
+    <value>Default</value>
+  </data>
+  <data name="Settings_DefaultFontHeader" xml:space="preserve">
+    <value>Default font</value>
+  </data>
+  <data name="Settings_Every15Minutes" xml:space="preserve">
+    <value>Every 15 minutes</value>
+  </data>
+  <data name="Settings_Every2Minutes" xml:space="preserve">
+    <value>Every 2 minutes</value>
+  </data>
+  <data name="Settings_Every30Seconds" xml:space="preserve">
+    <value>Every 30 seconds</value>
+  </data>
+  <data name="Settings_Every5Minutes" xml:space="preserve">
+    <value>Every 5 minutes</value>
+  </data>
+  <data name="Settings_EveryMinute" xml:space="preserve">
+    <value>Every minute</value>
+  </data>
+  <data name="Settings_ExternalContactsOnly" xml:space="preserve">
+    <value>My contacts only</value>
+  </data>
+  <data name="Settings_ExternalEveryone" xml:space="preserve">
+    <value>Everyone</value>
+  </data>
+  <data name="Settings_ExternalReply" xml:space="preserve">
+    <value>Reply to people outside my organization</value>
+  </data>
+  <data name="Settings_Font" xml:space="preserve">
+    <value>Font</value>
+  </data>
+  <data name="Settings_FontRestartNeeded" xml:space="preserve">
+    <value>Interface font changes appear after the app restarts.</value>
+  </data>
+  <data name="Settings_Fonts" xml:space="preserve">
+    <value>Fonts</value>
+  </data>
+  <data name="Settings_ForgetPassword" xml:space="preserve">
+    <value>Delete saved password</value>
+  </data>
+  <data name="Settings_Interface" xml:space="preserve">
+    <value>Interface</value>
+  </data>
+  <data name="Settings_InterfaceHint" xml:space="preserve">
+    <value>Menus, lists and buttons. Applied after the app restarts.</value>
+  </data>
+  <data name="Settings_InterfaceSample" xml:space="preserve">
+    <value>Sample: Inbox · Reply · Meeting 14:30</value>
+  </data>
+  <data name="Settings_InternalReply" xml:space="preserve">
+    <value>Reply to people in my organization</value>
+  </data>
+  <data name="Settings_InternalReplyPlaceholder" xml:space="preserve">
+    <value>E.g. I'm on leave from 1 to 5 November. For urgent matters, please contact Jane Doe (jane.doe@company.com).</value>
+  </data>
+  <data name="Settings_Language" xml:space="preserve">
+    <value>Language (Dil)</value>
+  </data>
+  <data name="Settings_LanguageHint" xml:space="preserve">
+    <value>Menus, messages and date formats. Applied after the app restarts.</value>
+  </data>
+  <data name="Settings_LanguageRestartNeeded" xml:space="preserve">
+    <value>The new language appears after the app restarts.</value>
+  </data>
+  <data name="Settings_MarkRead" xml:space="preserve">
+    <value>Mark messages as read</value>
+  </data>
+  <data name="Settings_MarkReadAfterDelay" xml:space="preserve">
+    <value>After a few seconds</value>
+  </data>
+  <data name="Settings_MarkReadHint" xml:space="preserve">
+    <value>When should an unread message opened in the reading pane count as read?</value>
+  </data>
+  <data name="Settings_MarkReadNever" xml:space="preserve">
+    <value>Never (manually)</value>
+  </data>
+  <data name="Settings_MarkReadWhenSelected" xml:space="preserve">
+    <value>When selected</value>
+  </data>
+  <data name="Settings_MinimizeToTray" xml:space="preserve">
+    <value>Minimize to the system tray when closed</value>
+  </data>
+  <data name="Settings_MinimizeToTrayHint" xml:space="preserve">
+    <value>When you close the window, Postacı keeps checking for new mail and showing notifications in the background. To quit completely, right-click the tray icon and choose Exit.</value>
+  </data>
+  <data name="Settings_Notifications" xml:space="preserve">
+    <value>New mail notifications</value>
+  </data>
+  <data name="Settings_NotificationsHint" xml:space="preserve">
+    <value>A Windows notification is shown when a new message arrives in the inbox. The unread count appears on the taskbar icon.</value>
+  </data>
+  <data name="Settings_OnlyDuringRange" xml:space="preserve">
+    <value>Only send during this time range</value>
+  </data>
+  <data name="Settings_OverrideFonts" xml:space="preserve">
+    <value>Also replace fonts set by messages with this font</value>
+  </data>
+  <data name="Settings_PasswordForgotten" xml:space="preserve">
+    <value>The saved password was deleted. You will be asked for it next time.</value>
+  </data>
+  <data name="Settings_PrivacyNote" xml:space="preserve">
+    <value>Data is sent only to the configured Exchange server; the app collects no telemetry.</value>
+  </data>
+  <data name="Settings_Reading" xml:space="preserve">
+    <value>Reading messages</value>
+  </data>
+  <data name="Settings_ReadingHint" xml:space="preserve">
+    <value>Reading pane and calendar details. While reading, you can also zoom with Ctrl + mouse wheel.</value>
+  </data>
+  <data name="Settings_ReadingSample" xml:space="preserve">
+    <value>Hello, please find the meeting notes attached. Best regards.</value>
+  </data>
+  <data name="Settings_RefreshInterval" xml:space="preserve">
+    <value>Check for new mail</value>
+  </data>
+  <data name="Settings_RefreshIntervalHint" xml:space="preserve">
+    <value>The inbox and folder counts are refreshed at this interval.</value>
+  </data>
+  <data name="Settings_RemoteImages" xml:space="preserve">
+    <value>Always show remote images</value>
+  </data>
+  <data name="Settings_RemoteImagesHint" xml:space="preserve">
+    <value>When off, external images are blocked to protect against tracking pixels.</value>
+  </data>
+  <data name="Settings_ReplyExternal" xml:space="preserve">
+    <value>Also reply to people outside my organization</value>
+  </data>
+  <data name="Settings_RestartNow" xml:space="preserve">
+    <value>Restart now</value>
+  </data>
+  <data name="Settings_SaveAutoReplies" xml:space="preserve">
+    <value>Save automatic replies</value>
+  </data>
+  <data name="Settings_SaveFailed" xml:space="preserve">
+    <value>Could not save settings: {0}</value>
+  </data>
+  <data name="Settings_SaveSignature" xml:space="preserve">
+    <value>Save signature</value>
+  </data>
+  <data name="Settings_Seconds" xml:space="preserve">
+    <value>Seconds</value>
+  </data>
+  <data name="Settings_SecondsShort" xml:space="preserve">
+    <value>s</value>
+  </data>
+  <data name="Settings_SendAutoReplies" xml:space="preserve">
+    <value>Send automatic replies</value>
+  </data>
+  <data name="Settings_Server" xml:space="preserve">
+    <value>Server (EWS)</value>
+  </data>
+  <data name="Settings_Signature" xml:space="preserve">
+    <value>Signature</value>
+  </data>
+  <data name="Settings_SignatureHint" xml:space="preserve">
+    <value>Added to the end of new messages, replies and forwards.</value>
+  </data>
+  <data name="Settings_SignatureSaved" xml:space="preserve">
+    <value>Signature saved.</value>
+  </data>
+  <data name="Settings_SignatureSaveFailed" xml:space="preserve">
+    <value>Could not save the signature: {0}</value>
+  </data>
+  <data name="Settings_SignIn" xml:space="preserve">
+    <value>Sign-in</value>
+  </data>
+  <data name="Settings_SignOut" xml:space="preserve">
+    <value>Sign out</value>
+  </data>
+  <data name="Settings_SignOutHint" xml:space="preserve">
+    <value>Closing the app window does not sign you out; it connects automatically next time. "Sign out" also deletes the saved password.</value>
+  </data>
+  <data name="Settings_Size" xml:space="preserve">
+    <value>Size</value>
+  </data>
+  <data name="Settings_SizeExtraLarge" xml:space="preserve">
+    <value>Extra large (130%)</value>
+  </data>
+  <data name="Settings_SizeLarge" xml:space="preserve">
+    <value>Large (115%)</value>
+  </data>
+  <data name="Settings_SizeNormal" xml:space="preserve">
+    <value>Normal</value>
+  </data>
+  <data name="Settings_SizeSmall" xml:space="preserve">
+    <value>Small (90%)</value>
+  </data>
+  <data name="Settings_StartupChangeFailed" xml:space="preserve">
+    <value>Could not change the startup setting: {0}</value>
+  </data>
+  <data name="Settings_StartWithWindows" xml:space="preserve">
+    <value>Start with Windows</value>
+  </data>
+  <data name="Settings_StartWithWindowsHint" xml:space="preserve">
+    <value>When you sign in to Windows, Postacı starts in the system tray and connects with the saved account.</value>
+  </data>
+  <data name="Settings_Theme" xml:space="preserve">
+    <value>Theme</value>
+  </data>
+  <data name="Settings_ThemeDark" xml:space="preserve">
+    <value>Dark</value>
+  </data>
+  <data name="Settings_ThemeLight" xml:space="preserve">
+    <value>Light</value>
+  </data>
+  <data name="Settings_UseWindowsSetting" xml:space="preserve">
+    <value>Use Windows setting</value>
+  </data>
+  <data name="Settings_VersionFormat" xml:space="preserve">
+    <value>Version {0}</value>
+  </data>
+  <data name="Settings_WindowsSignIn" xml:space="preserve">
+    <value>Windows session (single sign-on)</value>
+  </data>
+  <data name="Settings_Zoom" xml:space="preserve">
+    <value>Zoom</value>
+  </data>
+  <data name="Tray_CheckMail" xml:space="preserve">
+    <value>Check for new mail</value>
+  </data>
+  <data name="Tray_Exit" xml:space="preserve">
+    <value>Exit</value>
+  </data>
+  <data name="Tray_Open" xml:space="preserve">
+    <value>Open {0}</value>
+  </data>
+  <data name="Tray_StillRunningText" xml:space="preserve">
+    <value>It keeps checking for new mail. Click the icon in the system tray to open it; to quit, right-click the icon and choose Exit.</value>
+  </data>
+  <data name="Tray_StillRunningTitle" xml:space="preserve">
+    <value>{0} is still running</value>
+  </data>
+  <data name="Tray_UnreadTooltip" xml:space="preserve">
+    <value>{0} – {1} unread messages</value>
+  </data>
+  <data name="Tray_UnreadTooltip_One" xml:space="preserve">
+    <value>{0} – {1} unread message</value>
+  </data>
+</root>

@@ -127,7 +127,7 @@ public sealed partial class WeekGridView : UserControl
 
             var title = new TextBlock
             {
-                Text = day.ToString(_days == 1 ? "dddd, d MMMM" : "ddd d", culture),
+                Text = _days == 1 ? day.ToString("dddd", culture) + ", " + ViewModels.MailFormat.DayMonth(day) : day.ToString("ddd d", culture),
                 HorizontalAlignment = HorizontalAlignment.Center,
                 FontWeight = isToday ? FontWeights.SemiBold : FontWeights.Normal,
             };

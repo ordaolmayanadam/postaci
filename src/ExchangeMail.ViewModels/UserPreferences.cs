@@ -45,6 +45,9 @@ public sealed partial class UserPreferences : ObservableObject
 
     [ObservableProperty] private int _composeFontSize = MailFormat.DefaultComposeFontSize;
 
+    /// <summary>Interface language: "tr", "en", or empty to follow Windows. Applied at startup.</summary>
+    [ObservableProperty] private string _language = "";
+
     /// <summary>The signature as HTML, converting a legacy plain-text signature if needed. Empty when none.</summary>
     public string GetSignatureHtml() =>
         !string.IsNullOrWhiteSpace(SignatureHtml) ? SignatureHtml

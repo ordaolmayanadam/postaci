@@ -32,7 +32,7 @@ public sealed partial class SettingsPage : Page
         }
         catch (Exception ex)
         {
-            ViewModel.ErrorMessage = "İmza kaydedilemedi: " + ex.Message;
+            ViewModel.ErrorMessage = Loc.Format(Strings.Settings_SignatureSaveFailed, ex.Message);
         }
     }
 }

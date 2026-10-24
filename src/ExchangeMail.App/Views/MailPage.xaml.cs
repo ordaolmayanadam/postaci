@@ -40,7 +40,7 @@ public sealed partial class MailPage : Page
         }
         catch (Exception ex)
         {
-            ViewModel.ErrorMessage = "WebView2 başlatılamadı (Microsoft Edge WebView2 Runtime kurulu mu?): " + ex.Message;
+            ViewModel.ErrorMessage = Loc.Format(Strings.Mail_WebViewFailed, ex.Message);
         }
 
         await ViewModel.InitializeAsync();
@@ -121,7 +121,7 @@ public sealed partial class MailPage : Page
                 SuggestedStartLocation = PickerLocationId.Downloads,
             };
             picker.FileTypeChoices.Add(
-                extension.Length > 0 ? extension.TrimStart('.').ToUpperInvariant() + " dosyası" : "Dosya",
+                extension.Length > 0 ? Loc.Format(Strings.Mail_FileTypeFormat, extension.TrimStart('.').ToUpperInvariant()) : Strings.Mail_FileType,
                 [extension.Length > 0 ? extension : ".bin"]);
             WinRT.Interop.InitializeWithWindow.Initialize(picker, WinRT.Interop.WindowNative.GetWindowHandle(App.MainWindow));
 
@@ -130,11 +130,11 @@ public sealed partial class MailPage : Page
 
             var content = await ViewModel.DownloadAttachmentAsync(attachment);
             await File.WriteAllBytesAsync(file.Path, content.Content);
-            ViewModel.StatusText = $"Kaydedildi: {file.Path}";
+            ViewModel.StatusText = Loc.Format(Strings.Mail_SavedTo, file.Path);
         }
         catch (Exception ex)
         {
-            ViewModel.ErrorMessage = "Ek kaydedilemedi: " + ex.Message;
+            ViewModel.ErrorMessage = Loc.Format(Strings.Mail_AttachmentSaveFailed, ex.Message);
         }
     }
 }

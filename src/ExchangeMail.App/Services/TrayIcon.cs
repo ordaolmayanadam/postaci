@@ -43,7 +43,7 @@ public sealed class TrayIcon : IDisposable
         RegisterClassExW(ref windowClass); // fails harmlessly if already registered
         _hwnd = CreateWindowExW(WS_EX_TOOLWINDOW, WindowClass, ViewModels.AppInfo.Name, WS_POPUP, 0, 0, 0, 0,
             IntPtr.Zero, IntPtr.Zero, instance, IntPtr.Zero);
-        if (_hwnd == IntPtr.Zero) throw new InvalidOperationException($"Tepsi penceresi oluşturulamadı (hata {Marshal.GetLastWin32Error()}).");
+        if (_hwnd == IntPtr.Zero) throw new InvalidOperationException($"Could not create the tray window (error {Marshal.GetLastWin32Error()}).");
 
         // Explorer broadcasts this after it restarts; the icon must then be added again.
         _taskbarCreatedMessage = RegisterWindowMessageW("TaskbarCreated");

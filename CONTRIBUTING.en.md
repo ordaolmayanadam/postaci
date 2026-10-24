@@ -141,6 +141,7 @@ Notes:
 ├── src/
 │   ├── ExchangeMail.Core/          # EWS client and models (no UI, platform-independent)
 │   │   ├── Ews/                    # EwsClient (partial), Autodiscover, Xml helpers, errors
+│   │   ├── Localization/           # Strings.resx (Turkish), Strings.en.resx (English), Loc
 │   │   └── Models/                 # Mail, Calendar, Contact, AutoReply records
 │   ├── ExchangeMail.ViewModels/    # MVVM layer (CommunityToolkit.Mvvm), settings, formatting
 │   └── ExchangeMail.App/           # WinUI 3 app (Windows only)
@@ -174,9 +175,35 @@ In practice:
 - ViewModels surface exception messages to the user through properties such as `ErrorMessage` / `StatusText`;
   don't swallow errors. If you do swallow an error the user doesn't need to know about (e.g. the password could
   not be saved), explain why in a comment.
-- **User-facing text is in Turkish**; identifiers (class, method, variable names) and code comments are in
-  **English**. Use Turkish characters (ç, ğ, ı, İ, ö, ş, ü) correctly in UI text. There is no localization
-  infrastructure yet; if you'd like to add English UI support, please open an issue first to agree on the approach.
+- Identifiers (class, method, variable names) and code comments are written in **English**. User-facing text is
+  never written in code; it goes into the [translation resources](#ui-text-and-translations).
+
+### UI text and translations
+
+The interface is in Turkish and English. All user-facing text lives in `src/ExchangeMail.Core/Localization/`:
+
+| File | Contents |
+|---|---|
+| `Strings.resx` | Turkish (the default language) |
+| `Strings.en.resx` | English |
+| `Loc.cs` | Language selection, formatting (`Loc.Format`) and singular/plural (`Loc.Count`) |
+
+- **When adding text**, add the same key to **both files**. Key names follow `Area_What`
+  (e.g. `Mail_Reply`, `Calendar_EventCreated`, `Common_Cancel`). Visual Studio's resource editor or any text editor
+  works.
+- **In C#** use the class generated at build time: `Strings.Mail_Reply`. For text with values use a `{0}`
+  placeholder and `Loc.Format(Strings.Contacts_DeleteQuestion, name)`; for counts add a singular key with the `_One`
+  suffix and use `Loc.Count(count, Strings.Mail_ItemCount_One, Strings.Mail_ItemCount)` (both are the same in
+  Turkish).
+- **In XAML** use the markup extension: `Text="{h:L Key=Mail_Reply}"` (`xmlns:h="using:ExchangeMail.App.Helpers"`).
+  Texts are read once when a page loads, which is why changing the language needs a restart.
+- **For dates**, don't hard-code patterns; use standard formats such as `"D"`, `"t"`, `"Y"` or the
+  `MailFormat.DayMonth` / `DayMonthYear` helpers, so day–month order and 12/24-hour time follow the language.
+- `LocalizationTests` checks that both files have the same keys and placeholders, that every key used in XAML
+  exists, and that no hard-coded Turkish text is left in XAML or code. It cannot catch a hard-coded string without
+  Turkish-specific letters (e.g. `"Kaydet"`), so keep an eye out for those in reviews.
+- **To add a new language**, create `Strings.<lang>.resx`, register the language in `Loc` and add it to the language
+  list in Settings. Please open an issue first to let us know.
 
 ## Code style
 
@@ -280,7 +307,8 @@ Things to watch out for:
   retry loop.
 - **Version.** Requests are sent with the `Exchange2013_SP1` schema. Don't use elements that need a newer schema;
   everything must work on Exchange 2016, 2019 and SE.
-- **Error messages shown to the user** must be in Turkish (`throw new EwsException("Yanıtta ... yok.")`).
+- **Error messages shown to the user** come from the translation resources
+  (`throw new EwsException(Strings.Ews_MessageNotFound)`); add both the Turkish and the English text.
 
 ### 3. Map the response to a model
 
@@ -432,9 +460,11 @@ await WaitUntil(() => vm.Messages.Count == 2 && !vm.IsLoadingList);
 
 - [ ] Layering rules respected (Core/ViewModels don't depend on WinUI)
 - [ ] New EWS requests follow schema order and are verified by tests
-- [ ] Errors reach the user in clear Turkish; no swallowed errors
+- [ ] New texts were added to both `Strings.resx` and `Strings.en.resx`
+- [ ] Errors reach the user clearly; no swallowed errors
 - [ ] Long-running operations don't block the UI thread and can be cancelled
-- [ ] The UI doesn't break in light/dark themes or with an enlarged text size
+- [ ] The UI doesn't break in light/dark themes, with an enlarged text size or in either language (English texts
+      are often longer)
 - [ ] WebView2 security settings untouched (or the reason is explained)
 - [ ] No real people, addresses, server names or mail content
 - [ ] If AI was used, it is disclosed in the PR and the code is understood and tested by the author
@@ -484,6 +514,7 @@ taskbar.
 | `dotnet test` fails with something like "VSTest is not supported" | Pass `--project tests/ExchangeMail.Core.Tests` instead of a folder; don't delete `global.json` |
 | The solution doesn't build on Linux (XAML error) | Expected; build only Core, ViewModels and the test project |
 | `ErrorSchemaValidation` | Wrong element order or namespace (`m:`/`t:`) in the request; check the XSD order |
+| `[Key_Name]` appears in the UI | The key is missing from `Strings.resx` or misspelled in XAML; `LocalizationTests` catches this |
 | `ErrorChangeKeyRequiredForWriteOperations` | `ConflictResolution="AlwaysOverwrite"` missing on an `UpdateItem` without a ChangeKey |
 | An all-day event shifts by a day | A UTC date was used; use `LocalDateTime.Date` and pass `withTimeZone: true` for the calendar request |
 | A test fails with `No canned response for X` | The code sends an unexpected `X` request, or `On("X", ...)` is missing |

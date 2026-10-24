@@ -34,20 +34,20 @@
         </Grid>
 
         <CommandBar Grid.Row="1" HorizontalAlignment="Left" Background="Transparent" DefaultLabelPosition="Right">
-            <AppBarButton Icon="Send" Label="Gönder" Command="{x:Bind ViewModel.SendCommand}">
+            <AppBarButton Icon="Send" Label="{h:L Key=Compose_Send}" Command="{x:Bind ViewModel.SendCommand}">
                 <AppBarButton.KeyboardAccelerators>
                     <KeyboardAccelerator Key="Enter" Modifiers="Control" />
                 </AppBarButton.KeyboardAccelerators>
             </AppBarButton>
             <AppBarSeparator />
-            <AppBarButton Icon="Attach" Label="Dosya ekle" Click="OnAttachClick" />
-            <AppBarButton Icon="Save" Label="Taslak kaydet" Command="{x:Bind ViewModel.SaveDraftCommand}">
+            <AppBarButton Icon="Attach" Label="{h:L Key=Compose_Attach}" Click="OnAttachClick" />
+            <AppBarButton Icon="Save" Label="{h:L Key=Compose_SaveDraft}" Command="{x:Bind ViewModel.SaveDraftCommand}">
                 <AppBarButton.KeyboardAccelerators>
                     <KeyboardAccelerator Key="S" Modifiers="Control" />
                 </AppBarButton.KeyboardAccelerators>
             </AppBarButton>
-            <AppBarToggleButton Icon="Important" Label="Yüksek önem" IsChecked="{x:Bind ViewModel.IsHighImportance, Mode=TwoWay}" />
-            <AppBarToggleButton Label="Gizli" IsChecked="{x:Bind ViewModel.ShowBcc, Mode=TwoWay}">
+            <AppBarToggleButton Icon="Important" Label="{h:L Key=Mail_HighImportance}" IsChecked="{x:Bind ViewModel.IsHighImportance, Mode=TwoWay}" />
+            <AppBarToggleButton Label="{h:L Key=Compose_Bcc}" IsChecked="{x:Bind ViewModel.ShowBcc, Mode=TwoWay}">
                 <AppBarToggleButton.Icon>
                     <FontIcon Glyph="&#xE716;" />
                 </AppBarToggleButton.Icon>
@@ -84,17 +84,17 @@
                 <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
 
-            <TextBlock VerticalAlignment="Center" Text="Kime" />
+            <TextBlock VerticalAlignment="Center" Text="{h:L Key=Compose_To}" />
             <AutoSuggestBox
                 x:Name="ToBox"
                 Grid.Column="1"
-                PlaceholderText="Ad yazıp listeden seçin veya adres girin (; ile ayırın)"
+                PlaceholderText="{h:L Key=Compose_RecipientsPlaceholder}"
                 Text="{x:Bind ViewModel.To, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                 UpdateTextOnSelect="False"
                 TextChanged="OnRecipientTextChanged"
                 QuerySubmitted="OnRecipientQuerySubmitted" />
 
-            <TextBlock Grid.Row="1" VerticalAlignment="Center" Text="Bilgi" />
+            <TextBlock Grid.Row="1" VerticalAlignment="Center" Text="{h:L Key=Compose_Cc}" />
             <AutoSuggestBox
                 x:Name="CcBox"
                 Grid.Row="1"
@@ -107,7 +107,7 @@
             <TextBlock
                 Grid.Row="2"
                 VerticalAlignment="Center"
-                Text="Gizli"
+                Text="{h:L Key=Compose_Bcc}"
                 Visibility="{x:Bind ViewModel.ShowBcc, Mode=OneWay}" />
             <AutoSuggestBox
                 x:Name="BccBox"
@@ -119,7 +119,7 @@
                 QuerySubmitted="OnRecipientQuerySubmitted"
                 Visibility="{x:Bind ViewModel.ShowBcc, Mode=OneWay}" />
 
-            <TextBlock Grid.Row="3" VerticalAlignment="Center" Text="Konu" />
+            <TextBlock Grid.Row="3" VerticalAlignment="Center" Text="{h:L Key=Common_Subject}" />
             <TextBox
                 Grid.Row="3"
                 Grid.Column="1"
@@ -138,16 +138,16 @@
                 Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                 TextTrimming="CharacterEllipsis"
                 Visibility="{x:Bind ViewModel.IsResponse, Mode=OneWay}">
-                <Run Text="Özgün ileti gönderilirken alta eklenecek:" />
+                <Run Text="{h:L Key=Compose_OriginalAppended}" />
                 <Run Text="{x:Bind ViewModel.OriginalSummary}" />
             </TextBlock>
         </Grid>
 
         <StackPanel Grid.Row="5" Padding="16,0,16,12" Spacing="4">
             <TextBlock Style="{StaticResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}">
-                <Run Text="Ekler · toplam" />
+                <Run Text="{h:L Key=Compose_AttachmentsTotal}" />
                 <Run Text="{x:Bind ViewModel.AttachmentsSizeText, Mode=OneWay}" />
-                <Run Text="· dosyaları pencereye sürükleyip bırakabilirsiniz" />
+                <Run Text="{h:L Key=Compose_DropHint}" />
             </TextBlock>
             <ListView
                 MaxHeight="80"
@@ -182,7 +182,7 @@
                                 BorderThickness="0"
                                 Click="OnRemoveExistingAttachment"
                                 Tag="{x:Bind}"
-                                ToolTipService.ToolTip="Taslaktan kaldır">
+                                ToolTipService.ToolTip="{h:L Key=Compose_RemoveFromDraft}">
                                 <FontIcon Glyph="&#xE711;" FontSize="12" />
                             </Button>
                         </Grid>
@@ -222,7 +222,7 @@
                                 BorderThickness="0"
                                 Click="OnRemoveAttachment"
                                 Tag="{x:Bind}"
-                                ToolTipService.ToolTip="Kaldır">
+                                ToolTipService.ToolTip="{h:L Key=Common_Remove}">
                                 <FontIcon Glyph="&#xE711;" FontSize="12" />
                             </Button>
                         </Grid>

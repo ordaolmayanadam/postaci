@@ -1,0 +1,1096 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="Appointment_Attendees" xml:space="preserve">
+    <value>Katılımcılar</value>
+  </data>
+  <data name="Appointment_AttendeesHint" xml:space="preserve">
+    <value>Adres girerseniz toplantı daveti gönderilir. Birden fazlasını ; ile ayırın.</value>
+  </data>
+  <data name="Appointment_AttendeesPlaceholder" xml:space="preserve">
+    <value>ad.soyad@sirket.com.tr; ...</value>
+  </data>
+  <data name="Appointment_AvailabilityFailed" xml:space="preserve">
+    <value>Uygunluk alınamadı: {0}</value>
+  </data>
+  <data name="Appointment_AvailabilityHint" xml:space="preserve">
+    <value>Sizin ve katılımcıların seçili gündeki meşgul saatleri</value>
+  </data>
+  <data name="Appointment_Description" xml:space="preserve">
+    <value>Açıklama</value>
+  </data>
+  <data name="Appointment_EditEvent" xml:space="preserve">
+    <value>Etkinliği düzenle</value>
+  </data>
+  <data name="Appointment_EditMeeting" xml:space="preserve">
+    <value>Toplantıyı düzenle</value>
+  </data>
+  <data name="Appointment_EndDate" xml:space="preserve">
+    <value>Bitiş tarihi</value>
+  </data>
+  <data name="Appointment_InvalidAttendees" xml:space="preserve">
+    <value>Geçersiz katılımcı adresi: {0}</value>
+  </data>
+  <data name="Appointment_Location" xml:space="preserve">
+    <value>Konum</value>
+  </data>
+  <data name="Appointment_LocationPlaceholder" xml:space="preserve">
+    <value>Toplantı odası veya adres</value>
+  </data>
+  <data name="Appointment_Reminder" xml:space="preserve">
+    <value>Anımsatıcı</value>
+  </data>
+  <data name="Appointment_Reminder1440" xml:space="preserve">
+    <value>1 gün önce</value>
+  </data>
+  <data name="Appointment_Reminder15" xml:space="preserve">
+    <value>15 dakika önce</value>
+  </data>
+  <data name="Appointment_Reminder30" xml:space="preserve">
+    <value>30 dakika önce</value>
+  </data>
+  <data name="Appointment_Reminder5" xml:space="preserve">
+    <value>5 dakika önce</value>
+  </data>
+  <data name="Appointment_Reminder60" xml:space="preserve">
+    <value>1 saat önce</value>
+  </data>
+  <data name="Appointment_ReminderNone" xml:space="preserve">
+    <value>Yok</value>
+  </data>
+  <data name="Appointment_ShowAs" xml:space="preserve">
+    <value>Durumum</value>
+  </data>
+  <data name="Appointment_ShowAvailability" xml:space="preserve">
+    <value>Uygunluğu göster</value>
+  </data>
+  <data name="Appointment_StartDate" xml:space="preserve">
+    <value>Başlangıç tarihi</value>
+  </data>
+  <data name="Appointment_SubjectRequired" xml:space="preserve">
+    <value>Konu girin.</value>
+  </data>
+  <data name="Autodiscover_AuthFailed" xml:space="preserve">
+    <value>Autodiscover kimlik doğrulaması başarısız. Kullanıcı adı ve parolayı kontrol edin.</value>
+  </data>
+  <data name="Autodiscover_NoEwsUrl" xml:space="preserve">
+    <value>Yanıtta EwsUrl yok</value>
+  </data>
+  <data name="Autodiscover_NotFound" xml:space="preserve">
+    <value>Autodiscover EWS adresini bulamadı. EWS adresini elle girin (ör. https://mail.sirket.com/EWS/Exchange.asmx).</value>
+  </data>
+  <data name="Autodiscover_ResponseWithoutUrl" xml:space="preserve">
+    <value>EWS adresi içermeyen yanıt</value>
+  </data>
+  <data name="AutoReply_Active" xml:space="preserve">
+    <value>Otomatik yanıtlar açık. Size gelen iletilere otomatik yanıt gönderiliyor.</value>
+  </data>
+  <data name="AutoReply_ActiveUntil" xml:space="preserve">
+    <value>Otomatik yanıtlar {0} tarihine kadar gönderiliyor.</value>
+  </data>
+  <data name="AutoReply_InternalRequired" xml:space="preserve">
+    <value>Kuruluş içindekilere gidecek yanıt metnini yazın.</value>
+  </data>
+  <data name="AutoReply_LoadFailed" xml:space="preserve">
+    <value>Otomatik yanıt ayarları okunamadı: {0}</value>
+  </data>
+  <data name="AutoReply_PickDates" xml:space="preserve">
+    <value>Başlangıç ve bitiş tarihini seçin.</value>
+  </data>
+  <data name="AutoReply_Saved" xml:space="preserve">
+    <value>Otomatik yanıtlar kaydedildi.</value>
+  </data>
+  <data name="AutoReply_SaveFailed" xml:space="preserve">
+    <value>Otomatik yanıtlar kaydedilemedi: {0}</value>
+  </data>
+  <data name="AutoReply_TurnedOff" xml:space="preserve">
+    <value>Otomatik yanıtlar kapatıldı.</value>
+  </data>
+  <data name="AutoReply_TurnOff" xml:space="preserve">
+    <value>Kapat</value>
+  </data>
+  <data name="Availability_NoInfo" xml:space="preserve">
+    <value>Bilgi yok</value>
+  </data>
+  <data name="Availability_WorkingElsewhere" xml:space="preserve">
+    <value>Başka yerde çalışıyor</value>
+  </data>
+  <data name="Calendar_AllDay" xml:space="preserve">
+    <value>Tüm gün</value>
+  </data>
+  <data name="Calendar_AttendeesLabel" xml:space="preserve">
+    <value>Katılımcılar: </value>
+  </data>
+  <data name="Calendar_CancelledPrefix" xml:space="preserve">
+    <value>İptal edildi: </value>
+  </data>
+  <data name="Calendar_CancelMeetingQuestion" xml:space="preserve">
+    <value>Toplantı iptal edilecek ve katılımcılara iptal bildirimi gönderilecek. Devam edilsin mi?</value>
+  </data>
+  <data name="Calendar_CancelMeetingTitle" xml:space="preserve">
+    <value>Toplantıyı iptal et</value>
+  </data>
+  <data name="Calendar_CreateFailed" xml:space="preserve">
+    <value>Etkinlik oluşturulamadı: {0}</value>
+  </data>
+  <data name="Calendar_Day" xml:space="preserve">
+    <value>Gün</value>
+  </data>
+  <data name="Calendar_DeleteEventQuestion" xml:space="preserve">
+    <value>Bu etkinlik takvimden silinecek. Devam edilsin mi?</value>
+  </data>
+  <data name="Calendar_DeleteEventTitle" xml:space="preserve">
+    <value>Etkinliği sil</value>
+  </data>
+  <data name="Calendar_DeleteOrCancel" xml:space="preserve">
+    <value>Sil / iptal et</value>
+  </data>
+  <data name="Calendar_EventCount" xml:space="preserve">
+    <value>{0} etkinlik</value>
+  </data>
+  <data name="Calendar_EventCount_One" xml:space="preserve">
+    <value>{0} etkinlik</value>
+  </data>
+  <data name="Calendar_EventCreated" xml:space="preserve">
+    <value>Etkinlik oluşturuldu.</value>
+  </data>
+  <data name="Calendar_EventMoved" xml:space="preserve">
+    <value>Etkinlik taşındı.</value>
+  </data>
+  <data name="Calendar_EventUpdated" xml:space="preserve">
+    <value>Etkinlik güncellendi.</value>
+  </data>
+  <data name="Calendar_LoadFailed" xml:space="preserve">
+    <value>Takvim yüklenemedi: {0}</value>
+  </data>
+  <data name="Calendar_MeetingCreated" xml:space="preserve">
+    <value>Toplantı oluşturuldu ve davetler gönderildi.</value>
+  </data>
+  <data name="Calendar_MeetingUpdated" xml:space="preserve">
+    <value>Toplantı güncellendi; katılımcılara bildirildi.</value>
+  </data>
+  <data name="Calendar_Month" xml:space="preserve">
+    <value>Ay</value>
+  </data>
+  <data name="Calendar_MoveFailed" xml:space="preserve">
+    <value>Etkinlik taşınamadı: {0}</value>
+  </data>
+  <data name="Calendar_MoveMeetingQuestion" xml:space="preserve">
+    <value>Toplantı {0} saatine taşınacak ve katılımcılara güncelleme gönderilecek. Devam edilsin mi?</value>
+  </data>
+  <data name="Calendar_MoveMeetingTitle" xml:space="preserve">
+    <value>Toplantıyı taşı</value>
+  </data>
+  <data name="Calendar_NewEvent" xml:space="preserve">
+    <value>Yeni etkinlik</value>
+  </data>
+  <data name="Calendar_Next" xml:space="preserve">
+    <value>Sonraki</value>
+  </data>
+  <data name="Calendar_NoEvents" xml:space="preserve">
+    <value>Bu aralıkta etkinlik yok</value>
+  </data>
+  <data name="Calendar_OpenFailed" xml:space="preserve">
+    <value>Etkinlik açılamadı: {0}</value>
+  </data>
+  <data name="Calendar_OptionalLabel" xml:space="preserve">
+    <value>İsteğe bağlı: </value>
+  </data>
+  <data name="Calendar_OrganizerFormat" xml:space="preserve">
+    <value>Düzenleyen: {0}</value>
+  </data>
+  <data name="Calendar_Previous" xml:space="preserve">
+    <value>Önceki</value>
+  </data>
+  <data name="Calendar_SelectEvent" xml:space="preserve">
+    <value>Ayrıntıları görmek için bir etkinlik seçin</value>
+  </data>
+  <data name="Calendar_Today" xml:space="preserve">
+    <value>Bugün</value>
+  </data>
+  <data name="Calendar_Tomorrow" xml:space="preserve">
+    <value>Yarın</value>
+  </data>
+  <data name="Calendar_UpdateFailed" xml:space="preserve">
+    <value>Etkinlik güncellenemedi: {0}</value>
+  </data>
+  <data name="Calendar_WebViewFailed" xml:space="preserve">
+    <value>WebView2 başlatılamadı: {0}</value>
+  </data>
+  <data name="Calendar_Week" xml:space="preserve">
+    <value>Hafta</value>
+  </data>
+  <data name="Common_Cancel" xml:space="preserve">
+    <value>İptal</value>
+  </data>
+  <data name="Common_Delete" xml:space="preserve">
+    <value>Sil</value>
+  </data>
+  <data name="Common_DeleteFailed" xml:space="preserve">
+    <value>Silinemedi: {0}</value>
+  </data>
+  <data name="Common_Edit" xml:space="preserve">
+    <value>Düzenle</value>
+  </data>
+  <data name="Common_Email" xml:space="preserve">
+    <value>E-posta</value>
+  </data>
+  <data name="Common_End" xml:space="preserve">
+    <value>Bitiş</value>
+  </data>
+  <data name="Common_EndBeforeStart" xml:space="preserve">
+    <value>Bitiş zamanı başlangıçtan sonra olmalı.</value>
+  </data>
+  <data name="Common_InvalidEmail" xml:space="preserve">
+    <value>Geçerli bir e-posta adresi girin.</value>
+  </data>
+  <data name="Common_LoadMore" xml:space="preserve">
+    <value>Daha fazla yükle</value>
+  </data>
+  <data name="Common_No" xml:space="preserve">
+    <value>Hayır</value>
+  </data>
+  <data name="Common_NoSubject" xml:space="preserve">
+    <value>(Konu yok)</value>
+  </data>
+  <data name="Common_Off" xml:space="preserve">
+    <value>Kapalı</value>
+  </data>
+  <data name="Common_On" xml:space="preserve">
+    <value>Açık</value>
+  </data>
+  <data name="Common_Refresh" xml:space="preserve">
+    <value>Yenile</value>
+  </data>
+  <data name="Common_RefreshF5" xml:space="preserve">
+    <value>Yenile (F5)</value>
+  </data>
+  <data name="Common_Remove" xml:space="preserve">
+    <value>Kaldır</value>
+  </data>
+  <data name="Common_ResultCount" xml:space="preserve">
+    <value>{0} sonuç</value>
+  </data>
+  <data name="Common_ResultCount_One" xml:space="preserve">
+    <value>{0} sonuç</value>
+  </data>
+  <data name="Common_Save" xml:space="preserve">
+    <value>Kaydet</value>
+  </data>
+  <data name="Common_Start" xml:space="preserve">
+    <value>Başlangıç</value>
+  </data>
+  <data name="Common_Subject" xml:space="preserve">
+    <value>Konu</value>
+  </data>
+  <data name="Common_Time" xml:space="preserve">
+    <value>Saat</value>
+  </data>
+  <data name="Common_Yes" xml:space="preserve">
+    <value>Evet</value>
+  </data>
+  <data name="Compose_Attach" xml:space="preserve">
+    <value>Dosya ekle</value>
+  </data>
+  <data name="Compose_AttachFailed" xml:space="preserve">
+    <value>{0} eklenemedi: {1}</value>
+  </data>
+  <data name="Compose_AttachmentsTotal" xml:space="preserve">
+    <value>Ekler · toplam</value>
+  </data>
+  <data name="Compose_Bcc" xml:space="preserve">
+    <value>Gizli</value>
+  </data>
+  <data name="Compose_Cc" xml:space="preserve">
+    <value>Bilgi</value>
+  </data>
+  <data name="Compose_DiscardQuestion" xml:space="preserve">
+    <value>Yazdıklarınız kaybolacak. Pencere kapatılsın mı? (Saklamak için önce "Taslak kaydet"i kullanın.)</value>
+  </data>
+  <data name="Compose_DiscardTitle" xml:space="preserve">
+    <value>İleti gönderilmedi</value>
+  </data>
+  <data name="Compose_DraftSavedAt" xml:space="preserve">
+    <value>Taslak kaydedildi ({0}).</value>
+  </data>
+  <data name="Compose_DropCaption" xml:space="preserve">
+    <value>Ek olarak ekle</value>
+  </data>
+  <data name="Compose_DropHint" xml:space="preserve">
+    <value>· dosyaları pencereye sürükleyip bırakabilirsiniz</value>
+  </data>
+  <data name="Compose_EditorFailed" xml:space="preserve">
+    <value>Düzenleyici başlatılamadı (WebView2 Runtime kurulu mu?): {0}</value>
+  </data>
+  <data name="Compose_ForwardPrefix" xml:space="preserve">
+    <value>İLT: </value>
+  </data>
+  <data name="Compose_InvalidAddresses" xml:space="preserve">
+    <value>Geçersiz adres: {0}. Ad yazdıysanız listeden bir kişi seçin.</value>
+  </data>
+  <data name="Compose_NoSubjectQuestion" xml:space="preserve">
+    <value>Bu iletinin konusu yok. Yine de gönderilsin mi?</value>
+  </data>
+  <data name="Compose_NoSubjectTitle" xml:space="preserve">
+    <value>Konu yok</value>
+  </data>
+  <data name="Compose_OriginalAppended" xml:space="preserve">
+    <value>Özgün ileti gönderilirken alta eklenecek:</value>
+  </data>
+  <data name="Compose_RecipientRequired" xml:space="preserve">
+    <value>En az bir alıcı girin.</value>
+  </data>
+  <data name="Compose_RecipientsPlaceholder" xml:space="preserve">
+    <value>Ad yazıp listeden seçin veya adres girin (; ile ayırın)</value>
+  </data>
+  <data name="Compose_RemoveFromDraft" xml:space="preserve">
+    <value>Taslaktan kaldır</value>
+  </data>
+  <data name="Compose_ReplyPrefix" xml:space="preserve">
+    <value>YNT: </value>
+  </data>
+  <data name="Compose_SaveDraft" xml:space="preserve">
+    <value>Taslak kaydet</value>
+  </data>
+  <data name="Compose_Send" xml:space="preserve">
+    <value>Gönder</value>
+  </data>
+  <data name="Compose_TitleDraft" xml:space="preserve">
+    <value>Taslak</value>
+  </data>
+  <data name="Compose_TitleForward" xml:space="preserve">
+    <value>İlet</value>
+  </data>
+  <data name="Compose_TitleNew" xml:space="preserve">
+    <value>Yeni ileti</value>
+  </data>
+  <data name="Compose_TitleReply" xml:space="preserve">
+    <value>Yanıtla</value>
+  </data>
+  <data name="Compose_TitleReplyAll" xml:space="preserve">
+    <value>Tümünü yanıtla</value>
+  </data>
+  <data name="Compose_To" xml:space="preserve">
+    <value>Kime</value>
+  </data>
+  <data name="Contacts_AddedFormat" xml:space="preserve">
+    <value>{0} kişilerinize eklendi.</value>
+  </data>
+  <data name="Contacts_AddToMine" xml:space="preserve">
+    <value>Kişilerime ekle</value>
+  </data>
+  <data name="Contacts_BusinessPhone" xml:space="preserve">
+    <value>İş telefonu</value>
+  </data>
+  <data name="Contacts_Company" xml:space="preserve">
+    <value>Şirket</value>
+  </data>
+  <data name="Contacts_Count" xml:space="preserve">
+    <value>{0} kişi</value>
+  </data>
+  <data name="Contacts_Count_One" xml:space="preserve">
+    <value>{0} kişi</value>
+  </data>
+  <data name="Contacts_DeleteFailed" xml:space="preserve">
+    <value>Kişi silinemedi: {0}</value>
+  </data>
+  <data name="Contacts_DeleteQuestion" xml:space="preserve">
+    <value>{0} kişilerinizden silinecek. Devam edilsin mi?</value>
+  </data>
+  <data name="Contacts_DeleteTitle" xml:space="preserve">
+    <value>Kişiyi sil</value>
+  </data>
+  <data name="Contacts_Department" xml:space="preserve">
+    <value>Departman</value>
+  </data>
+  <data name="Contacts_Directory" xml:space="preserve">
+    <value>Şirket rehberi</value>
+  </data>
+  <data name="Contacts_DirectoryHint" xml:space="preserve">
+    <value>Şirket rehberinde aramak için yukarıya bir ad yazıp Enter'a basın.</value>
+  </data>
+  <data name="Contacts_DistributionList" xml:space="preserve">
+    <value>Dağıtım listesi</value>
+  </data>
+  <data name="Contacts_Edit" xml:space="preserve">
+    <value>Kişiyi düzenle</value>
+  </data>
+  <data name="Contacts_First100" xml:space="preserve">
+    <value>İlk 100 sonuç gösteriliyor; aramayı daraltın.</value>
+  </data>
+  <data name="Contacts_GivenName" xml:space="preserve">
+    <value>Ad</value>
+  </data>
+  <data name="Contacts_JobTitle" xml:space="preserve">
+    <value>Unvan</value>
+  </data>
+  <data name="Contacts_LoadFailed" xml:space="preserve">
+    <value>Kişiler yüklenemedi: {0}</value>
+  </data>
+  <data name="Contacts_Mine" xml:space="preserve">
+    <value>Kişilerim</value>
+  </data>
+  <data name="Contacts_MobilePhone" xml:space="preserve">
+    <value>Cep telefonu</value>
+  </data>
+  <data name="Contacts_NameRequired" xml:space="preserve">
+    <value>Ad veya soyad girin.</value>
+  </data>
+  <data name="Contacts_New" xml:space="preserve">
+    <value>Yeni kişi</value>
+  </data>
+  <data name="Contacts_NewTooltip" xml:space="preserve">
+    <value>Yeni kişi (Ctrl+N)</value>
+  </data>
+  <data name="Contacts_NoneFound" xml:space="preserve">
+    <value>Kişi bulunamadı.</value>
+  </data>
+  <data name="Contacts_SaveFailed" xml:space="preserve">
+    <value>Kişi kaydedilemedi: {0}</value>
+  </data>
+  <data name="Contacts_SearchDirectoryPlaceholder" xml:space="preserve">
+    <value>Şirket rehberinde ara (ad, soyad, e-posta)</value>
+  </data>
+  <data name="Contacts_SearchMinePlaceholder" xml:space="preserve">
+    <value>Kişilerimde ara</value>
+  </data>
+  <data name="Contacts_SelectContact" xml:space="preserve">
+    <value>Ayrıntıları görmek için bir kişi seçin</value>
+  </data>
+  <data name="Contacts_SendEmail" xml:space="preserve">
+    <value>E-posta gönder</value>
+  </data>
+  <data name="Contacts_Surname" xml:space="preserve">
+    <value>Soyad</value>
+  </data>
+  <data name="Contacts_Unnamed" xml:space="preserve">
+    <value>(adsız)</value>
+  </data>
+  <data name="Contacts_Updated" xml:space="preserve">
+    <value>Kişi güncellendi.</value>
+  </data>
+  <data name="Contacts_UpdateFailed" xml:space="preserve">
+    <value>Kişi güncellenemedi: {0}</value>
+  </data>
+  <data name="Credentials_WriteFailed" xml:space="preserve">
+    <value>Parola Kimlik Bilgisi Yöneticisi'ne yazılamadı (hata {0}).</value>
+  </data>
+  <data name="Editor_Black" xml:space="preserve">
+    <value>Siyah</value>
+  </data>
+  <data name="Editor_Blue" xml:space="preserve">
+    <value>Mavi</value>
+  </data>
+  <data name="Editor_Bold" xml:space="preserve">
+    <value>Kalın (Ctrl+B)</value>
+  </data>
+  <data name="Editor_BulletList" xml:space="preserve">
+    <value>Madde işaretli liste</value>
+  </data>
+  <data name="Editor_ClearFormatting" xml:space="preserve">
+    <value>Biçimlendirmeyi temizle</value>
+  </data>
+  <data name="Editor_Gray" xml:space="preserve">
+    <value>Gri</value>
+  </data>
+  <data name="Editor_Green" xml:space="preserve">
+    <value>Yeşil</value>
+  </data>
+  <data name="Editor_Insert" xml:space="preserve">
+    <value>Ekle</value>
+  </data>
+  <data name="Editor_InsertLink" xml:space="preserve">
+    <value>Bağlantı ekle</value>
+  </data>
+  <data name="Editor_Italic" xml:space="preserve">
+    <value>İtalik (Ctrl+I)</value>
+  </data>
+  <data name="Editor_NumberedList" xml:space="preserve">
+    <value>Numaralı liste</value>
+  </data>
+  <data name="Editor_Orange" xml:space="preserve">
+    <value>Turuncu</value>
+  </data>
+  <data name="Editor_Red" xml:space="preserve">
+    <value>Kırmızı</value>
+  </data>
+  <data name="Editor_SizeHuge" xml:space="preserve">
+    <value>Çok büyük</value>
+  </data>
+  <data name="Editor_SizeLarge" xml:space="preserve">
+    <value>Büyük</value>
+  </data>
+  <data name="Editor_SizeNormal" xml:space="preserve">
+    <value>Normal</value>
+  </data>
+  <data name="Editor_SizeSmall" xml:space="preserve">
+    <value>Küçük</value>
+  </data>
+  <data name="Editor_TextColor" xml:space="preserve">
+    <value>Yazı rengi</value>
+  </data>
+  <data name="Editor_TextSize" xml:space="preserve">
+    <value>Yazı boyutu</value>
+  </data>
+  <data name="Editor_Underline" xml:space="preserve">
+    <value>Altı çizili (Ctrl+U)</value>
+  </data>
+  <data name="Ews_AttachedMessageDownloadFailed" xml:space="preserve">
+    <value>Ekli ileti indirilemedi.</value>
+  </data>
+  <data name="Ews_AttachmentNotFound" xml:space="preserve">
+    <value>Ek bulunamadı.</value>
+  </data>
+  <data name="Ews_AuthFailed" xml:space="preserve">
+    <value>Kimlik doğrulama başarısız. Kullanıcı adı ve parolayı kontrol edin.</value>
+  </data>
+  <data name="Ews_AutoReplySettingsMissing" xml:space="preserve">
+    <value>Yanıtta otomatik yanıt ayarları yok.</value>
+  </data>
+  <data name="Ews_AvailabilityUnavailable" xml:space="preserve">
+    <value>Uygunluk bilgisi alınamadı.</value>
+  </data>
+  <data name="Ews_EmptyResponse" xml:space="preserve">
+    <value>Boş SOAP yanıtı alındı.</value>
+  </data>
+  <data name="Ews_EventNotFound" xml:space="preserve">
+    <value>Etkinlik bulunamadı.</value>
+  </data>
+  <data name="Ews_ItemIdMissing" xml:space="preserve">
+    <value>Yanıtta ItemId bulunamadı.</value>
+  </data>
+  <data name="Ews_MailboxRootNotFound" xml:space="preserve">
+    <value>Posta kutusu kök klasörü bulunamadı.</value>
+  </data>
+  <data name="Ews_MessageNotFound" xml:space="preserve">
+    <value>İleti bulunamadı.</value>
+  </data>
+  <data name="Ews_NoResponseMessage" xml:space="preserve">
+    <value>Yanıtta ResponseMessage yok.</value>
+  </data>
+  <data name="Ews_RecipientRequired" xml:space="preserve">
+    <value>En az bir alıcı gerekli.</value>
+  </data>
+  <data name="Ews_ReferenceItemRequired" xml:space="preserve">
+    <value>Yanıt ve iletme için ReferenceItemId gerekli.</value>
+  </data>
+  <data name="Ews_RootFolderMissing" xml:space="preserve">
+    <value>FindItem yanıtında RootFolder yok.</value>
+  </data>
+  <data name="Ews_ServerUnreachable" xml:space="preserve">
+    <value>Sunucuya ulaşılamadı: {0}</value>
+  </data>
+  <data name="Ews_SoapFault" xml:space="preserve">
+    <value>SOAP hatası</value>
+  </data>
+  <data name="Ews_Timeout" xml:space="preserve">
+    <value>Sunucu zamanında yanıt vermedi.</value>
+  </data>
+  <data name="Ews_UnexpectedResponse" xml:space="preserve">
+    <value>Sunucudan beklenmeyen yanıt alındı (HTTP {0} {1}). EWS adresini kontrol edin.</value>
+  </data>
+  <data name="Ews_UnknownError" xml:space="preserve">
+    <value>Bilinmeyen EWS hatası</value>
+  </data>
+  <data name="FreeBusy_Away" xml:space="preserve">
+    <value>Dışarıda</value>
+  </data>
+  <data name="FreeBusy_Busy" xml:space="preserve">
+    <value>Meşgul</value>
+  </data>
+  <data name="FreeBusy_Free" xml:space="preserve">
+    <value>Boş</value>
+  </data>
+  <data name="Login_Advanced" xml:space="preserve">
+    <value>Gelişmiş</value>
+  </data>
+  <data name="Login_Authentication" xml:space="preserve">
+    <value>Kimlik doğrulama</value>
+  </data>
+  <data name="Login_Autodiscovering" xml:space="preserve">
+    <value>Autodiscover ile sunucu aranıyor…</value>
+  </data>
+  <data name="Login_Connect" xml:space="preserve">
+    <value>Bağlan</value>
+  </data>
+  <data name="Login_ConnectingFormat" xml:space="preserve">
+    <value>{0} sunucusuna bağlanılıyor…</value>
+  </data>
+  <data name="Login_EmailAddress" xml:space="preserve">
+    <value>E-posta adresi</value>
+  </data>
+  <data name="Login_EmailPlaceholder" xml:space="preserve">
+    <value>ad.soyad@sirket.com.tr</value>
+  </data>
+  <data name="Login_EwsUrl" xml:space="preserve">
+    <value>EWS adresi</value>
+  </data>
+  <data name="Login_EwsUrlHint" xml:space="preserve">
+    <value>Boş bırakılırsa Autodiscover ile bulunur.</value>
+  </data>
+  <data name="Login_EwsUrlInvalid" xml:space="preserve">
+    <value>EWS adresi https:// ile başlayan tam bir adres olmalı (ör. https://mail.sirket.com/EWS/Exchange.asmx).</value>
+  </data>
+  <data name="Login_EwsUrlPlaceholder" xml:space="preserve">
+    <value>https://mail.sirket.com.tr/EWS/Exchange.asmx</value>
+  </data>
+  <data name="Login_Password" xml:space="preserve">
+    <value>Parola</value>
+  </data>
+  <data name="Login_PasswordRequired" xml:space="preserve">
+    <value>Parola girin veya Windows oturum bilgilerini kullanın.</value>
+  </data>
+  <data name="Login_RememberPassword" xml:space="preserve">
+    <value>Parolayı Windows Kimlik Bilgisi Yöneticisi'nde sakla</value>
+  </data>
+  <data name="Login_SavedPasswordMissing" xml:space="preserve">
+    <value>Kayıtlı parola bulunamadı. Parolanızı girip bağlanın; bir sonraki açılışta tekrar sorulmayacak.</value>
+  </data>
+  <data name="Login_Subtitle" xml:space="preserve">
+    <value>Şirket içi Exchange Server 2016 / 2019 / SE (Exchange Web Services)</value>
+  </data>
+  <data name="Login_Title" xml:space="preserve">
+    <value>Exchange hesabına bağlan</value>
+  </data>
+  <data name="Login_UserName" xml:space="preserve">
+    <value>Kullanıcı adı</value>
+  </data>
+  <data name="Login_UserNamePlaceholder" xml:space="preserve">
+    <value>ŞİRKET\kullanici (boş bırakılırsa e-posta adresi)</value>
+  </data>
+  <data name="Login_UserPassword" xml:space="preserve">
+    <value>Kullanıcı adı ve parola</value>
+  </data>
+  <data name="Login_UseWindows" xml:space="preserve">
+    <value>Windows oturumumu kullan (tek oturum açma)</value>
+  </data>
+  <data name="Mail_AttachmentSaveFailed" xml:space="preserve">
+    <value>Ek kaydedilemedi: {0}</value>
+  </data>
+  <data name="Mail_CcLabel" xml:space="preserve">
+    <value>Bilgi:</value>
+  </data>
+  <data name="Mail_ClearSearch" xml:space="preserve">
+    <value>Aramayı temizle</value>
+  </data>
+  <data name="Mail_ClickToSave" xml:space="preserve">
+    <value>Kaydetmek için tıklayın</value>
+  </data>
+  <data name="Mail_EditDraft" xml:space="preserve">
+    <value>Taslağı düzenle</value>
+  </data>
+  <data name="Mail_Empty" xml:space="preserve">
+    <value>Bu görünümde öğe yok</value>
+  </data>
+  <data name="Mail_FileType" xml:space="preserve">
+    <value>Dosya</value>
+  </data>
+  <data name="Mail_FileTypeFormat" xml:space="preserve">
+    <value>{0} dosyası</value>
+  </data>
+  <data name="Mail_FoldersLoadFailed" xml:space="preserve">
+    <value>Klasörler yüklenemedi: {0}</value>
+  </data>
+  <data name="Mail_Forward" xml:space="preserve">
+    <value>İlet</value>
+  </data>
+  <data name="Mail_HasAttachment" xml:space="preserve">
+    <value>Ek var</value>
+  </data>
+  <data name="Mail_HighImportance" xml:space="preserve">
+    <value>Yüksek önem</value>
+  </data>
+  <data name="Mail_ItemCount" xml:space="preserve">
+    <value>{0} öğe</value>
+  </data>
+  <data name="Mail_ItemCount_One" xml:space="preserve">
+    <value>{0} öğe</value>
+  </data>
+  <data name="Mail_MarkReadFailed" xml:space="preserve">
+    <value>Okundu olarak işaretlenemedi: {0}</value>
+  </data>
+  <data name="Mail_Meeting" xml:space="preserve">
+    <value>Toplantı</value>
+  </data>
+  <data name="Mail_MeetingInvitation" xml:space="preserve">
+    <value>Toplantı daveti</value>
+  </data>
+  <data name="Mail_MeetingInvitationHint" xml:space="preserve">
+    <value>Yanıtınız düzenleyene gönderilir ve toplantı takviminize işlenir.</value>
+  </data>
+  <data name="Mail_Move" xml:space="preserve">
+    <value>Taşı</value>
+  </data>
+  <data name="Mail_New" xml:space="preserve">
+    <value>Yeni posta</value>
+  </data>
+  <data name="Mail_NewTooltip" xml:space="preserve">
+    <value>Yeni posta (Ctrl+N)</value>
+  </data>
+  <data name="Mail_NoRecipient" xml:space="preserve">
+    <value>(alıcı yok)</value>
+  </data>
+  <data name="Mail_NoSender" xml:space="preserve">
+    <value>(gönderen yok)</value>
+  </data>
+  <data name="Mail_OpenFailed" xml:space="preserve">
+    <value>İleti açılamadı: {0}</value>
+  </data>
+  <data name="Mail_PermanentDeleteQuestion" xml:space="preserve">
+    <value>Bu ileti kalıcı olarak silinecek. Devam edilsin mi?</value>
+  </data>
+  <data name="Mail_PermanentDeleteTitle" xml:space="preserve">
+    <value>Kalıcı olarak sil</value>
+  </data>
+  <data name="Mail_RemoteImagesBlocked" xml:space="preserve">
+    <value>Gizliliğiniz için bu iletideki uzak resimler engellendi.</value>
+  </data>
+  <data name="Mail_Reply" xml:space="preserve">
+    <value>Yanıtla</value>
+  </data>
+  <data name="Mail_ReplyAll" xml:space="preserve">
+    <value>Tümünü yanıtla</value>
+  </data>
+  <data name="Mail_SavedTo" xml:space="preserve">
+    <value>Kaydedildi: {0}</value>
+  </data>
+  <data name="Mail_SearchPlaceholder" xml:space="preserve">
+    <value>Ara (ör. rapor, from:ali, hasattachment:yes)</value>
+  </data>
+  <data name="Mail_SelectItem" xml:space="preserve">
+    <value>Okumak için bir öğe seçin</value>
+  </data>
+  <data name="Mail_ShowImages" xml:space="preserve">
+    <value>Resimleri göster</value>
+  </data>
+  <data name="Mail_ToggleRead" xml:space="preserve">
+    <value>Okundu / okunmadı</value>
+  </data>
+  <data name="Mail_ToLabel" xml:space="preserve">
+    <value>Kime:</value>
+  </data>
+  <data name="Mail_WebViewFailed" xml:space="preserve">
+    <value>WebView2 başlatılamadı (Microsoft Edge WebView2 Runtime kurulu mu?): {0}</value>
+  </data>
+  <data name="Meeting_Accept" xml:space="preserve">
+    <value>Kabul et</value>
+  </data>
+  <data name="Meeting_Accepted" xml:space="preserve">
+    <value>Toplantı kabul edildi.</value>
+  </data>
+  <data name="Meeting_Decline" xml:space="preserve">
+    <value>Reddet</value>
+  </data>
+  <data name="Meeting_Declined" xml:space="preserve">
+    <value>Toplantı reddedildi.</value>
+  </data>
+  <data name="Meeting_ResponseFailed" xml:space="preserve">
+    <value>Yanıt gönderilemedi: {0}</value>
+  </data>
+  <data name="Meeting_TentativeSent" xml:space="preserve">
+    <value>Belki yanıtı gönderildi.</value>
+  </data>
+  <data name="Nav_Calendar" xml:space="preserve">
+    <value>Takvim</value>
+  </data>
+  <data name="Nav_Contacts" xml:space="preserve">
+    <value>Kişiler</value>
+  </data>
+  <data name="Nav_Mail" xml:space="preserve">
+    <value>Posta</value>
+  </data>
+  <data name="Nav_Settings" xml:space="preserve">
+    <value>Ayarlar</value>
+  </data>
+  <data name="Notification_NewMessage" xml:space="preserve">
+    <value>Yeni ileti</value>
+  </data>
+  <data name="Notification_NewMessages" xml:space="preserve">
+    <value>{0} yeni ileti</value>
+  </data>
+  <data name="Notification_NewMessages_One" xml:space="preserve">
+    <value>{0} yeni ileti</value>
+  </data>
+  <data name="Response_Accepted" xml:space="preserve">
+    <value>Kabul edildi</value>
+  </data>
+  <data name="Response_Declined" xml:space="preserve">
+    <value>Reddedildi</value>
+  </data>
+  <data name="Response_NotResponded" xml:space="preserve">
+    <value>Yanıt bekleniyor</value>
+  </data>
+  <data name="Response_Organizer" xml:space="preserve">
+    <value>Düzenleyen sizsiniz</value>
+  </data>
+  <data name="Response_Tentative" xml:space="preserve">
+    <value>Belki</value>
+  </data>
+  <data name="Settings_About" xml:space="preserve">
+    <value>Hakkında</value>
+  </data>
+  <data name="Settings_Account" xml:space="preserve">
+    <value>Hesap</value>
+  </data>
+  <data name="Settings_Appearance" xml:space="preserve">
+    <value>Görünüm</value>
+  </data>
+  <data name="Settings_Application" xml:space="preserve">
+    <value>Uygulama</value>
+  </data>
+  <data name="Settings_AutoReplies" xml:space="preserve">
+    <value>Otomatik yanıtlar (ofis dışında)</value>
+  </data>
+  <data name="Settings_Compose" xml:space="preserve">
+    <value>Yeni ileti yazma</value>
+  </data>
+  <data name="Settings_ComposeHint" xml:space="preserve">
+    <value>Yazma penceresi ve imza düzenleyicisi. Alıcılar iletiyi bu yazı tipi ve boyutta görür.</value>
+  </data>
+  <data name="Settings_ComposeSample" xml:space="preserve">
+    <value>Merhaba Ayşe Hanım, yarınki toplantı için gündemi paylaşıyorum.</value>
+  </data>
+  <data name="Settings_DefaultFont" xml:space="preserve">
+    <value>Varsayılan</value>
+  </data>
+  <data name="Settings_DefaultFontHeader" xml:space="preserve">
+    <value>Varsayılan yazı tipi</value>
+  </data>
+  <data name="Settings_Every15Minutes" xml:space="preserve">
+    <value>15 dakikada bir</value>
+  </data>
+  <data name="Settings_Every2Minutes" xml:space="preserve">
+    <value>2 dakikada bir</value>
+  </data>
+  <data name="Settings_Every30Seconds" xml:space="preserve">
+    <value>30 saniyede bir</value>
+  </data>
+  <data name="Settings_Every5Minutes" xml:space="preserve">
+    <value>5 dakikada bir</value>
+  </data>
+  <data name="Settings_EveryMinute" xml:space="preserve">
+    <value>Dakikada bir</value>
+  </data>
+  <data name="Settings_ExternalContactsOnly" xml:space="preserve">
+    <value>Yalnızca kişilerime</value>
+  </data>
+  <data name="Settings_ExternalEveryone" xml:space="preserve">
+    <value>Herkese</value>
+  </data>
+  <data name="Settings_ExternalReply" xml:space="preserve">
+    <value>Kuruluş dışına gönderilecek yanıt</value>
+  </data>
+  <data name="Settings_Font" xml:space="preserve">
+    <value>Yazı tipi</value>
+  </data>
+  <data name="Settings_FontRestartNeeded" xml:space="preserve">
+    <value>Arayüz yazı tipi değişikliği uygulama yeniden başlatılınca görünür.</value>
+  </data>
+  <data name="Settings_Fonts" xml:space="preserve">
+    <value>Yazı tipleri</value>
+  </data>
+  <data name="Settings_ForgetPassword" xml:space="preserve">
+    <value>Kayıtlı parolayı sil</value>
+  </data>
+  <data name="Settings_Interface" xml:space="preserve">
+    <value>Arayüz</value>
+  </data>
+  <data name="Settings_InterfaceHint" xml:space="preserve">
+    <value>Menüler, listeler ve düğmeler. Uygulama yeniden başlatılınca uygulanır.</value>
+  </data>
+  <data name="Settings_InterfaceSample" xml:space="preserve">
+    <value>Örnek: Gelen Kutusu · Yanıtla · Toplantı 14:30</value>
+  </data>
+  <data name="Settings_InternalReply" xml:space="preserve">
+    <value>Kuruluşumdaki kişilere gönderilecek yanıt</value>
+  </data>
+  <data name="Settings_InternalReplyPlaceholder" xml:space="preserve">
+    <value>Ör. 1-5 Kasım arasında izindeyim. Acil konular için Ali Veli'ye (ali.veli@sirket.com.tr) yazabilirsiniz.</value>
+  </data>
+  <data name="Settings_Language" xml:space="preserve">
+    <value>Dil (Language)</value>
+  </data>
+  <data name="Settings_LanguageHint" xml:space="preserve">
+    <value>Menüler, iletiler ve tarih biçimleri. Uygulama yeniden başlatılınca uygulanır.</value>
+  </data>
+  <data name="Settings_LanguageRestartNeeded" xml:space="preserve">
+    <value>Dil değişikliği uygulama yeniden başlatılınca görünür.</value>
+  </data>
+  <data name="Settings_MarkRead" xml:space="preserve">
+    <value>İletiyi okundu olarak işaretle</value>
+  </data>
+  <data name="Settings_MarkReadAfterDelay" xml:space="preserve">
+    <value>Birkaç saniye sonra</value>
+  </data>
+  <data name="Settings_MarkReadHint" xml:space="preserve">
+    <value>Okuma bölmesinde açılan okunmamış ileti ne zaman okundu sayılsın?</value>
+  </data>
+  <data name="Settings_MarkReadNever" xml:space="preserve">
+    <value>Hiçbir zaman (elle)</value>
+  </data>
+  <data name="Settings_MarkReadWhenSelected" xml:space="preserve">
+    <value>Seçildiğinde</value>
+  </data>
+  <data name="Settings_MinimizeToTray" xml:space="preserve">
+    <value>Kapatınca sistem tepsisine küçült</value>
+  </data>
+  <data name="Settings_MinimizeToTrayHint" xml:space="preserve">
+    <value>Pencereyi kapattığınızda Postacı arka planda yeni postaları denetlemeye ve bildirim göstermeye devam eder. Tamamen kapatmak için tepsi simgesine sağ tıklayıp Çıkış'ı seçin.</value>
+  </data>
+  <data name="Settings_Notifications" xml:space="preserve">
+    <value>Yeni posta bildirimleri</value>
+  </data>
+  <data name="Settings_NotificationsHint" xml:space="preserve">
+    <value>Gelen kutusuna yeni ileti düştüğünde Windows bildirimi gösterilir. Okunmamış sayısı görev çubuğu simgesinde görünür.</value>
+  </data>
+  <data name="Settings_OnlyDuringRange" xml:space="preserve">
+    <value>Yalnızca bu zaman aralığında gönder</value>
+  </data>
+  <data name="Settings_OverrideFonts" xml:space="preserve">
+    <value>İletilerin kendi yazı tiplerini de bu yazı tipiyle değiştir</value>
+  </data>
+  <data name="Settings_PasswordForgotten" xml:space="preserve">
+    <value>Kayıtlı parola silindi. Bir sonraki açılışta parola sorulacak.</value>
+  </data>
+  <data name="Settings_PrivacyNote" xml:space="preserve">
+    <value>Veriler yalnızca yapılandırılan Exchange sunucusuna gönderilir; uygulama telemetri toplamaz.</value>
+  </data>
+  <data name="Settings_Reading" xml:space="preserve">
+    <value>İleti okuma</value>
+  </data>
+  <data name="Settings_ReadingHint" xml:space="preserve">
+    <value>Okuma bölmesi ve takvim ayrıntıları. Okurken Ctrl + fare tekerleği ile de yakınlaştırabilirsiniz.</value>
+  </data>
+  <data name="Settings_ReadingSample" xml:space="preserve">
+    <value>Merhaba, toplantı notlarını ekte bulabilirsiniz. İyi çalışmalar.</value>
+  </data>
+  <data name="Settings_RefreshInterval" xml:space="preserve">
+    <value>Yeni posta denetimi</value>
+  </data>
+  <data name="Settings_RefreshIntervalHint" xml:space="preserve">
+    <value>Gelen kutusu ve klasör sayıları bu aralıkla yenilenir.</value>
+  </data>
+  <data name="Settings_RemoteImages" xml:space="preserve">
+    <value>Uzak resimleri her zaman göster</value>
+  </data>
+  <data name="Settings_RemoteImagesHint" xml:space="preserve">
+    <value>Kapalıyken izleme piksellerine karşı dış kaynaklı resimler engellenir.</value>
+  </data>
+  <data name="Settings_ReplyExternal" xml:space="preserve">
+    <value>Kuruluşum dışındaki kişilere de yanıt gönder</value>
+  </data>
+  <data name="Settings_RestartNow" xml:space="preserve">
+    <value>Şimdi yeniden başlat</value>
+  </data>
+  <data name="Settings_SaveAutoReplies" xml:space="preserve">
+    <value>Otomatik yanıtları kaydet</value>
+  </data>
+  <data name="Settings_SaveFailed" xml:space="preserve">
+    <value>Ayarlar kaydedilemedi: {0}</value>
+  </data>
+  <data name="Settings_SaveSignature" xml:space="preserve">
+    <value>İmzayı kaydet</value>
+  </data>
+  <data name="Settings_Seconds" xml:space="preserve">
+    <value>Saniye</value>
+  </data>
+  <data name="Settings_SecondsShort" xml:space="preserve">
+    <value>sn</value>
+  </data>
+  <data name="Settings_SendAutoReplies" xml:space="preserve">
+    <value>Otomatik yanıt gönder</value>
+  </data>
+  <data name="Settings_Server" xml:space="preserve">
+    <value>Sunucu (EWS)</value>
+  </data>
+  <data name="Settings_Signature" xml:space="preserve">
+    <value>İmza</value>
+  </data>
+  <data name="Settings_SignatureHint" xml:space="preserve">
+    <value>Yeni iletilerin, yanıtların ve iletmelerin sonuna eklenir.</value>
+  </data>
+  <data name="Settings_SignatureSaved" xml:space="preserve">
+    <value>İmza kaydedildi.</value>
+  </data>
+  <data name="Settings_SignatureSaveFailed" xml:space="preserve">
+    <value>İmza kaydedilemedi: {0}</value>
+  </data>
+  <data name="Settings_SignIn" xml:space="preserve">
+    <value>Oturum açma</value>
+  </data>
+  <data name="Settings_SignOut" xml:space="preserve">
+    <value>Oturumu kapat</value>
+  </data>
+  <data name="Settings_SignOutHint" xml:space="preserve">
+    <value>Uygulamayı pencereden kapatmak oturumu kapatmaz; bir sonraki açılışta otomatik bağlanılır. "Oturumu kapat" kayıtlı parolayı da siler.</value>
+  </data>
+  <data name="Settings_Size" xml:space="preserve">
+    <value>Boyut</value>
+  </data>
+  <data name="Settings_SizeExtraLarge" xml:space="preserve">
+    <value>Çok büyük (%130)</value>
+  </data>
+  <data name="Settings_SizeLarge" xml:space="preserve">
+    <value>Büyük (%115)</value>
+  </data>
+  <data name="Settings_SizeNormal" xml:space="preserve">
+    <value>Normal</value>
+  </data>
+  <data name="Settings_SizeSmall" xml:space="preserve">
+    <value>Küçük (%90)</value>
+  </data>
+  <data name="Settings_StartupChangeFailed" xml:space="preserve">
+    <value>Başlangıç ayarı değiştirilemedi: {0}</value>
+  </data>
+  <data name="Settings_StartWithWindows" xml:space="preserve">
+    <value>Windows açılışında başlat</value>
+  </data>
+  <data name="Settings_StartWithWindowsHint" xml:space="preserve">
+    <value>Windows'a giriş yaptığınızda Postacı sistem tepsisinde başlar ve kayıtlı hesapla bağlanır.</value>
+  </data>
+  <data name="Settings_Theme" xml:space="preserve">
+    <value>Tema</value>
+  </data>
+  <data name="Settings_ThemeDark" xml:space="preserve">
+    <value>Koyu</value>
+  </data>
+  <data name="Settings_ThemeLight" xml:space="preserve">
+    <value>Açık</value>
+  </data>
+  <data name="Settings_UseWindowsSetting" xml:space="preserve">
+    <value>Windows ayarını kullan</value>
+  </data>
+  <data name="Settings_VersionFormat" xml:space="preserve">
+    <value>Sürüm {0}</value>
+  </data>
+  <data name="Settings_WindowsSignIn" xml:space="preserve">
+    <value>Windows oturumu (tek oturum açma)</value>
+  </data>
+  <data name="Settings_Zoom" xml:space="preserve">
+    <value>Yakınlaştırma</value>
+  </data>
+  <data name="Tray_CheckMail" xml:space="preserve">
+    <value>Yeni postaları denetle</value>
+  </data>
+  <data name="Tray_Exit" xml:space="preserve">
+    <value>Çıkış</value>
+  </data>
+  <data name="Tray_Open" xml:space="preserve">
+    <value>{0}'yı aç</value>
+  </data>
+  <data name="Tray_StillRunningText" xml:space="preserve">
+    <value>Yeni postaları denetlemeye devam ediyor. Açmak için sistem tepsisindeki simgeye tıklayın; kapatmak için simgeye sağ tıklayıp Çıkış'ı seçin.</value>
+  </data>
+  <data name="Tray_StillRunningTitle" xml:space="preserve">
+    <value>{0} çalışmaya devam ediyor</value>
+  </data>
+  <data name="Tray_UnreadTooltip" xml:space="preserve">
+    <value>{0} – {1} okunmamış ileti</value>
+  </data>
+  <data name="Tray_UnreadTooltip_One" xml:space="preserve">
+    <value>{0} – {1} okunmamış ileti</value>
+  </data>
+</root>

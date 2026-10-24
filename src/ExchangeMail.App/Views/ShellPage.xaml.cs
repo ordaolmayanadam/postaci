@@ -20,7 +20,7 @@ public sealed partial class ShellPage : Page
         InitializeComponent();
         Loaded += (_, _) =>
         {
-            if (Nav.SettingsItem is NavigationViewItem settings) settings.Content = "Ayarlar";
+            if (Nav.SettingsItem is NavigationViewItem settings) settings.Content = Strings.Nav_Settings;
         };
     }
 

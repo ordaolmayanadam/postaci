@@ -15,7 +15,7 @@ namespace ExchangeMail.App.Controls;
 /// </summary>
 public sealed partial class HtmlEditor : UserControl
 {
-    private const string Document = """
+    private static string Document => $$"""
         <!DOCTYPE html><html><head><meta charset="utf-8">
         <meta http-equiv="Content-Security-Policy" content="img-src data:; style-src 'unsafe-inline'">
         <style>
@@ -23,11 +23,14 @@ public sealed partial class HtmlEditor : UserControl
           body{box-sizing:border-box;padding:12px 14px;color:#1a1a1a;background:#fff;outline:none;overflow-wrap:break-word}
           p{margin:0} img{max-width:100%} a{color:#0563c1}
           blockquote{margin:0 0 0 .8ex;border-left:2px solid #ccc;padding-left:1ex}
-        </style></head><body contenteditable="true" spellcheck="true" lang="tr"></body></html>
+        </style></head><body contenteditable="true" spellcheck="true" lang="{{Loc.Current}}"></body></html>
         """;
 
-    private static readonly (string Name, string Color)[] Colors =
-        [("Siyah", "#000000"), ("Kırmızı", "#C00000"), ("Mavi", "#0563C1"), ("Yeşil", "#00B050"), ("Turuncu", "#ED7D31"), ("Gri", "#7F7F7F")];
+    private static (string Name, string Color)[] Colors =>
+    [
+        (Strings.Editor_Black, "#000000"), (Strings.Editor_Red, "#C00000"), (Strings.Editor_Blue, "#0563C1"),
+        (Strings.Editor_Green, "#00B050"), (Strings.Editor_Orange, "#ED7D31"), (Strings.Editor_Gray, "#7F7F7F"),
+    ];
 
     private readonly WebView2 _web = new();
     private readonly TaskCompletionSource _ready = new(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -37,17 +40,17 @@ public sealed partial class HtmlEditor : UserControl
     public HtmlEditor()
     {
         var toolbar = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 2, Margin = new Thickness(0, 0, 0, 6) };
-        toolbar.Children.Add(ToolButton("", "Kalın (Ctrl+B)", () => ExecAsync("bold")));
-        toolbar.Children.Add(ToolButton("", "İtalik (Ctrl+I)", () => ExecAsync("italic")));
-        toolbar.Children.Add(ToolButton("", "Altı çizili (Ctrl+U)", () => ExecAsync("underline")));
+        toolbar.Children.Add(ToolButton("", Strings.Editor_Bold, () => ExecAsync("bold")));
+        toolbar.Children.Add(ToolButton("", Strings.Editor_Italic, () => ExecAsync("italic")));
+        toolbar.Children.Add(ToolButton("", Strings.Editor_Underline, () => ExecAsync("underline")));
         toolbar.Children.Add(ColorButton());
         toolbar.Children.Add(SizeButton());
         toolbar.Children.Add(Separator());
-        toolbar.Children.Add(ToolButton("", "Madde işaretli liste", () => ExecAsync("insertUnorderedList")));
-        toolbar.Children.Add(TextButton("1.", "Numaralı liste", () => ExecAsync("insertOrderedList")));
-        toolbar.Children.Add(ToolButton("", "Bağlantı ekle", InsertLinkAsync));
+        toolbar.Children.Add(ToolButton("", Strings.Editor_BulletList, () => ExecAsync("insertUnorderedList")));
+        toolbar.Children.Add(TextButton("1.", Strings.Editor_NumberedList, () => ExecAsync("insertOrderedList")));
+        toolbar.Children.Add(ToolButton("", Strings.Editor_InsertLink, InsertLinkAsync));
         toolbar.Children.Add(Separator());
-        toolbar.Children.Add(ToolButton("", "Biçimlendirmeyi temizle", () => ExecAsync("removeFormat")));
+        toolbar.Children.Add(ToolButton("", Strings.Editor_ClearFormatting, () => ExecAsync("removeFormat")));
 
         var frame = new Border
         {
@@ -170,10 +173,10 @@ public sealed partial class HtmlEditor : UserControl
         var box = new TextBox { PlaceholderText = "https://", MinWidth = 320 };
         var dialog = new ContentDialog
         {
-            Title = "Bağlantı ekle",
+            Title = Strings.Editor_InsertLink,
             Content = box,
-            PrimaryButtonText = "Ekle",
-            CloseButtonText = "İptal",
+            PrimaryButtonText = Strings.Editor_Insert,
+            CloseButtonText = Strings.Common_Cancel,
             DefaultButton = ContentDialogButton.Primary,
             XamlRoot = XamlRoot,
             RequestedTheme = ActualTheme,
@@ -228,19 +231,19 @@ public sealed partial class HtmlEditor : UserControl
             item.Click += async (_, _) => await ExecAsync("foreColor", color);
             flyout.Items.Add(item);
         }
-        return DropDown("", "Yazı rengi", flyout);
+        return DropDown("", Strings.Editor_TextColor, flyout);
     }
 
     private DropDownButton SizeButton()
     {
         var flyout = new MenuFlyout();
-        foreach (var (name, size) in new[] { ("Küçük", "2"), ("Normal", "3"), ("Büyük", "5"), ("Çok büyük", "6") })
+        foreach (var (name, size) in new[] { (Strings.Editor_SizeSmall, "2"), (Strings.Editor_SizeNormal, "3"), (Strings.Editor_SizeLarge, "5"), (Strings.Editor_SizeHuge, "6") })
         {
             var item = new MenuFlyoutItem { Text = name };
             item.Click += async (_, _) => await ExecAsync("fontSize", size);
             flyout.Items.Add(item);
         }
-        return DropDown("", "Yazı boyutu", flyout);
+        return DropDown("", Strings.Editor_TextSize, flyout);
     }
 
     private static DropDownButton DropDown(string glyph, string tooltip, MenuFlyout flyout)

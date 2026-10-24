@@ -62,8 +62,8 @@ public static class Dialogs
         {
             Title = title,
             Content = new TextBlock { Text = message, TextWrapping = TextWrapping.Wrap },
-            PrimaryButtonText = "Evet",
-            CloseButtonText = "Hayır",
+            PrimaryButtonText = Strings.Common_Yes,
+            CloseButtonText = Strings.Common_No,
             DefaultButton = ContentDialogButton.Close,
             XamlRoot = root,
             RequestedTheme = (root.Content as FrameworkElement)?.ActualTheme ?? ElementTheme.Default,

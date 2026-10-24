@@ -34,10 +34,10 @@ and sends data nowhere except the Exchange server you configure.
 > (Claude Code), directed and reviewed by the project owner. See [Built with AI](#built-with-ai) for what has and
 > has not been verified.
 
-> [!IMPORTANT]
-> **The user interface is in Turkish.** This English README gives the Turkish labels in **bold** followed by an
-> English translation in parentheses, so you can find your way around the app. Translating the UI is a welcome
-> contribution.
+> [!TIP]
+> **The interface is available in English and Turkish.** By default Postacı follows the Windows display language
+> (Turkish on Turkish Windows, English otherwise). You can change it under **Settings → Appearance → Language**;
+> the new language applies after a restart. Dates and times follow the chosen language too.
 
 ## Contents
 
@@ -64,6 +64,8 @@ and sends data nowhere except the Exchange server you configure.
 - **Desktop integration:** Windows notifications, system tray, taskbar badge, start with Windows.
 - **Safe reading:** scripts disabled in messages, remote images blocked by default.
 - **Single sign-on:** password-less connection with your Windows session on domain-joined PCs (Kerberos/NTLM).
+- **English and Turkish interface:** follows the Windows display language by default; change it under Settings →
+  Appearance → Language. Date and time formats follow the chosen language.
 
 ## Installation
 
@@ -96,11 +98,11 @@ installed from [Microsoft's page](https://developer.microsoft.com/microsoft-edge
 
 ### Uninstalling
 
-1. Quit the app (tray icon → **Çıkış** (Exit)).
-2. If **Windows açılışında başlat** (Start with Windows) is on in Settings, turn it off.
+1. Quit the app (tray icon → **Exit**).
+2. If **Start with Windows** is on in Settings, turn it off.
 3. Delete the app folder and the `%LOCALAPPDATA%\Postaci` folder.
 4. Optionally remove the saved password: **Control Panel → Credential Manager → Windows Credentials →**
-   `Postaci:<user>`. The **Oturumu kapat** (Sign out) button in Settings does this too.
+   `Postaci:<user>`. The **Sign out** button in Settings does this too.
 
 ## First connection
 
@@ -108,14 +110,14 @@ The connection screen appears on first launch:
 
 | Field | Description |
 |---|---|
-| **E-posta adresi** (Email address) | Your mailbox address. Autodiscover starts from its domain. |
-| **Kimlik doğrulama** (Authentication) | *Windows oturumumu kullan* (Use my Windows session): no password needed on domain-joined PCs. When off, a user name and password are requested. |
-| **Kullanıcı adı** (User name) | `DOMAIN\user` or `user@company.com`. If left empty, the email address is used. |
-| **Parolayı sakla** (Remember password) | The password is stored in Windows Credential Manager and used to connect automatically next time. |
-| **Gelişmiş → EWS adresi** (Advanced → EWS URL) | Enter it manually if Autodiscover fails: `https://mail.company.com/EWS/Exchange.asmx` |
+| **Email address** | Your mailbox address. Autodiscover starts from its domain. |
+| **Authentication** | *Use my Windows session (single sign-on)*: no password needed on domain-joined PCs. When off, a user name and password are requested. |
+| **User name** | `DOMAIN\user` or `user@company.com`. If left empty, the email address is used. |
+| **Save the password in Windows Credential Manager** | The password is stored in Windows Credential Manager and used to connect automatically next time. |
+| **Advanced → EWS URL** | Enter it manually if Autodiscover fails: `https://mail.company.com/EWS/Exchange.asmx` |
 
 After you connect, closing the window does not sign you out: the app minimizes to the system tray and keeps checking
-for new mail. To quit completely, right-click the tray icon and choose **Çıkış** (Exit).
+for new mail. To quit completely, right-click the tray icon and choose **Exit**.
 
 ### Exchange requirements
 
@@ -151,7 +153,7 @@ for new mail. To quit completely, right-click the tray icon and choose **Çıkı
 - **Autocomplete from the company directory** in the To, Cc and Bcc fields.
 - Add attachments by picking files or by **drag and drop**.
 - **Drafts:** every save from the same window updates the same draft. A message in the Drafts folder opens with
-  **Taslağı düzenle** (Edit draft) or a double-click, and can be edited and sent; attachments on the draft can be removed.
+  **Edit draft** or a double-click, and can be edited and sent; attachments on the draft can be removed.
 - In replies and forwards Exchange appends the original message; the quote appears in the editor when a saved reply draft is reopened.
 - A **rich-text signature** is added automatically to new messages, replies and forwards.
 - Closing the window with unsaved changes shows a warning.
@@ -168,8 +170,8 @@ for new mail. To quit completely, right-click the tray icon and choose **Çıkı
 
 ### Contacts
 
-- Switch between and search **Kişilerim** (My contacts, the Contacts folder) and **Şirket rehberi** (Company
-  directory, the Global Address List).
+- Switch between and search **My contacts** (the Contacts folder) and the **Company directory** (the Global
+  Address List).
 - Details: email, business and mobile phone, job title, department, company. Write an email with one click.
 - Add, edit and delete contacts; copy someone from the directory to your contacts.
 
@@ -184,12 +186,12 @@ for new mail. To quit completely, right-click the tray icon and choose **Çıkı
 
 | Section | Options |
 |---|---|
-| **Posta** (Mail) | When to mark as read, new-mail check interval, always show remote images, signature, notifications |
-| **Otomatik yanıtlar** (Automatic replies) | On/off, time range, internal and external reply text, external audience |
-| **Uygulama** (Application) | Minimize to tray on close, start with Windows |
-| **Görünüm** (Appearance) | Theme (Windows / light / dark) |
-| **Yazı tipleri** (Fonts) | Interface font and size (applied after restart), reading font and zoom, compose font and size |
-| **Hesap** (Account) | Email, server, sign-in method; delete saved password, sign out |
+| **Mail** | When to mark as read, new-mail check interval, always show remote images, signature, notifications |
+| **Automatic replies** | On/off, time range, internal and external reply text, external audience |
+| **Application** | Minimize to tray on close, start with Windows |
+| **Appearance** | Theme (Windows / light / dark), language (Windows / Türkçe / English, applied after restart) |
+| **Fonts** | Interface font and size (applied after restart), reading font and zoom, compose font and size |
+| **Account** | Email, server, sign-in method; delete saved password, sign out |
 
 ## Keyboard shortcuts
 
@@ -211,13 +213,13 @@ for new mail. To quit completely, right-click the tray icon and choose **Çıkı
 
 | Symptom | Likely cause and fix |
 |---|---|
-| "Autodiscover EWS adresini bulamadı" (Autodiscover could not find the EWS URL) | No Autodiscover DNS record, or it is not reachable. Enter the URL manually under **Gelişmiş → EWS adresi** (Advanced → EWS URL). |
-| "Kimlik doğrulama başarısız" (Authentication failed) | Try the other user name format (`DOMAIN\user` ↔ UPN). If Windows session sign-in is selected, make sure the PC is domain-joined. |
-| "Sunucuya ulaşılamadı" (Server unreachable) / certificate error | The server certificate is not trusted on this PC, or there is no network access. Open the EWS URL in a browser and check the certificate. |
+| "Autodiscover could not find the EWS URL" | No Autodiscover DNS record, or it is not reachable. Enter the URL manually under **Advanced → EWS URL**. |
+| "Authentication failed" | Try the other user name format (`DOMAIN\user` ↔ UPN). If Windows session sign-in is selected, make sure the PC is domain-joined. |
+| "Could not reach the server" / certificate error | The server certificate is not trusted on this PC, or there is no network access. Open the EWS URL in a browser and check the certificate. |
 | `ErrorServerBusy` | Exchange throttling limit reached. Postacı automatically waits and retries; if it persists, increase the check interval. |
-| Empty message body / "WebView2 başlatılamadı" (WebView2 could not start) | WebView2 Runtime is missing. Install it [from Microsoft](https://developer.microsoft.com/microsoft-edge/webview2/). |
+| Empty message body / "Could not start WebView2" | WebView2 Runtime is missing. Install it [from Microsoft](https://developer.microsoft.com/microsoft-edge/webview2/). |
 | No notifications | Check that Postacı is allowed under Windows Settings → Notifications and that Do Not Disturb is off. Notifications must also be enabled in Postacı's Settings. |
-| Password requested on every launch | **Parolayı sakla** (Remember password) must be checked when connecting. Check that a `Postaci:<user>` entry exists in Credential Manager. |
+| Password requested on every launch | **Save the password in Windows Credential Manager** must be checked when connecting. Check that a `Postaci:<user>` entry exists in Credential Manager. |
 | Calendar times are shifted | Check the Windows time zone; Postacı sends the Windows time zone to Exchange with calendar requests. |
 
 When reporting a bug, please use the [bug template](.github/ISSUE_TEMPLATE/bug_report.yml) and **do not share real
@@ -298,7 +300,7 @@ flowchart LR
 
 | Project | Target | Responsibility |
 |---|---|---|
-| `src/ExchangeMail.Core` | `net10.0` | EWS client (raw SOAP over `HttpClient`), Autodiscover, models. Knows nothing about the UI. |
+| `src/ExchangeMail.Core` | `net10.0` | EWS client (raw SOAP over `HttpClient`), Autodiscover, models, Turkish/English text resources. Knows nothing about the UI. |
 | `src/ExchangeMail.ViewModels` | `net10.0` | MVVM layer ([CommunityToolkit.Mvvm](https://learn.microsoft.com/dotnet/communitytoolkit/mvvm/)), preferences, HTML helpers. No WinUI dependency. |
 | `src/ExchangeMail.App` | `net10.0-windows` | WinUI 3 UI, WebView2, Windows services. Unpackaged (`WindowsPackageType=None`) and self-contained. |
 | `tests/ExchangeMail.Core.Tests` | `net10.0` | Unit tests (xUnit v3) against a fake EWS server (`FakeEwsServer`). They also verify the structure and order of the SOAP requests sent. |
@@ -347,7 +349,6 @@ See the [security policy](SECURITY.en.md) for reporting vulnerabilities.
 
 ## Known limitations and roadmap
 
-- The UI is available in Turkish only.
 - No Tasks.
 - Editing an entire recurring series is not supported; changes made in the grid affect only that occurrence.
 - Event duration cannot be changed by dragging an edge in the grid; change it in the edit dialog.

@@ -68,7 +68,7 @@ public sealed class CredentialManagerStore : ICredentialStore
                 UserName = userName,
             };
             if (!CredWriteW(ref credential, 0))
-                throw new InvalidOperationException($"Parola Kimlik Bilgisi Yöneticisi'ne yazılamadı (hata {Marshal.GetLastWin32Error()}).");
+                throw new InvalidOperationException(Loc.Format(Strings.Credentials_WriteFailed, Marshal.GetLastWin32Error()));
         }
         finally
         {

@@ -14,7 +14,7 @@ public sealed partial class EwsClient
         var response = await ExecuteAsync(request, ct);
         EnsureOofSuccess(response);
 
-        var settings = response.Element(TNs + "OofSettings") ?? throw new EwsException("Yanıtta otomatik yanıt ayarları yok.");
+        var settings = response.Element(TNs + "OofSettings") ?? throw new EwsException(Strings.Ews_AutoReplySettingsMissing);
         var duration = settings.Element(TNs + "Duration");
         return new AutoReplySettings(
             Enum.TryParse<AutoReplyState>((string?)settings.Element(TNs + "OofState"), out var state) ? state : AutoReplyState.Disabled,
@@ -28,7 +28,7 @@ public sealed partial class EwsClient
     public async Task SetAutoReplyAsync(string mailbox, AutoReplySettings settings, CancellationToken ct = default)
     {
         if (settings.State == AutoReplyState.Scheduled && !(settings.Start < settings.End))
-            throw new ArgumentException("Bitiş zamanı başlangıçtan sonra olmalı.", nameof(settings));
+            throw new ArgumentException(Strings.Common_EndBeforeStart, nameof(settings));
 
         // Exchange always expects a valid window, even when replies are not scheduled.
         var start = settings.Start ?? DateTimeOffset.UtcNow;
@@ -50,10 +50,10 @@ public sealed partial class EwsClient
     private static void EnsureOofSuccess(XElement response)
     {
         var message = response.Elements().FirstOrDefault(e => e.Name.LocalName == "ResponseMessage")
-                      ?? throw new EwsException("Yanıtta ResponseMessage yok.");
+                      ?? throw new EwsException(Strings.Ews_NoResponseMessage);
         if ((string?)message.Attribute("ResponseClass") != "Error") return;
         var code = message.Elements().FirstOrDefault(e => e.Name.LocalName == "ResponseCode")?.Value;
-        var text = message.Elements().FirstOrDefault(e => e.Name.LocalName == "MessageText")?.Value ?? code ?? "Bilinmeyen EWS hatası";
+        var text = message.Elements().FirstOrDefault(e => e.Name.LocalName == "MessageText")?.Value ?? code ?? Strings.Ews_UnknownError;
         throw new EwsException(text, code);
     }
 

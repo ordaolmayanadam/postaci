@@ -125,7 +125,7 @@ public sealed partial class MainViewModel : ObservableObject
         }
         catch (EwsException ex)
         {
-            ErrorMessage = "Klasörler yüklenemedi: " + ex.Message;
+            ErrorMessage = Loc.Format(Strings.Mail_FoldersLoadFailed, ex.Message);
         }
     }
 
@@ -166,7 +166,9 @@ public sealed partial class MainViewModel : ObservableObject
                 _knownInboxIds ??= page.Items.Select(i => i.ItemId.Id).ToHashSet();
             _nextOffset = page.NextOffset;
             HasMore = !page.IsLastPage;
-            StatusText = IsSearchActive ? $"{page.TotalCount} sonuç" : $"{page.TotalCount} öğe";
+            StatusText = IsSearchActive
+                ? Loc.Count(page.TotalCount, Strings.Common_ResultCount_One, Strings.Common_ResultCount)
+                : Loc.Count(page.TotalCount, Strings.Mail_ItemCount_One, Strings.Mail_ItemCount);
         }
         catch (OperationCanceledException)
         {
@@ -215,7 +217,7 @@ public sealed partial class MainViewModel : ObservableObject
             if (!ct.IsCancellationRequested)
             {
                 Current = null;
-                ErrorMessage = "İleti açılamadı: " + ex.Message;
+                ErrorMessage = Loc.Format(Strings.Mail_OpenFailed, ex.Message);
             }
         }
         finally
@@ -232,7 +234,7 @@ public sealed partial class MainViewModel : ObservableObject
         }
         catch (EwsException ex)
         {
-            ErrorMessage = "Okundu olarak işaretlenemedi: " + ex.Message; // the message is still shown
+            ErrorMessage = Loc.Format(Strings.Mail_MarkReadFailed, ex.Message); // the message is still shown
         }
     }
 
@@ -329,7 +331,7 @@ public sealed partial class MainViewModel : ObservableObject
         if (SelectedMessage is not { } item) return;
         var permanent = SelectedFolder?.WellKnown == WellKnownFolder.DeletedItems;
         if (permanent && ConfirmAsync is not null
-            && !await ConfirmAsync("Kalıcı olarak sil", "Bu ileti kalıcı olarak silinecek. Devam edilsin mi?"))
+            && !await ConfirmAsync(Strings.Mail_PermanentDeleteTitle, Strings.Mail_PermanentDeleteQuestion))
             return;
 
         await RemoveFromListAsync(item, () => Client.DeleteItemsAsync([item.Id], permanent ? DeleteMode.SoftDelete : DeleteMode.MoveToDeletedItems));
@@ -388,9 +390,9 @@ public sealed partial class MainViewModel : ObservableObject
         await RemoveFromListAsync(item, () => Client.RespondToMeetingAsync(item.Id, kind));
         StatusText = kind switch
         {
-            MeetingResponse.Accept => "Toplantı kabul edildi.",
-            MeetingResponse.Tentative => "Toplantıya belki yanıtı gönderildi.",
-            _ => "Toplantı reddedildi.",
+            MeetingResponse.Accept => Strings.Meeting_Accepted,
+            MeetingResponse.Tentative => Strings.Meeting_TentativeSent,
+            _ => Strings.Meeting_Declined,
         };
     }
 

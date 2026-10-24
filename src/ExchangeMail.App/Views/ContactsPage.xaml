@@ -28,13 +28,13 @@
 
             <StackPanel Padding="12,12,12,4" Spacing="10">
                 <Grid>
-                    <TextBlock Text="Kişiler" Style="{StaticResource SubtitleTextBlockStyle}" />
+                    <TextBlock Text="{h:L Key=Nav_Contacts}" Style="{StaticResource SubtitleTextBlockStyle}" />
                     <StackPanel HorizontalAlignment="Right" Orientation="Horizontal" Spacing="8">
                         <ProgressRing Width="16" Height="16" IsActive="{x:Bind ViewModel.IsLoading, Mode=OneWay}" />
-                        <Button Click="OnNewContact" ToolTipService.ToolTip="Yeni kişi (Ctrl+N)">
+                        <Button Click="OnNewContact" ToolTipService.ToolTip="{h:L Key=Contacts_NewTooltip}">
                             <StackPanel Orientation="Horizontal" Spacing="6">
                                 <FontIcon Glyph="&#xE8FA;" FontSize="14" />
-                                <TextBlock Text="Yeni kişi" />
+                                <TextBlock Text="{h:L Key=Contacts_New}" />
                             </StackPanel>
                             <Button.KeyboardAccelerators>
                                 <KeyboardAccelerator Key="N" Modifiers="Control" />
@@ -43,8 +43,8 @@
                     </StackPanel>
                 </Grid>
                 <RadioButtons MaxColumns="2" SelectedIndex="{x:Bind ViewModel.SourceIndex, Mode=TwoWay}">
-                    <x:String>Kişilerim</x:String>
-                    <x:String>Şirket rehberi</x:String>
+                    <RadioButton Content="{h:L Key=Contacts_Mine}" />
+                    <RadioButton Content="{h:L Key=Contacts_Directory}" />
                 </RadioButtons>
                 <AutoSuggestBox
                     x:Name="SearchBox"
@@ -100,7 +100,7 @@
                     <Button
                         Margin="0,8,0,16"
                         HorizontalAlignment="Center"
-                        Content="Daha fazla yükle"
+                        Content="{h:L Key=Common_LoadMore}"
                         Command="{x:Bind ViewModel.LoadMoreCommand}"
                         Visibility="{x:Bind ViewModel.HasMore, Mode=OneWay}" />
                 </ListView.Footer>
@@ -127,7 +127,7 @@
                 Spacing="8"
                 Visibility="{x:Bind h:Ui.VisibleIfNot(ViewModel.HasSelection), Mode=OneWay}">
                 <FontIcon Glyph="&#xE716;" FontSize="48" Foreground="{ThemeResource TextFillColorTertiaryBrush}" />
-                <TextBlock Text="Ayrıntıları görmek için bir kişi seçin" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                <TextBlock Text="{h:L Key=Contacts_SelectContact}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
             </StackPanel>
 
             <StackPanel
@@ -155,25 +155,25 @@
                     <Button Command="{x:Bind ViewModel.SendMailCommand}" Style="{StaticResource AccentButtonStyle}">
                         <StackPanel Orientation="Horizontal" Spacing="8">
                             <FontIcon Glyph="&#xE715;" FontSize="14" />
-                            <TextBlock Text="E-posta gönder" />
+                            <TextBlock Text="{h:L Key=Contacts_SendEmail}" />
                         </StackPanel>
                     </Button>
                     <Button Command="{x:Bind ViewModel.AddToContactsCommand}" Visibility="{x:Bind ViewModel.Selected.IsDirectoryEntry, Mode=OneWay, FallbackValue=Collapsed}">
                         <StackPanel Orientation="Horizontal" Spacing="8">
                             <FontIcon Glyph="&#xE8FA;" FontSize="14" />
-                            <TextBlock Text="Kişilerime ekle" />
+                            <TextBlock Text="{h:L Key=Contacts_AddToMine}" />
                         </StackPanel>
                     </Button>
                     <Button Command="{x:Bind ViewModel.EditCommand}" Visibility="{x:Bind h:Ui.VisibleIfNot(ViewModel.IsDirectory), Mode=OneWay}">
                         <StackPanel Orientation="Horizontal" Spacing="8">
                             <FontIcon Glyph="&#xE70F;" FontSize="14" />
-                            <TextBlock Text="Düzenle" />
+                            <TextBlock Text="{h:L Key=Common_Edit}" />
                         </StackPanel>
                     </Button>
                     <Button Command="{x:Bind ViewModel.DeleteCommand}" Visibility="{x:Bind h:Ui.VisibleIfNot(ViewModel.IsDirectory), Mode=OneWay}">
                         <StackPanel Orientation="Horizontal" Spacing="8">
                             <FontIcon Glyph="&#xE74D;" FontSize="14" />
-                            <TextBlock Text="Sil" />
+                            <TextBlock Text="{h:L Key=Common_Delete}" />
                         </StackPanel>
                     </Button>
                 </StackPanel>
@@ -195,11 +195,11 @@
                         <RowDefinition Height="Auto" />
                         <RowDefinition Height="Auto" />
                     </Grid.RowDefinitions>
-                    <TextBlock Text="E-posta" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                    <TextBlock Text="{h:L Key=Common_Email}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                     <TextBlock Grid.Column="1" Text="{x:Bind ViewModel.Selected.Email, Mode=OneWay}" IsTextSelectionEnabled="True" />
-                    <TextBlock Grid.Row="1" Text="İş telefonu" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                    <TextBlock Grid.Row="1" Text="{h:L Key=Contacts_BusinessPhone}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                     <TextBlock Grid.Row="1" Grid.Column="1" Text="{x:Bind ViewModel.Selected.BusinessPhone, Mode=OneWay}" IsTextSelectionEnabled="True" />
-                    <TextBlock Grid.Row="2" Text="Cep telefonu" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                    <TextBlock Grid.Row="2" Text="{h:L Key=Contacts_MobilePhone}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                     <TextBlock Grid.Row="2" Grid.Column="1" Text="{x:Bind ViewModel.Selected.MobilePhone, Mode=OneWay}" IsTextSelectionEnabled="True" />
                 </Grid>
             </StackPanel>

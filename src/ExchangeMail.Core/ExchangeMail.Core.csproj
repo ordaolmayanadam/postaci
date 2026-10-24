@@ -2,8 +2,20 @@
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
     <RootNamespace>ExchangeMail.Core</RootNamespace>
+    <!-- Strings.resx holds Turkish; other languages are satellite assemblies (Strings.<lang>.resx). -->
+    <NeutralLanguage>tr</NeutralLanguage>
   </PropertyGroup>
   <ItemGroup>
     <InternalsVisibleTo Include="ExchangeMail.Core.Tests" />
+    <Using Include="ExchangeMail.Core.Localization" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Update="Localization\Strings.resx">
+      <StronglyTypedFileName>$(IntermediateOutputPath)Strings.Designer.cs</StronglyTypedFileName>
+      <StronglyTypedLanguage>CSharp</StronglyTypedLanguage>
+      <StronglyTypedNamespace>ExchangeMail.Core.Localization</StronglyTypedNamespace>
+      <StronglyTypedClassName>Strings</StronglyTypedClassName>
+      <PublicClass>true</PublicClass>
+    </EmbeddedResource>
   </ItemGroup>
 </Project>

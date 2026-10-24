@@ -45,7 +45,7 @@ public sealed partial class EwsClient
             M("ItemIds", ItemIdElement(id)));
 
         var item = Single(await ExecuteAsync(request, ct, withTimeZone: true)).Element(MNs + "Items")?.Elements().FirstOrDefault()
-                   ?? throw new EwsException("Etkinlik bulunamadı.", "ErrorItemNotFound");
+                   ?? throw new EwsException(Strings.Ews_EventNotFound, "ErrorItemNotFound");
         var body = item.Element(TNs + "Body");
 
         return new CalendarEventDetail(
@@ -66,7 +66,7 @@ public sealed partial class EwsClient
         bool notifyAttendees, CancellationToken ct = default)
     {
         if (appointment.End <= appointment.Start)
-            throw new ArgumentException("Bitiş zamanı başlangıçtan sonra olmalı.", nameof(appointment));
+            throw new ArgumentException(Strings.Common_EndBeforeStart, nameof(appointment));
 
         var updates = new List<XElement>
         {
@@ -142,7 +142,7 @@ public sealed partial class EwsClient
             if (r is null || (string?)message?.Attribute("ResponseClass") == "Error")
             {
                 var text = message?.Elements().FirstOrDefault(e => e.Name.LocalName == "MessageText")?.Value;
-                list.Add(new AttendeeAvailability(addresses[i], [], text ?? "Uygunluk bilgisi alınamadı."));
+                list.Add(new AttendeeAvailability(addresses[i], [], text ?? Strings.Ews_AvailabilityUnavailable));
                 continue;
             }
             var busy = r.Descendants(TNs + "CalendarEvent").Select(e => new BusyInterval(
@@ -166,7 +166,7 @@ public sealed partial class EwsClient
     public async Task<EwsItemId> CreateAppointmentAsync(NewAppointment appointment, CancellationToken ct = default)
     {
         if (appointment.End <= appointment.Start)
-            throw new ArgumentException("Bitiş zamanı başlangıçtan sonra olmalı.", nameof(appointment));
+            throw new ArgumentException(Strings.Common_EndBeforeStart, nameof(appointment));
 
         var isMeeting = appointment.RequiredAttendees.Count + appointment.OptionalAttendees.Count > 0;
         // Element order follows the EWS schema (ItemType fields, then CalendarItemType fields).

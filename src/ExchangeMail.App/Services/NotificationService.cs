@@ -26,7 +26,7 @@ public sealed class NotificationService
         catch (Exception ex)
         {
             // Notifications are a convenience; mail keeps working without them.
-            Debug.WriteLine("Bildirimler kullanılamıyor: " + ex);
+            Debug.WriteLine("Notifications are unavailable: " + ex);
         }
     }
 
@@ -54,8 +54,8 @@ public sealed class NotificationService
         {
             var mail = items[0];
             builder.AddArgument("action", "open").AddArgument("id", mail.ItemId.Id)
-                .AddText(mail.From?.Display ?? "Yeni ileti")
-                .AddText(string.IsNullOrWhiteSpace(mail.Subject) ? "(Konu yok)" : mail.Subject);
+                .AddText(mail.From?.Display ?? Strings.Notification_NewMessage)
+                .AddText(string.IsNullOrWhiteSpace(mail.Subject) ? Strings.Common_NoSubject : mail.Subject);
             if (mail.Preview.Length > 0)
                 builder.AddText(mail.Preview.Length > 140 ? mail.Preview[..140] + "…" : mail.Preview);
         }
@@ -63,7 +63,7 @@ public sealed class NotificationService
         {
             var senders = items.Select(i => i.From?.Display).OfType<string>().Distinct().Take(3);
             builder.AddArgument("action", "inbox")
-                .AddText($"{items.Count} yeni ileti")
+                .AddText(Loc.Count(items.Count, Strings.Notification_NewMessages_One, Strings.Notification_NewMessages))
                 .AddText(string.Join(", ", senders));
         }
 

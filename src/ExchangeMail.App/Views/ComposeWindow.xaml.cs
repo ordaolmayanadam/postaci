@@ -61,7 +61,7 @@ public sealed partial class ComposeWindow : Window
             }
             catch (Exception ex)
             {
-                ViewModel.ErrorMessage = "Düzenleyici başlatılamadı (WebView2 Runtime kurulu mu?): " + ex.Message;
+                ViewModel.ErrorMessage = Loc.Format(Strings.Compose_EditorFailed, ex.Message);
             }
         };
     }
@@ -84,8 +84,7 @@ public sealed partial class ComposeWindow : Window
             // editor never started; nothing typed
         }
 
-        if (!changed || await ConfirmAsync("İleti gönderilmedi",
-                "Yazdıklarınız kaybolacak. Pencere kapatılsın mı? (Saklamak için önce \"Taslak kaydet\"i kullanın.)"))
+        if (!changed || await ConfirmAsync(Strings.Compose_DiscardTitle, Strings.Compose_DiscardQuestion))
         {
             _canClose = true;
             Close();
@@ -133,7 +132,7 @@ public sealed partial class ComposeWindow : Window
         if (e.DataView.Contains(StandardDataFormats.StorageItems))
         {
             e.AcceptedOperation = DataPackageOperation.Copy;
-            e.DragUIOverride.Caption = "Ek olarak ekle";
+            e.DragUIOverride.Caption = Strings.Compose_DropCaption;
         }
     }
 
@@ -154,7 +153,7 @@ public sealed partial class ComposeWindow : Window
             }
             catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
             {
-                ViewModel.ErrorMessage = $"{file.Name} eklenemedi: {ex.Message}";
+                ViewModel.ErrorMessage = Loc.Format(Strings.Compose_AttachFailed, file.Name, ex.Message);
             }
         }
     }

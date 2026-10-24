@@ -28,10 +28,10 @@
                 HorizontalAlignment="Stretch"
                 Style="{StaticResource AccentButtonStyle}"
                 Command="{x:Bind ViewModel.NewMailCommand}"
-                ToolTipService.ToolTip="Yeni posta (Ctrl+N)">
+                ToolTipService.ToolTip="{h:L Key=Mail_NewTooltip}">
                 <StackPanel Orientation="Horizontal" Spacing="8">
                     <FontIcon Glyph="&#xE710;" FontSize="14" />
-                    <TextBlock Text="Yeni posta" />
+                    <TextBlock Text="{h:L Key=Mail_New}" />
                 </StackPanel>
                 <Button.KeyboardAccelerators>
                     <KeyboardAccelerator Key="N" Modifiers="Control" />
@@ -92,7 +92,7 @@
             <StackPanel Padding="12,12,12,4" Spacing="10">
                 <AutoSuggestBox
                     x:Name="SearchBox"
-                    PlaceholderText="Ara (ör. rapor, from:ali, hasattachment:yes)"
+                    PlaceholderText="{h:L Key=Mail_SearchPlaceholder}"
                     QueryIcon="Find"
                     Text="{x:Bind ViewModel.SearchText, Mode=TwoWay}"
                     QuerySubmitted="OnSearchSubmitted">
@@ -107,7 +107,7 @@
                         TextTrimming="CharacterEllipsis" />
                     <StackPanel HorizontalAlignment="Right" Orientation="Horizontal" Spacing="8">
                         <HyperlinkButton
-                            Content="Aramayı temizle"
+                            Content="{h:L Key=Mail_ClearSearch}"
                             Command="{x:Bind ViewModel.ClearSearchCommand}"
                             Visibility="{x:Bind ViewModel.IsSearchActive, Mode=OneWay}" />
                         <ProgressRing Width="16" Height="16" IsActive="{x:Bind ViewModel.IsLoadingList, Mode=OneWay}" />
@@ -127,7 +127,7 @@
                 Grid.Row="2"
                 Margin="0,48,0,0"
                 HorizontalAlignment="Center"
-                Text="Bu görünümde öğe yok"
+                Text="{h:L Key=Mail_Empty}"
                 Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                 Visibility="{x:Bind ViewModel.IsListEmpty, Mode=OneWay}" />
 
@@ -168,20 +168,20 @@
                                         Grid.Column="1"
                                         Glyph="&#xE787;"
                                         FontSize="12"
-                                        ToolTipService.ToolTip="Toplantı"
+                                        ToolTipService.ToolTip="{h:L Key=Mail_Meeting}"
                                         Visibility="{x:Bind IsMeeting}" />
                                     <FontIcon
                                         Grid.Column="2"
                                         Glyph="&#xE8C9;"
                                         FontSize="12"
                                         Foreground="{ThemeResource SystemFillColorCriticalBrush}"
-                                        ToolTipService.ToolTip="Yüksek önem"
+                                        ToolTipService.ToolTip="{h:L Key=Mail_HighImportance}"
                                         Visibility="{x:Bind IsHighImportance}" />
                                     <FontIcon
                                         Grid.Column="3"
                                         Glyph="&#xE723;"
                                         FontSize="12"
-                                        ToolTipService.ToolTip="Ek var"
+                                        ToolTipService.ToolTip="{h:L Key=Mail_HasAttachment}"
                                         Visibility="{x:Bind HasAttachments}" />
                                     <TextBlock
                                         Grid.Column="4"
@@ -209,7 +209,7 @@
                     <Button
                         Margin="0,8,0,16"
                         HorizontalAlignment="Center"
-                        Content="Daha fazla yükle"
+                        Content="{h:L Key=Common_LoadMore}"
                         Command="{x:Bind ViewModel.LoadMoreCommand}"
                         Visibility="{x:Bind ViewModel.HasMore, Mode=OneWay}" />
                 </ListView.Footer>
@@ -237,37 +237,37 @@
             <CommandBar HorizontalAlignment="Left" Background="Transparent" DefaultLabelPosition="Right">
                 <AppBarButton
                     Icon="Edit"
-                    Label="Taslağı düzenle"
+                    Label="{h:L Key=Mail_EditDraft}"
                     Command="{x:Bind ViewModel.EditDraftCommand}"
                     Visibility="{x:Bind ViewModel.IsDraftsFolder, Mode=OneWay}" />
-                <AppBarButton Icon="MailReply" Label="Yanıtla" Command="{x:Bind ViewModel.ReplyCommand}">
+                <AppBarButton Icon="MailReply" Label="{h:L Key=Mail_Reply}" Command="{x:Bind ViewModel.ReplyCommand}">
                     <AppBarButton.KeyboardAccelerators>
                         <KeyboardAccelerator Key="R" Modifiers="Control" />
                     </AppBarButton.KeyboardAccelerators>
                 </AppBarButton>
-                <AppBarButton Icon="MailReplyAll" Label="Tümünü yanıtla" Command="{x:Bind ViewModel.ReplyAllCommand}">
+                <AppBarButton Icon="MailReplyAll" Label="{h:L Key=Mail_ReplyAll}" Command="{x:Bind ViewModel.ReplyAllCommand}">
                     <AppBarButton.KeyboardAccelerators>
                         <KeyboardAccelerator Key="R" Modifiers="Control,Shift" />
                     </AppBarButton.KeyboardAccelerators>
                 </AppBarButton>
-                <AppBarButton Icon="MailForward" Label="İlet" Command="{x:Bind ViewModel.ForwardCommand}">
+                <AppBarButton Icon="MailForward" Label="{h:L Key=Mail_Forward}" Command="{x:Bind ViewModel.ForwardCommand}">
                     <AppBarButton.KeyboardAccelerators>
                         <KeyboardAccelerator Key="F" Modifiers="Control" />
                     </AppBarButton.KeyboardAccelerators>
                 </AppBarButton>
                 <AppBarSeparator />
-                <AppBarButton Icon="Delete" Label="Sil" Command="{x:Bind ViewModel.DeleteCommand}" />
-                <AppBarButton Icon="MoveToFolder" Label="Taşı" IsEnabled="{x:Bind h:Ui.IsNotNull(ViewModel.SelectedMessage), Mode=OneWay}">
+                <AppBarButton Icon="Delete" Label="{h:L Key=Common_Delete}" Command="{x:Bind ViewModel.DeleteCommand}" />
+                <AppBarButton Icon="MoveToFolder" Label="{h:L Key=Mail_Move}" IsEnabled="{x:Bind h:Ui.IsNotNull(ViewModel.SelectedMessage), Mode=OneWay}">
                     <AppBarButton.Flyout>
                         <MenuFlyout x:Name="MoveFlyout" Opening="OnMoveFlyoutOpening" />
                     </AppBarButton.Flyout>
                 </AppBarButton>
-                <AppBarButton Icon="Read" Label="Okundu / okunmadı" Command="{x:Bind ViewModel.ToggleReadCommand}">
+                <AppBarButton Icon="Read" Label="{h:L Key=Mail_ToggleRead}" Command="{x:Bind ViewModel.ToggleReadCommand}">
                     <AppBarButton.KeyboardAccelerators>
                         <KeyboardAccelerator Key="Q" Modifiers="Control" />
                     </AppBarButton.KeyboardAccelerators>
                 </AppBarButton>
-                <AppBarButton Icon="Refresh" Label="Yenile" Command="{x:Bind ViewModel.RefreshCommand}">
+                <AppBarButton Icon="Refresh" Label="{h:L Key=Common_Refresh}" Command="{x:Bind ViewModel.RefreshCommand}">
                     <AppBarButton.KeyboardAccelerators>
                         <KeyboardAccelerator Key="F5" />
                     </AppBarButton.KeyboardAccelerators>
@@ -281,7 +281,7 @@
                 Spacing="8"
                 Visibility="{x:Bind ViewModel.ShowPlaceholder, Mode=OneWay}">
                 <FontIcon Glyph="&#xE715;" FontSize="48" Foreground="{ThemeResource TextFillColorTertiaryBrush}" />
-                <TextBlock Text="Okumak için bir öğe seçin" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                <TextBlock Text="{h:L Key=Mail_SelectItem}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
             </StackPanel>
 
             <ProgressRing
@@ -335,7 +335,7 @@
                                     <ColumnDefinition Width="Auto" />
                                     <ColumnDefinition Width="*" />
                                 </Grid.ColumnDefinitions>
-                                <TextBlock Text="Kime:" Style="{StaticResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                <TextBlock Text="{h:L Key=Mail_ToLabel}" Style="{StaticResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                                 <TextBlock Grid.Column="1" Text="{x:Bind ViewModel.Current.ToText, Mode=OneWay}" Style="{StaticResource CaptionTextBlockStyle}" IsTextSelectionEnabled="True" TextWrapping="Wrap" />
                             </Grid>
                             <Grid ColumnSpacing="6" Visibility="{x:Bind ViewModel.Current.HasCc, Mode=OneWay, FallbackValue=Collapsed}">
@@ -343,7 +343,7 @@
                                     <ColumnDefinition Width="Auto" />
                                     <ColumnDefinition Width="*" />
                                 </Grid.ColumnDefinitions>
-                                <TextBlock Text="Bilgi:" Style="{StaticResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                <TextBlock Text="{h:L Key=Mail_CcLabel}" Style="{StaticResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                                 <TextBlock Grid.Column="1" Text="{x:Bind ViewModel.Current.CcText, Mode=OneWay}" Style="{StaticResource CaptionTextBlockStyle}" IsTextSelectionEnabled="True" TextWrapping="Wrap" />
                             </Grid>
                             <TextBlock Text="{x:Bind ViewModel.Current.DateText, Mode=OneWay}" Style="{StaticResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
@@ -358,7 +358,7 @@
                     ItemClick="OnAttachmentClick"
                     ItemsSource="{x:Bind ViewModel.Current.Attachments, Mode=OneWay}"
                     SelectionMode="None"
-                    ToolTipService.ToolTip="Kaydetmek için tıklayın"
+                    ToolTipService.ToolTip="{h:L Key=Mail_ClickToSave}"
                     Visibility="{x:Bind ViewModel.Current.HasAttachments, Mode=OneWay, FallbackValue=Collapsed}">
                     <GridView.ItemTemplate>
                         <DataTemplate x:DataType="vm:AttachmentViewModel">
@@ -386,20 +386,20 @@
 
                 <StackPanel Grid.Row="2" Spacing="8">
                     <InfoBar
-                        Title="Toplantı daveti"
+                        Title="{h:L Key=Mail_MeetingInvitation}"
                         Severity="Informational"
                         IsClosable="False"
                         IsOpen="{x:Bind ViewModel.IsMeetingRequest, Mode=OneWay}"
-                        Message="Yanıtınız düzenleyene gönderilir ve toplantı takviminize işlenir.">
+                        Message="{h:L Key=Mail_MeetingInvitationHint}">
                         <InfoBar.Content>
                             <StackPanel Margin="0,0,0,12" Orientation="Horizontal" Spacing="8">
                                 <Button
-                                    Content="Kabul et"
+                                    Content="{h:L Key=Meeting_Accept}"
                                     Style="{StaticResource AccentButtonStyle}"
                                     Command="{x:Bind ViewModel.RespondToMeetingCommand}"
                                     CommandParameter="Accept" />
-                                <Button Content="Belki" Command="{x:Bind ViewModel.RespondToMeetingCommand}" CommandParameter="Tentative" />
-                                <Button Content="Reddet" Command="{x:Bind ViewModel.RespondToMeetingCommand}" CommandParameter="Decline" />
+                                <Button Content="{h:L Key=Response_Tentative}" Command="{x:Bind ViewModel.RespondToMeetingCommand}" CommandParameter="Tentative" />
+                                <Button Content="{h:L Key=Meeting_Decline}" Command="{x:Bind ViewModel.RespondToMeetingCommand}" CommandParameter="Decline" />
                             </StackPanel>
                         </InfoBar.Content>
                     </InfoBar>
@@ -407,9 +407,9 @@
                         Severity="Informational"
                         IsClosable="False"
                         IsOpen="{x:Bind ViewModel.Current.ShowRemoteContentBanner, Mode=OneWay, FallbackValue=False}"
-                        Message="Gizliliğiniz için bu iletideki uzak resimler engellendi.">
+                        Message="{h:L Key=Mail_RemoteImagesBlocked}">
                         <InfoBar.ActionButton>
-                            <Button Content="Resimleri göster" Click="OnShowRemoteContent" />
+                            <Button Content="{h:L Key=Mail_ShowImages}" Click="OnShowRemoteContent" />
                         </InfoBar.ActionButton>
                     </InfoBar>
                 </StackPanel>

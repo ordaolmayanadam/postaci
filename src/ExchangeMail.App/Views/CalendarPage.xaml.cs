@@ -47,7 +47,7 @@ public sealed partial class CalendarPage : Page
         }
         catch (Exception ex)
         {
-            ViewModel.ErrorMessage = "WebView2 başlatılamadı: " + ex.Message;
+            ViewModel.ErrorMessage = Loc.Format(Strings.Calendar_WebViewFailed, ex.Message);
         }
 
         await ViewModel.InitializeAsync();

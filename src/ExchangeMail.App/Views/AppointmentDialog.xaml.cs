@@ -38,7 +38,7 @@ public sealed partial class AppointmentDialog : ContentDialog
         var e = detail.Event;
         var dialog = new AppointmentDialog(e.Start.LocalDateTime, availability)
         {
-            Title = e.IsMeeting ? "Toplantıyı düzenle" : "Etkinliği düzenle",
+            Title = e.IsMeeting ? Strings.Appointment_EditMeeting : Strings.Appointment_EditEvent,
         };
         dialog.SubjectBox.Text = e.Subject;
         dialog.LocationBox.Text = e.Location;
@@ -96,7 +96,7 @@ public sealed partial class AppointmentDialog : ContentDialog
         }
         catch (Exception ex)
         {
-            AvailabilityHint.Text = "Uygunluk alınamadı: " + ex.Message;
+            AvailabilityHint.Text = Loc.Format(Strings.Appointment_AvailabilityFailed, ex.Message);
         }
         finally
         {
@@ -127,16 +127,16 @@ public sealed partial class AppointmentDialog : ContentDialog
     private string? TryBuild(out NewAppointment? appointment)
     {
         appointment = null;
-        if (string.IsNullOrWhiteSpace(SubjectBox.Text)) return "Konu girin.";
-        if (StartDate.Date is not { } startDate || EndDate.Date is not { } endDate) return "Başlangıç ve bitiş tarihini seçin.";
+        if (string.IsNullOrWhiteSpace(SubjectBox.Text)) return Strings.Appointment_SubjectRequired;
+        if (StartDate.Date is not { } startDate || EndDate.Date is not { } endDate) return Strings.AutoReply_PickDates;
 
         var attendees = RecipientParser.Parse(AttendeesBox.Text, out var invalid);
-        if (invalid.Count > 0) return "Geçersiz katılımcı adresi: " + string.Join(", ", invalid);
+        if (invalid.Count > 0) return Loc.Format(Strings.Appointment_InvalidAttendees, string.Join(", ", invalid));
 
         var allDay = AllDayCheck.IsChecked == true;
         var start = allDay ? Local(startDate.Date) : Local(startDate.Date + StartTime.Time);
         var end = allDay ? Local(endDate.Date.AddDays(1)) : Local(endDate.Date + EndTime.Time);
-        if (end <= start) return "Bitiş zamanı başlangıçtan sonra olmalı.";
+        if (end <= start) return Strings.Common_EndBeforeStart;
 
         appointment = new NewAppointment
         {

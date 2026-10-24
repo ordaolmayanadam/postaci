@@ -59,6 +59,8 @@ yapılandırılan Exchange sunucusu dışında hiçbir yere veri göndermez.
 - **Masaüstüne uyum:** Windows bildirimleri, sistem tepsisi, görev çubuğu rozeti, Windows açılışında başlatma.
 - **Güvenli okuma:** iletilerde betikler kapalı, uzak resimler varsayılan olarak engelli.
 - **Tek oturum açma:** etki alanındaki bilgisayarlarda Windows oturumuyla parolasız bağlantı (Kerberos/NTLM).
+- **Türkçe ve İngilizce arayüz:** varsayılan olarak Windows dilini izler; Ayarlar → Görünüm → Dil'den değiştirilebilir.
+  Tarih ve saat biçimleri de seçilen dile uyar.
 
 ## Kurulum
 
@@ -178,7 +180,7 @@ denetlemeye devam eder. Tamamen kapatmak için tepsi simgesine sağ tıklayıp *
 | Posta | Okundu işaretleme zamanı, yeni posta denetim aralığı, uzak resimleri her zaman gösterme, imza, bildirimler |
 | Otomatik yanıtlar | Açık/kapalı, zaman aralığı, iç ve dış yanıt metinleri, dış alıcı kapsamı |
 | Uygulama | Kapatınca tepsiye küçült, Windows açılışında başlat |
-| Görünüm | Tema (Windows / açık / koyu) |
+| Görünüm | Tema (Windows / açık / koyu), dil (Windows / Türkçe / English; yeniden başlatınca uygulanır) |
 | Yazı tipleri | Arayüz yazı tipi ve boyutu (yeniden başlatınca uygulanır), okuma yazı tipi ve yakınlaştırma, yazma yazı tipi ve boyutu |
 | Hesap | E-posta, sunucu, oturum açma yöntemi; kayıtlı parolayı silme, oturumu kapatma |
 
@@ -289,7 +291,7 @@ flowchart LR
 
 | Proje | Hedef | Sorumluluk |
 |---|---|---|
-| `src/ExchangeMail.Core` | `net10.0` | EWS istemcisi (ham SOAP, `HttpClient`), Autodiscover, modeller. Arayüzden habersiz. |
+| `src/ExchangeMail.Core` | `net10.0` | EWS istemcisi (ham SOAP, `HttpClient`), Autodiscover, modeller, Türkçe/İngilizce metin kaynakları. Arayüzden habersiz. |
 | `src/ExchangeMail.ViewModels` | `net10.0` | MVVM katmanı ([CommunityToolkit.Mvvm](https://learn.microsoft.com/dotnet/communitytoolkit/mvvm/)), tercihler, HTML yardımcıları. WinUI'ye bağımlı değil. |
 | `src/ExchangeMail.App` | `net10.0-windows` | WinUI 3 arayüzü, WebView2, Windows servisleri. Paketsiz (`WindowsPackageType=None`) ve self-contained. |
 | `tests/ExchangeMail.Core.Tests` | `net10.0` | Sahte EWS sunucusuna (`FakeEwsServer`) karşı birim testleri (xUnit v3). Gönderilen SOAP isteklerinin yapısını ve sırasını da doğrular. |

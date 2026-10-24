@@ -51,19 +51,19 @@ public static class Autodiscover
                     queue = new Queue<Uri>([redirectUrl]);
                     break;
                 default:
-                    errors.Add($"{url.Host}: {result.Error ?? "EWS adresi içermeyen yanıt"}");
+                    errors.Add($"{url.Host}: {result.Error ?? Strings.Autodiscover_ResponseWithoutUrl}");
                     break;
             }
         }
 
-        throw new EwsException("Autodiscover EWS adresini bulamadı. EWS adresini elle girin (ör. https://mail.sirket.com/EWS/Exchange.asmx)."
+        throw new EwsException(Strings.Autodiscover_NotFound
                                + (errors.Count > 0 ? Environment.NewLine + string.Join(Environment.NewLine, errors) : ""));
     }
 
     private static IEnumerable<Uri> CandidateUrls(string email)
     {
         var at = email.LastIndexOf('@');
-        if (at < 0 || at == email.Length - 1) throw new ArgumentException("Geçerli bir e-posta adresi girin.", nameof(email));
+        if (at < 0 || at == email.Length - 1) throw new ArgumentException(Strings.Common_InvalidEmail, nameof(email));
         var domain = email[(at + 1)..];
         yield return new Uri($"https://autodiscover.{domain}/autodiscover/autodiscover.xml");
         yield return new Uri($"https://{domain}/autodiscover/autodiscover.xml");
@@ -79,7 +79,7 @@ public static class Autodiscover
         using var content = new StringContent(request.ToString(SaveOptions.DisableFormatting), Encoding.UTF8, "text/xml");
         using var response = await http.PostAsync(url, content, ct);
         if (response.StatusCode == HttpStatusCode.Unauthorized)
-            throw new EwsAuthenticationException("Autodiscover kimlik doğrulaması başarısız. Kullanıcı adı ve parolayı kontrol edin.");
+            throw new EwsAuthenticationException(Strings.Autodiscover_AuthFailed);
         response.EnsureSuccessStatusCode();
 
         return Parse(await response.Content.ReadAsStringAsync(ct));
@@ -113,7 +113,7 @@ public static class Autodiscover
                 return new AutodiscoverResult(uri, null, null, null);
         }
 
-        return new AutodiscoverResult(null, null, null, "Yanıtta EwsUrl yok");
+        return new AutodiscoverResult(null, null, null, Strings.Autodiscover_NoEwsUrl);
     }
 
     internal sealed record AutodiscoverResult(Uri? EwsUrl, string? RedirectAddress, Uri? RedirectUrl, string? Error);

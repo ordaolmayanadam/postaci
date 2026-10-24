@@ -140,6 +140,7 @@ Notlar:
 ├── src/
 │   ├── ExchangeMail.Core/          # EWS istemcisi ve modeller (UI yok, platformdan bağımsız)
 │   │   ├── Ews/                    # EwsClient (partial), Autodiscover, Xml yardımcıları, hatalar
+│   │   ├── Localization/           # Strings.resx (Türkçe), Strings.en.resx (İngilizce), Loc
 │   │   └── Models/                 # Mail, Calendar, Contact, AutoReply kayıtları
 │   ├── ExchangeMail.ViewModels/    # MVVM katmanı (CommunityToolkit.Mvvm), ayarlar, biçimlendirme
 │   └── ExchangeMail.App/           # WinUI 3 uygulaması (yalnızca Windows)
@@ -174,8 +175,34 @@ Pratikte:
 - ViewModel'ler `Exception` mesajlarını kullanıcıya `ErrorMessage` / `StatusText` gibi özelliklerle verir;
   hata yutmayın. Kullanıcının bilmesi gerekmeyen hataları (ör. parola kaydedilemedi) yutacaksanız nedenini yorumla
   belirtin.
-- **Kullanıcıya görünen metinler Türkçe**, tanımlayıcılar (sınıf, metot, değişken adları) ve kod yorumları
-  **İngilizce** yazılır. Türkçe karakterleri (ç, ğ, ı, İ, ö, ş, ü) arayüz metinlerinde doğru kullanın.
+- Tanımlayıcılar (sınıf, metot, değişken adları) ve kod yorumları **İngilizce** yazılır. Kullanıcıya görünen
+  metinler koda yazılmaz; [çeviri kaynaklarına](#arayüz-metinleri-ve-çeviri) eklenir.
+
+### Arayüz metinleri ve çeviri
+
+Arayüz Türkçe ve İngilizce'dir. Bütün kullanıcıya görünen metinler `src/ExchangeMail.Core/Localization/` altındadır:
+
+| Dosya | İçerik |
+|---|---|
+| `Strings.resx` | Türkçe (varsayılan dil) |
+| `Strings.en.resx` | İngilizce |
+| `Loc.cs` | Dil seçimi, biçimlendirme (`Loc.Format`) ve tekil/çoğul (`Loc.Count`) |
+
+- **Yeni metin eklerken** aynı anahtarı **iki dosyaya da** ekleyin. Anahtar adı `Alan_Ne` biçimindedir
+  (ör. `Mail_Reply`, `Calendar_EventCreated`, `Common_Cancel`). Visual Studio'nun kaynak düzenleyicisi veya
+  herhangi bir metin düzenleyici kullanılabilir.
+- **C#'ta** derleme sırasında üretilen sınıfı kullanın: `Strings.Mail_Reply`. Değişken içeren metinler için
+  `{0}` yer tutucusu ve `Loc.Format(Strings.Contacts_DeleteQuestion, name)`; sayılar için `_One` ekli tekil
+  anahtar ve `Loc.Count(count, Strings.Mail_ItemCount_One, Strings.Mail_ItemCount)` (Türkçede ikisi aynıdır).
+- **XAML'de** işaretleme uzantısını kullanın: `Text="{h:L Key=Mail_Reply}"` (`xmlns:h="using:ExchangeMail.App.Helpers"`).
+  Metinler sayfa yüklenirken bir kez okunur; dil değişikliği bu yüzden yeniden başlatma ister.
+- **Tarihler** için sabit biçim yazmayın; `"D"`, `"t"`, `"Y"` gibi standart biçimleri veya `MailFormat.DayMonth` /
+  `DayMonthYear` yardımcılarını kullanın. Böylece gün–ay sırası ve 12/24 saat dile göre değişir.
+- `LocalizationTests` iki dosyanın aynı anahtarlara ve yer tutuculara sahip olduğunu, XAML'deki her anahtarın var
+  olduğunu ve XAML'de veya kodda sabit Türkçe metin kalmadığını denetler. Test Türkçe karakter içermeyen bir
+  sabit metni (ör. `"Kaydet"`) yakalayamaz; inceleme sırasında buna da bakın.
+- **Yeni bir dil eklemek** için `Strings.<dil>.resx` dosyası oluşturun, `Loc` içinde dili tanımlayın ve Ayarlar'daki
+  dil listesine ekleyin. Önce bir issue açarak haber verin.
 
 ## Kod stili
 
@@ -275,7 +302,8 @@ Dikkat edilecekler:
   döngü yazmayın.
 - **Sürüm.** İstekler `Exchange2013_SP1` şemasıyla gönderilir. Daha yeni şema gerektiren bir öğe kullanmayın;
   Exchange 2016/2019/SE'nin hepsinde çalışmalıdır.
-- **Kullanıcıya gidecek hata metinleri** Türkçe olmalıdır (`throw new EwsException("Yanıtta ... yok.")`).
+- **Kullanıcıya gidecek hata metinleri** çeviri kaynaklarından gelir (`throw new EwsException(Strings.Ews_MessageNotFound)`);
+  Türkçe ve İngilizce karşılığını ekleyin.
 
 ### 3. Yanıtı modele çevirin
 
@@ -428,9 +456,10 @@ await WaitUntil(() => vm.Messages.Count == 2 && !vm.IsLoadingList);
 
 - [ ] Katman kuralları korunmuş (Core/ViewModels WinUI'ye bağımlı değil)
 - [ ] Yeni EWS istekleri şema sırasına uyuyor ve testle doğrulanıyor
-- [ ] Hatalar kullanıcıya Türkçe ve anlaşılır biçimde ulaşıyor; yutulan hata yok
+- [ ] Yeni metinler `Strings.resx` ve `Strings.en.resx` dosyalarının ikisine de eklendi
+- [ ] Hatalar kullanıcıya anlaşılır biçimde ulaşıyor; yutulan hata yok
 - [ ] Uzun süren işlemler UI iş parçacığını kilitlemiyor, iptal edilebiliyor
-- [ ] Açık/koyu tema ve büyütülmüş yazı boyutu ile arayüz bozulmuyor
+- [ ] Açık/koyu tema, büyütülmüş yazı boyutu ve iki dil (İngilizce metinler genellikle daha uzundur) ile arayüz bozulmuyor
 - [ ] WebView2 güvenlik ayarlarına dokunulmamış (veya dokunulduysa gerekçesi yazılmış)
 - [ ] Gerçek kişi, adres, sunucu adı veya posta içeriği yok
 - [ ] Yapay zekâ kullanıldıysa PR'da belirtilmiş ve kod yazar tarafından anlaşılmış/denenmiş
@@ -479,6 +508,7 @@ koruyun.
 | `dotnet test` "VSTest is not supported" benzeri hata veriyor | Klasör yerine `--project tests/ExchangeMail.Core.Tests` verin; `global.json`'u silmeyin |
 | Linux'ta çözüm derlenmiyor (XAML hatası) | Beklenen durum; yalnızca Core, ViewModels ve test projesini derleyin |
 | `ErrorSchemaValidation` | İstekteki öğe sırası veya ad alanı (`m:`/`t:`) yanlış; XSD sırasını kontrol edin |
+| Arayüzde `[Anahtar_Adı]` görünüyor | Anahtar `Strings.resx`'te yok ya da XAML'de yanlış yazılmış; `LocalizationTests` bunu yakalar |
 | `ErrorChangeKeyRequiredForWriteOperations` | ChangeKey göndermeyen `UpdateItem`'da `ConflictResolution="AlwaysOverwrite"` eksik |
 | Tüm gün etkinliği bir gün kayıyor | UTC tarih kullanılmış; `LocalDateTime.Date` kullanın ve takvim isteğinde `withTimeZone: true` verin |
 | Test `No canned response for X` ile düşüyor | Kod beklenmeyen bir `X` isteği gönderiyor ya da `On("X", ...)` eksik |

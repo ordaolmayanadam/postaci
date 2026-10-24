@@ -1,3 +1,4 @@
+using System.Globalization;
 using ExchangeMail.App.Helpers;
 using ExchangeMail.Core.Models;
 using Microsoft.UI;
@@ -72,13 +73,13 @@ public sealed partial class AvailabilityView : UserControl
             var blocks = new List<(FrameworkElement Element, double From, double To)>();
             if (person.Error is not null)
             {
-                var info = new TextBlock { Text = "Bilgi yok", FontSize = 11 * Ui.TextScale, Opacity = 0.7, Margin = new Thickness(6, 3, 0, 0) };
+                var info = new TextBlock { Text = Strings.Availability_NoInfo, FontSize = 11 * Ui.TextScale, Opacity = 0.7, Margin = new Thickness(6, 3, 0, 0) };
                 track.Children.Add(info);
             }
             foreach (var busy in person.Busy)
             {
                 var rect = new Rectangle { Fill = Ui.Brush(StatusColor(busy.Status)), Height = RowHeight, RadiusX = 2, RadiusY = 2 };
-                ToolTipService.SetToolTip(rect, $"{busy.Start.LocalDateTime:HH:mm} – {busy.End.LocalDateTime:HH:mm} · {StatusText(busy.Status)}");
+                ToolTipService.SetToolTip(rect, $"{busy.Start.LocalDateTime.ToString("t", CultureInfo.CurrentCulture)} – {busy.End.LocalDateTime.ToString("t", CultureInfo.CurrentCulture)} · {StatusText(busy.Status)}");
                 track.Children.Add(rect);
                 blocks.Add((rect, Fraction(busy.Start.LocalDateTime), Fraction(busy.End.LocalDateTime)));
             }
@@ -137,10 +138,10 @@ public sealed partial class AvailabilityView : UserControl
 
     private static string StatusText(FreeBusyStatus status) => status switch
     {
-        FreeBusyStatus.Tentative => "Belki",
-        FreeBusyStatus.OOF => "Dışarıda",
-        FreeBusyStatus.WorkingElsewhere => "Başka yerde çalışıyor",
-        FreeBusyStatus.NoData => "Bilgi yok",
-        _ => "Meşgul",
+        FreeBusyStatus.Tentative => Strings.Response_Tentative,
+        FreeBusyStatus.OOF => Strings.FreeBusy_Away,
+        FreeBusyStatus.WorkingElsewhere => Strings.Availability_WorkingElsewhere,
+        FreeBusyStatus.NoData => Strings.Availability_NoInfo,
+        _ => Strings.FreeBusy_Busy,
     };
 }

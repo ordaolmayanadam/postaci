@@ -24,7 +24,7 @@
                 Style="{StaticResource AccentButtonStyle}">
                 <StackPanel Orientation="Horizontal" Spacing="8">
                     <FontIcon Glyph="&#xE710;" FontSize="14" />
-                    <TextBlock Text="Yeni etkinlik" />
+                    <TextBlock Text="{h:L Key=Calendar_NewEvent}" />
                 </StackPanel>
                 <Button.KeyboardAccelerators>
                     <KeyboardAccelerator Key="N" Modifiers="Control" />
@@ -65,19 +65,19 @@
                         IsActive="{x:Bind ViewModel.IsLoading, Mode=OneWay}" />
                 </Grid>
                 <StackPanel Orientation="Horizontal" Spacing="4">
-                    <Button Command="{x:Bind ViewModel.PreviousCommand}" ToolTipService.ToolTip="Önceki">
+                    <Button Command="{x:Bind ViewModel.PreviousCommand}" ToolTipService.ToolTip="{h:L Key=Calendar_Previous}">
                         <FontIcon Glyph="&#xE76B;" FontSize="12" />
                     </Button>
-                    <Button Content="Bugün" Command="{x:Bind ViewModel.TodayCommand}" />
-                    <Button Command="{x:Bind ViewModel.NextCommand}" ToolTipService.ToolTip="Sonraki">
+                    <Button Content="{h:L Key=Calendar_Today}" Command="{x:Bind ViewModel.TodayCommand}" />
+                    <Button Command="{x:Bind ViewModel.NextCommand}" ToolTipService.ToolTip="{h:L Key=Calendar_Next}">
                         <FontIcon Glyph="&#xE76C;" FontSize="12" />
                     </Button>
                     <ComboBox MinWidth="100" SelectedIndex="{x:Bind ViewModel.RangeIndex, Mode=TwoWay}">
-                        <ComboBoxItem Content="Gün" />
-                        <ComboBoxItem Content="Hafta" />
-                        <ComboBoxItem Content="Ay" />
+                        <ComboBoxItem Content="{h:L Key=Calendar_Day}" />
+                        <ComboBoxItem Content="{h:L Key=Calendar_Week}" />
+                        <ComboBoxItem Content="{h:L Key=Calendar_Month}" />
                     </ComboBox>
-                    <Button Command="{x:Bind ViewModel.RefreshCommand}" ToolTipService.ToolTip="Yenile (F5)">
+                    <Button Command="{x:Bind ViewModel.RefreshCommand}" ToolTipService.ToolTip="{h:L Key=Common_RefreshF5}">
                         <FontIcon Glyph="&#xE72C;" FontSize="12" />
                         <Button.KeyboardAccelerators>
                             <KeyboardAccelerator Key="F5" />
@@ -104,7 +104,7 @@
                 <TextBlock
                     Margin="0,48,0,0"
                     HorizontalAlignment="Center"
-                    Text="Bu aralıkta etkinlik yok"
+                    Text="{h:L Key=Calendar_NoEvents}"
                     Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                     Visibility="{x:Bind ViewModel.IsEmpty, Mode=OneWay}" />
 
@@ -173,16 +173,16 @@
             </Grid.RowDefinitions>
 
             <CommandBar HorizontalAlignment="Left" Background="Transparent" DefaultLabelPosition="Right">
-                <AppBarButton Icon="Edit" Label="Düzenle" Command="{x:Bind ViewModel.EditCommand}" />
-                <AppBarButton Icon="Accept" Label="Kabul et" Command="{x:Bind ViewModel.RespondCommand}" CommandParameter="Accept" />
-                <AppBarButton Label="Belki" Command="{x:Bind ViewModel.RespondCommand}" CommandParameter="Tentative">
+                <AppBarButton Icon="Edit" Label="{h:L Key=Common_Edit}" Command="{x:Bind ViewModel.EditCommand}" />
+                <AppBarButton Icon="Accept" Label="{h:L Key=Meeting_Accept}" Command="{x:Bind ViewModel.RespondCommand}" CommandParameter="Accept" />
+                <AppBarButton Label="{h:L Key=Response_Tentative}" Command="{x:Bind ViewModel.RespondCommand}" CommandParameter="Tentative">
                     <AppBarButton.Icon>
                         <FontIcon Glyph="&#xE9CE;" />
                     </AppBarButton.Icon>
                 </AppBarButton>
-                <AppBarButton Icon="Cancel" Label="Reddet" Command="{x:Bind ViewModel.RespondCommand}" CommandParameter="Decline" />
+                <AppBarButton Icon="Cancel" Label="{h:L Key=Meeting_Decline}" Command="{x:Bind ViewModel.RespondCommand}" CommandParameter="Decline" />
                 <AppBarSeparator />
-                <AppBarButton Icon="Delete" Label="Sil / iptal et" Command="{x:Bind ViewModel.DeleteCommand}" />
+                <AppBarButton Icon="Delete" Label="{h:L Key=Calendar_DeleteOrCancel}" Command="{x:Bind ViewModel.DeleteCommand}" />
             </CommandBar>
 
             <StackPanel
@@ -192,7 +192,7 @@
                 Spacing="8"
                 Visibility="{x:Bind h:Ui.VisibleIfNot(ViewModel.HasDetail), Mode=OneWay}">
                 <FontIcon Glyph="&#xE787;" FontSize="48" Foreground="{ThemeResource TextFillColorTertiaryBrush}" />
-                <TextBlock Text="Ayrıntıları görmek için bir etkinlik seçin" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                <TextBlock Text="{h:L Key=Calendar_SelectEvent}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
             </StackPanel>
 
             <ProgressRing
@@ -238,7 +238,7 @@
                         IsTextSelectionEnabled="True"
                         TextWrapping="Wrap"
                         Visibility="{x:Bind ViewModel.Detail.HasAttendees, Mode=OneWay, FallbackValue=Collapsed}">
-                        <Run Text="Katılımcılar: " FontWeight="SemiBold" />
+                        <Run Text="{h:L Key=Calendar_AttendeesLabel}" FontWeight="SemiBold" />
                         <Run Text="{x:Bind ViewModel.Detail.AttendeesText, Mode=OneWay}" />
                     </TextBlock>
                     <TextBlock
@@ -246,7 +246,7 @@
                         IsTextSelectionEnabled="True"
                         TextWrapping="Wrap"
                         Visibility="{x:Bind ViewModel.Detail.HasOptionalAttendees, Mode=OneWay, FallbackValue=Collapsed}">
-                        <Run Text="İsteğe bağlı: " FontWeight="SemiBold" />
+                        <Run Text="{h:L Key=Calendar_OptionalLabel}" FontWeight="SemiBold" />
                         <Run Text="{x:Bind ViewModel.Detail.OptionalAttendeesText, Mode=OneWay}" />
                     </TextBlock>
                 </StackPanel>

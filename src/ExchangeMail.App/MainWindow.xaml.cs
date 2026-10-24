@@ -40,7 +40,7 @@ public sealed partial class MainWindow : Window
         catch (Exception ex)
         {
             // Without a tray icon the window simply closes normally.
-            System.Diagnostics.Debug.WriteLine("Tepsi simgesi oluşturulamadı: " + ex);
+            System.Diagnostics.Debug.WriteLine("Could not create the tray icon: " + ex);
         }
 
         AppWindow.Closing += OnClosing;
@@ -89,14 +89,15 @@ public sealed partial class MainWindow : Window
         {
             preferences.TrayHintShown = true;
             App.SavePreferences();
-            App.Notifications.ShowInfo($"{AppInfo.Name} çalışmaya devam ediyor",
-                "Yeni postaları denetlemeye devam ediyor. Açmak için sistem tepsisindeki simgeye tıklayın; kapatmak için simgeye sağ tıklayıp Çıkış'ı seçin.");
+            App.Notifications.ShowInfo(Loc.Format(Strings.Tray_StillRunningTitle, AppInfo.Name), Strings.Tray_StillRunningText);
         }
     }
 
     /// <summary>Updates the tray icon and tooltip with the inbox's unread count.</summary>
     public void SetUnreadCount(int unread) =>
-        _tray?.Update(unread > 0, unread > 0 ? $"{AppInfo.Name} – {unread} okunmamış ileti" : AppInfo.Name);
+        _tray?.Update(unread > 0, unread > 0
+            ? Loc.Format(unread == 1 ? Strings.Tray_UnreadTooltip_One : Strings.Tray_UnreadTooltip, AppInfo.Name, unread)
+            : AppInfo.Name);
 
     /// <summary>Really closes the app (tray menu "Çıkış").</summary>
     public void Exit()
@@ -117,15 +118,15 @@ public sealed partial class MainWindow : Window
         var shell = ShellPage.Current;
         return
         [
-            new TrayMenuItem($"{AppInfo.Name}'yı aç", BringToFront, IsDefault: true),
-            new TrayMenuItem("Yeni posta", () =>
+            new TrayMenuItem(Loc.Format(Strings.Tray_Open, AppInfo.Name), BringToFront, IsDefault: true),
+            new TrayMenuItem(Strings.Mail_New, () =>
             {
                 BringToFront();
                 shell?.Mail.NewMailCommand.Execute(null);
             }, Enabled: shell is not null),
-            new TrayMenuItem("Yeni postaları denetle", () => shell?.RefreshNow(), Enabled: shell is not null),
+            new TrayMenuItem(Strings.Tray_CheckMail, () => shell?.RefreshNow(), Enabled: shell is not null),
             TrayMenuItem.Separator,
-            new TrayMenuItem("Çıkış", Exit),
+            new TrayMenuItem(Strings.Tray_Exit, Exit),
         ];
     }
 
