@@ -334,6 +334,9 @@
   <data name="Compose_InvalidAddresses" xml:space="preserve">
     <value>Geçersiz adres: {0}. Ad yazdıysanız listeden bir kişi seçin.</value>
   </data>
+  <data name="Compose_LoadingOriginal" xml:space="preserve">
+    <value>Özgün ileti yükleniyor…</value>
+  </data>
   <data name="Compose_NoSubjectQuestion" xml:space="preserve">
     <value>Bu iletinin konusu yok. Yine de gönderilsin mi?</value>
   </data>
@@ -873,6 +876,27 @@
   </data>
   <data name="Notification_NewMessages_One" xml:space="preserve">
     <value>{0} yeni ileti</value>
+  </data>
+  <data name="Person_CopyAddress" xml:space="preserve">
+    <value>Adresi kopyala</value>
+  </data>
+  <data name="Person_DirectReports" xml:space="preserve">
+    <value>Doğrudan bağlı çalışanlar ({0})</value>
+  </data>
+  <data name="Person_LoadFailed" xml:space="preserve">
+    <value>Kişi bilgileri alınamadı: {0}</value>
+  </data>
+  <data name="Person_Loading" xml:space="preserve">
+    <value>Yükleniyor…</value>
+  </data>
+  <data name="Person_NotInDirectory" xml:space="preserve">
+    <value>Bu adres şirket rehberinde yok.</value>
+  </data>
+  <data name="Person_Office" xml:space="preserve">
+    <value>Ofis</value>
+  </data>
+  <data name="Person_Organization" xml:space="preserve">
+    <value>Kuruluş</value>
   </data>
   <data name="Response_Accepted" xml:space="preserve">
     <value>Kabul edildi</value>

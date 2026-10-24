@@ -153,6 +153,9 @@ for new mail. To quit completely, right-click the tray icon and choose **Exit**.
 - Reply, reply all, forward, delete (permanent delete with confirmation in Deleted Items), move to folder,
   read/unread.
 - **Meeting invitations** can be accepted, tentatively accepted or declined from the reading pane.
+- **Person card:** click the sender or a name in To/Cc in the reading pane to see the company directory details (photo,
+  job title, department, office, phones), the manager chain from the top down, and direct reports. Clicking a name in
+  the chain opens that person's card.
 - **Attachments** can be saved; attached emails are downloaded as `.eml`. Inline images in the body are displayed.
 
 ### Compose
@@ -162,7 +165,10 @@ for new mail. To quit completely, right-click the tray icon and choose **Exit**.
 - Add attachments by picking files or by **drag and drop**.
 - **Drafts:** every save from the same window updates the same draft. A message in the Drafts folder opens with
   **Edit draft** or a double-click, and can be edited and sent; attachments on the draft can be removed.
-- In replies and forwards Exchange appends the original message; the quote appears in the editor when a saved reply draft is reopened.
+- **The original shows in the editor for replies and forwards:** when the window opens a draft is created, Exchange
+  adds the quote (and, for a forward, the attachments), and it is loaded into the editor with its inline images; the
+  quote can be edited too. Closing the window without sending removes that automatic draft; a draft kept with
+  "Save draft" stays.
 - A **rich-text signature** is added automatically to new messages, replies and forwards.
 - Closing the window with unsaved changes shows a warning.
 
@@ -325,7 +331,10 @@ forwards, messages with attachments and existing drafts are sent in this order:
 
 1. `GetItem`: fetch the current `ChangeKey` of the original message.
 2. `CreateItem(SaveOnly)` + `ReplyToItem` / `ReplyAllToItem` / `ForwardItem`: Exchange creates the draft with the quote.
-3. `UpdateItem`: write the recipients, subject and importance edited by the user.
+   For replies and forwards this happens when the compose window opens; the draft's body (`GetItem`, and
+   `GetAttachment` for inline images) is loaded into the editor. Images become `data:` URLs in the editor and are turned
+   back into `cid:` references when saving; the original's `<head>` styles are kept.
+3. `UpdateItem`: write the recipients, subject, importance and (once a draft exists) body edited by the user.
 4. `CreateAttachment` / `DeleteAttachment`: add or remove attachments.
 5. `SendItem`: send the draft and save it to Sent Items.
 

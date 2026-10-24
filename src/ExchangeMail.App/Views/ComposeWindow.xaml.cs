@@ -56,8 +56,13 @@ public sealed partial class ComposeWindow : Window
             {
                 await Editor.EnsureInitializedAsync();
                 _savedHtml = await Editor.GetHtmlAsync();
-                if (ViewModel.IsResponse || ViewModel.IsEditingDraft) await Editor.FocusEditorAsync();
+                var response = ViewModel.IsResponse || ViewModel.IsEditingDraft;
+                if (response) await Editor.FocusEditorAsync();
                 else ToBox.Focus(FocusState.Programmatic);
+
+                // Loads the quoted original (replies, forwards) or the draft's images; BodyReplaced updates the editor.
+                await ViewModel.PrepareAsync();
+                if (response) await Editor.FocusEditorAsync();
             }
             catch (Exception ex)
             {
@@ -87,6 +92,7 @@ public sealed partial class ComposeWindow : Window
         if (!changed || await ConfirmAsync(Strings.Compose_DiscardTitle, Strings.Compose_DiscardQuestion))
         {
             _canClose = true;
+            _ = ViewModel.DiscardAsync(); // removes the draft made only to show the original
             Close();
         }
     }

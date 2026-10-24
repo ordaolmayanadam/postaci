@@ -1,8 +1,12 @@
 using System.ComponentModel;
+using ExchangeMail.App.Controls;
 using ExchangeMail.App.Helpers;
+using ExchangeMail.Core.Models;
 using ExchangeMail.ViewModels;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Controls.Primitives;
+using Microsoft.UI.Xaml.Documents;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Navigation;
@@ -74,6 +78,52 @@ public sealed partial class MailPage : Page
         _shownDetail = ViewModel.Current;
         if (_shownDetail is not null) _shownDetail.PropertyChanged += OnDetailPropertyChanged;
         _body.Show(_shownDetail?.DisplayHtml);
+        ShowAddresses(_shownDetail?.Detail);
+    }
+
+    private void ShowAddresses(MailDetail? detail)
+    {
+        FillAddresses(FromLine, detail?.From is { } from ? [from] : [], primary: true);
+        FillAddresses(ToLine, detail?.To ?? [], primary: false);
+        FillAddresses(CcLine, detail?.Cc ?? [], primary: false);
+    }
+
+    /// <summary>One link per address, separated like Outlook's "; ".</summary>
+    private void FillAddresses(TextBlock line, IReadOnlyList<MailboxAddress> people, bool primary)
+    {
+        line.Inlines.Clear();
+        for (var i = 0; i < people.Count; i++)
+        {
+            if (i > 0) line.Inlines.Add(new Run { Text = "; " });
+            var person = people[i];
+            var link = new Hyperlink { UnderlineStyle = UnderlineStyle.None };
+            if (primary && Application.Current.Resources.TryGetValue("TextFillColorPrimaryBrush", out var brush)) link.Foreground = (Brush)brush;
+            link.Inlines.Add(new Run { Text = person.Display });
+            link.Click += (_, _) => ShowPersonCard(person, line);
+            line.Inlines.Add(link);
+        }
+    }
+
+    private void OnSenderPictureTapped(object sender, TappedRoutedEventArgs e)
+    {
+        if (ViewModel.Current?.Detail.From is { } from && sender is FrameworkElement anchor) ShowPersonCard(from, anchor);
+    }
+
+    private void ShowPersonCard(MailboxAddress person, FrameworkElement anchor)
+    {
+        var card = new PersonCardViewModel(ViewModel.Client);
+        Flyout? flyout = null;
+        flyout = new Flyout
+        {
+            Content = new PersonCard(card, address =>
+            {
+                flyout?.Hide();
+                ViewModel.NewMailTo(address);
+            }),
+            Placement = FlyoutPlacementMode.BottomEdgeAlignedLeft,
+        };
+        flyout.ShowAt(anchor);
+        _ = card.LoadAsync(person);
     }
 
     private void OnDetailPropertyChanged(object? sender, PropertyChangedEventArgs e)

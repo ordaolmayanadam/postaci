@@ -146,6 +146,9 @@ denetlemeye devam eder. Tamamen kapatmak için tepsi simgesine sağ tıklayıp *
   Okundu bilgisi istenmiş iletiler için bildirim sessizce gönderilmez.
 - Yanıtla, tümünü yanıtla, ilet, sil (Silinmiş Öğeler'de onayla kalıcı silme), klasöre taşı, okundu/okunmadı.
 - **Toplantı davetleri** okuma bölmesinden kabul edilir, "belki" yanıtı verilir veya reddedilir.
+- **Kişi kartı:** okuma bölmesinde gönderenin veya Kime/Bilgi'deki bir adın üzerine tıklayınca şirket rehberindeki
+  bilgileri (fotoğraf, unvan, departman, ofis, telefonlar), yönetici zinciri en üstten aşağıya ve doğrudan bağlı
+  çalışanlar görünür. Zincirdeki bir ada tıklamak o kişinin kartını açar.
 - **Ekler** kaydedilir; ekli e-postalar `.eml` olarak indirilir. Gövdedeki gömülü resimler gösterilir.
 
 ### Yazma
@@ -155,7 +158,9 @@ denetlemeye devam eder. Tamamen kapatmak için tepsi simgesine sağ tıklayıp *
 - Dosya seçerek veya **sürükle-bırak** ile ek ekleme.
 - **Taslaklar:** aynı penceredeki her kayıt aynı taslağı günceller. Taslaklar klasöründeki ileti
   *Taslağı düzenle* (veya çift tıklama) ile açılır, düzenlenir ve gönderilir; taslaktaki ekler kaldırılabilir.
-- Yanıt ve iletmelerde özgün ileti Exchange tarafından alta eklenir; kaydedilen yanıt taslağında alıntı düzenleyicide görünür.
+- **Yanıt ve iletmede özgün ileti düzenleyicide görünür:** pencere açılınca taslak oluşturulur, Exchange alıntıyı (iletmede
+  ekleri de) ekler ve düzenleyiciye gömülü resimleriyle yüklenir; alıntı da düzenlenebilir. Gönderilmeden kapatılan
+  pencerenin otomatik taslağı silinir; "Taslak kaydet" ile kaydedilen taslak kalır.
 - **Biçimli imza** yeni iletilere, yanıtlara ve iletmelere otomatik eklenir.
 - Kaydedilmemiş değişiklik varken pencere kapatılırsa uyarı gösterilir.
 
@@ -316,7 +321,10 @@ veya var olan taslak şu sırayla gönderilir:
 
 1. `GetItem`: özgün iletinin güncel `ChangeKey`'i alınır.
 2. `CreateItem(SaveOnly)` + `ReplyToItem` / `ReplyAllToItem` / `ForwardItem`: Exchange alıntıyı ekleyerek taslağı oluşturur.
-3. `UpdateItem`: kullanıcının düzenlediği alıcılar, konu ve önem yazılır.
+   Yanıt ve iletmede bu adım yazma penceresi açılırken yapılır; taslağın gövdesi (`GetItem`, gömülü resimler için
+   `GetAttachment`) düzenleyiciye yüklenir. Resimler düzenleyicide `data:` adresi olur, kaydederken yeniden `cid:`
+   başvurusuna çevrilir; özgün iletinin `<head>` stilleri korunur.
+3. `UpdateItem`: kullanıcının düzenlediği alıcılar, konu, önem ve (taslak varsa) gövde yazılır.
 4. `CreateAttachment` / `DeleteAttachment`: ekler eklenir veya kaldırılır.
 5. `SendItem`: taslak gönderilir ve Gönderilmiş Öğeler'e kaydedilir.
 

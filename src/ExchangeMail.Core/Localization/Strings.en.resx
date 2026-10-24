@@ -334,6 +334,9 @@
   <data name="Compose_InvalidAddresses" xml:space="preserve">
     <value>Invalid address: {0}. If you typed a name, pick a person from the list.</value>
   </data>
+  <data name="Compose_LoadingOriginal" xml:space="preserve">
+    <value>Loading the original message…</value>
+  </data>
   <data name="Compose_NoSubjectQuestion" xml:space="preserve">
     <value>This message has no subject. Send it anyway?</value>
   </data>
@@ -873,6 +876,27 @@
   </data>
   <data name="Notification_NewMessages_One" xml:space="preserve">
     <value>{0} new message</value>
+  </data>
+  <data name="Person_CopyAddress" xml:space="preserve">
+    <value>Copy address</value>
+  </data>
+  <data name="Person_DirectReports" xml:space="preserve">
+    <value>Direct reports ({0})</value>
+  </data>
+  <data name="Person_LoadFailed" xml:space="preserve">
+    <value>Could not load the person's details: {0}</value>
+  </data>
+  <data name="Person_Loading" xml:space="preserve">
+    <value>Loading…</value>
+  </data>
+  <data name="Person_NotInDirectory" xml:space="preserve">
+    <value>This address is not in the company directory.</value>
+  </data>
+  <data name="Person_Office" xml:space="preserve">
+    <value>Office</value>
+  </data>
+  <data name="Person_Organization" xml:space="preserve">
+    <value>Organization</value>
   </data>
   <data name="Response_Accepted" xml:space="preserve">
     <value>Accepted</value>

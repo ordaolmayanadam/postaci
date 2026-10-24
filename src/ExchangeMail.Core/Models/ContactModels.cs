@@ -17,6 +17,21 @@ public sealed record ContactInfo(
     public bool IsDirectoryEntry => ItemId is null;
 }
 
+/// <summary>A company directory (Active Directory) entry with its place in the organization.</summary>
+public sealed record DirectoryPerson(
+    string DisplayName,
+    string? Email,
+    string? JobTitle,
+    string? Department,
+    string? Company,
+    string? Office,
+    string? BusinessPhone,
+    string? MobilePhone,
+    string? ManagerName,
+    string? ManagerEmail,
+    IReadOnlyList<MailboxAddress> DirectReports,
+    byte[]? Photo);
+
 public sealed record ContactPage(IReadOnlyList<ContactInfo> Items, int TotalCount, int NextOffset, bool IsLastPage);
 
 public sealed class NewContact

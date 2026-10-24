@@ -147,6 +147,66 @@ public sealed partial class EwsClient
     private static XElement IndexedField(string uri, string index) =>
         T("IndexedFieldURI", new XAttribute("FieldURI", uri), new XAttribute("FieldIndex", index));
 
+    /// <summary>
+    /// Looks up one person in the company directory by e-mail address (or name), with manager, direct reports and
+    /// photo. Null when the address is not in the directory (external senders).
+    /// </summary>
+    public async Task<DirectoryPerson?> GetDirectoryPersonAsync(string addressOrName, CancellationToken ct = default)
+    {
+        if (string.IsNullOrWhiteSpace(addressOrName)) return null;
+        var entry = addressOrName.Trim();
+        // "smtp:" makes Exchange match the address exactly instead of doing an ambiguous name search.
+        if (entry.Contains('@') && !entry.StartsWith("smtp:", StringComparison.OrdinalIgnoreCase)) entry = "smtp:" + entry;
+
+        // ContactDataShape AllProperties (Exchange 2010 SP2+) adds ManagerMailbox, DirectReports and the photo.
+        var request = M("ResolveNames",
+            new XAttribute("ReturnFullContactData", "true"),
+            new XAttribute("SearchScope", "ActiveDirectory"),
+            new XAttribute("ContactDataShape", "AllProperties"),
+            M("UnresolvedEntry", entry));
+
+        var message = ResponseMessages(await ExecuteAsync(request, ct)).FirstOrDefault();
+        if (message is null || (string?)message.Element(MNs + "ResponseCode") == "ErrorNameResolutionNoResults") return null;
+        // Several matches still come back (with a warning class); the first is the best one.
+        if ((string?)message.Attribute("ResponseClass") == "Error") Ok(message);
+
+        var resolution = message.Element(MNs + "ResolutionSet")?.Elements(TNs + "Resolution").FirstOrDefault();
+        if (resolution is null) return null;
+        var mailbox = ParseMailbox(resolution.Element(TNs + "Mailbox"));
+        var contact = resolution.Element(TNs + "Contact");
+        var phones = contact?.Element(TNs + "PhoneNumbers");
+        var manager = ParseMailbox(contact?.Element(TNs + "ManagerMailbox")?.Element(TNs + "Mailbox"));
+        var photo = (string?)contact?.Element(TNs + "Photo");
+
+        return new DirectoryPerson(
+            (string?)contact?.Element(TNs + "DisplayName") ?? mailbox?.Display ?? addressOrName,
+            mailbox?.Address,
+            NullIfEmpty((string?)contact?.Element(TNs + "JobTitle")),
+            NullIfEmpty((string?)contact?.Element(TNs + "Department")),
+            NullIfEmpty((string?)contact?.Element(TNs + "CompanyName")),
+            NullIfEmpty((string?)contact?.Element(TNs + "OfficeLocation")),
+            Entry(phones, "BusinessPhone"),
+            Entry(phones, "MobilePhone"),
+            manager?.Name ?? NullIfEmpty((string?)contact?.Element(TNs + "Manager")),
+            manager?.Address,
+            ParseMailboxList(contact?.Element(TNs + "DirectReports")),
+            string.IsNullOrEmpty(photo) ? null : TryBase64(photo));
+    }
+
+    private static string? NullIfEmpty(string? value) => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
+
+    private static byte[]? TryBase64(string value)
+    {
+        try
+        {
+            return Convert.FromBase64String(value);
+        }
+        catch (FormatException)
+        {
+            return null;
+        }
+    }
+
     private static string? Entry(XElement? dictionary, string key)
     {
         var value = (string?)dictionary?.Elements(TNs + "Entry").FirstOrDefault(e => (string?)e.Attribute("Key") == key);

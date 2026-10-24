@@ -136,6 +136,13 @@ public static partial class MailFormat
         return index >= 0 ? preparedHtml.Insert(index, style) : style + preparedHtml;
     }
 
+    /// <summary>What is inside &lt;head&gt; (styles of the original message), or null when there is none.</summary>
+    public static string? ExtractHead(string html)
+    {
+        var match = HeadContent().Match(html);
+        return match.Success ? ScriptBlock().Replace(match.Groups[1].Value, "") : null;
+    }
+
     /// <summary>Returns what is inside &lt;body&gt; (or the whole fragment), without scripts, for loading into the editor.</summary>
     public static string ExtractBodyHtml(string html)
     {
@@ -189,6 +196,9 @@ public static partial class MailFormat
 
     [GeneratedRegex(@"<body[^>]*>(.*)</body>", RegexOptions.IgnoreCase | RegexOptions.Singleline)]
     private static partial Regex BodyContent();
+
+    [GeneratedRegex(@"<head[^>]*>(.*?)</head>", RegexOptions.IgnoreCase | RegexOptions.Singleline)]
+    private static partial Regex HeadContent();
 
     [GeneratedRegex(@"<script\b.*?</script\s*>", RegexOptions.IgnoreCase | RegexOptions.Singleline)]
     private static partial Regex ScriptBlock();

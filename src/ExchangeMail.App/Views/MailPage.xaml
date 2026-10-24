@@ -378,10 +378,12 @@
                             Width="40"
                             Height="40"
                             VerticalAlignment="Top"
+                            Tapped="OnSenderPictureTapped"
                             DisplayName="{x:Bind ViewModel.Current.FromName, Mode=OneWay}" />
                         <StackPanel Grid.Column="1" Spacing="2">
                             <StackPanel Orientation="Horizontal" Spacing="8">
-                                <TextBlock Text="{x:Bind ViewModel.Current.FromName, Mode=OneWay}" FontWeight="SemiBold" IsTextSelectionEnabled="True" />
+                                <!--  Names are links (built in code-behind) that open a card with the person's place in the directory.  -->
+                                <TextBlock x:Name="FromLine" FontWeight="SemiBold" />
                                 <TextBlock Text="{x:Bind ViewModel.Current.FromAddress, Mode=OneWay}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" IsTextSelectionEnabled="True" />
                             </StackPanel>
                             <Grid ColumnSpacing="6">
@@ -390,7 +392,7 @@
                                     <ColumnDefinition Width="*" />
                                 </Grid.ColumnDefinitions>
                                 <TextBlock Text="{h:L Key=Mail_ToLabel}" Style="{StaticResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
-                                <TextBlock Grid.Column="1" Text="{x:Bind ViewModel.Current.ToText, Mode=OneWay}" Style="{StaticResource CaptionTextBlockStyle}" IsTextSelectionEnabled="True" TextWrapping="Wrap" />
+                                <TextBlock x:Name="ToLine" Grid.Column="1" Style="{StaticResource CaptionTextBlockStyle}" TextWrapping="Wrap" />
                             </Grid>
                             <Grid ColumnSpacing="6" Visibility="{x:Bind ViewModel.Current.HasCc, Mode=OneWay, FallbackValue=Collapsed}">
                                 <Grid.ColumnDefinitions>
@@ -398,7 +400,7 @@
                                     <ColumnDefinition Width="*" />
                                 </Grid.ColumnDefinitions>
                                 <TextBlock Text="{h:L Key=Mail_CcLabel}" Style="{StaticResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
-                                <TextBlock Grid.Column="1" Text="{x:Bind ViewModel.Current.CcText, Mode=OneWay}" Style="{StaticResource CaptionTextBlockStyle}" IsTextSelectionEnabled="True" TextWrapping="Wrap" />
+                                <TextBlock x:Name="CcLine" Grid.Column="1" Style="{StaticResource CaptionTextBlockStyle}" TextWrapping="Wrap" />
                             </Grid>
                             <TextBlock Text="{x:Bind ViewModel.Current.DateText, Mode=OneWay}" Style="{StaticResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                         </StackPanel>

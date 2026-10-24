@@ -18,6 +18,23 @@ public sealed partial class ComposeViewModel : ObservableObject
     /// <summary>The draft this window writes to, once it exists on the server.</summary>
     private EwsItemId? _draftId;
 
+    /// <summary>The draft was created only to show the quoted original; it is deleted if the window is discarded.</summary>
+    private bool _isAutoDraft;
+
+    /// <summary>The window was discarded; a draft that is still being created gets removed when it arrives.</summary>
+    private bool _discarded;
+
+    /// <summary>The draft opened for editing, loaded into the editor in full by <see cref="PrepareAsync"/>.</summary>
+    private MailDetail? _draftSource;
+
+    /// <summary>&lt;head&gt; of the draft's HTML (the original's styles), put back around the editor's body when saving.</summary>
+    private string? _bodyHead;
+
+    /// <summary>Inline images shown in the editor as data: URIs, by content id; turned back into cid: when saving.</summary>
+    private readonly Dictionary<string, string> _inlineImages = [];
+
+    private const long MaxInlineImageBytes = 15 * 1024 * 1024;
+
     public ComposeViewModel(MailSession session, ComposeMode mode, MailDetail? original)
     {
         if (mode != ComposeMode.New && original is null)
@@ -70,6 +87,7 @@ public sealed partial class ComposeViewModel : ObservableObject
             InitialHtml = draft.IsHtml ? MailFormat.ExtractBodyHtml(draft.Body) : MailFormat.PlainTextToHtml(draft.Body),
         };
         vm._draftId = draft.ItemId;
+        vm._draftSource = draft;
         foreach (var a in draft.Attachments.Where(a => !a.IsInline)) vm.ExistingAttachments.Add(a);
         return vm;
     }
@@ -169,6 +187,78 @@ public sealed partial class ComposeViewModel : ObservableObject
         }
     }
 
+    /// <summary>
+    /// Called once the editor is ready. A reply or forward is saved as a draft right away so Exchange adds the quoted
+    /// original (and, for a forward, its attachments), which then appears in the editor; a draft being edited gets
+    /// its inline images and styles. Failure leaves the window usable: Exchange then adds the original when sending.
+    /// </summary>
+    public async Task PrepareAsync()
+    {
+        if (_draftSource is { } source)
+        {
+            _draftSource = null;
+            try
+            {
+                BodyReplaced?.Invoke(this, await ToEditorHtmlAsync(source));
+            }
+            catch (EwsException)
+            {
+                // The draft stays editable as loaded, only its inline images don't show.
+            }
+            return;
+        }
+        if (Mode == ComposeMode.New || _draftId is not null) return;
+
+        var message = await BuildMessageAsync(requireRecipients: false);
+        if (message is null) return;
+        InfoMessage = Strings.Compose_LoadingOriginal;
+        await RunAsync(async () =>
+        {
+            _draftId = await _session.Client.SaveDraftAsync(message);
+            _isAutoDraft = true;
+            if (_discarded)
+            {
+                await DeleteAutoDraftAsync();
+                return;
+            }
+            try
+            {
+                await ReloadDraftAsync(replaceBody: true);
+            }
+            catch (EwsException)
+            {
+                // Without the body in the editor, sending would overwrite the quote; fall back to letting Exchange
+                // add the original at send time, as if no draft had been made.
+                await DeleteAutoDraftAsync();
+                _draftId = null;
+                OnPropertyChanged(nameof(IsResponse));
+                throw;
+            }
+        });
+        if (InfoMessage == Strings.Compose_LoadingOriginal) InfoMessage = null;
+    }
+
+    /// <summary>The window is closed without sending: a draft created only to show the original is removed.</summary>
+    public Task DiscardAsync()
+    {
+        _discarded = true;
+        return DeleteAutoDraftAsync();
+    }
+
+    private async Task DeleteAutoDraftAsync()
+    {
+        if (!_isAutoDraft || _draftId is not { } id) return;
+        _isAutoDraft = false;
+        try
+        {
+            await _session.Client.DeleteItemsAsync([id], DeleteMode.SoftDelete);
+        }
+        catch (EwsException)
+        {
+            // It stays in Drafts; nothing is lost.
+        }
+    }
+
     private bool CanSubmit() => !IsBusy;
 
     [RelayCommand(CanExecute = nameof(CanSubmit))]
@@ -197,25 +287,65 @@ public sealed partial class ComposeViewModel : ObservableObject
         {
             var wasResponse = IsResponse;
             _draftId = await _session.Client.SaveDraftAsync(message);
-
-            // Reload what the server now holds: saved attachments (and, for a forward, the original's attachments)
-            // and, the first time a reply is saved, the body including the quoted original.
-            var saved = await _session.Client.GetItemAsync(_draftId);
-            _draftId = saved.ItemId;
-            Attachments.Clear();
-            _removedAttachmentIds.Clear();
-            ExistingAttachments.Clear();
-            foreach (var a in saved.Attachments.Where(a => !a.IsInline)) ExistingAttachments.Add(a);
-            OnPropertyChanged(nameof(AttachmentsSizeText));
-            if (wasResponse)
-            {
-                OnPropertyChanged(nameof(IsResponse));
-                BodyReplaced?.Invoke(this, saved.IsHtml ? MailFormat.ExtractBodyHtml(saved.Body) : MailFormat.PlainTextToHtml(saved.Body));
-            }
+            _isAutoDraft = false; // the user wants to keep it
+            await ReloadDraftAsync(replaceBody: wasResponse);
 
             InfoMessage = Loc.Format(Strings.Compose_DraftSavedAt, DateTime.Now.ToString("t", System.Globalization.CultureInfo.CurrentCulture));
             DraftSaved?.Invoke(this, EventArgs.Empty);
         });
+    }
+
+    /// <summary>
+    /// Reloads what the server now holds: saved attachments (and, for a forward, the original's attachments) and,
+    /// when <paramref name="replaceBody"/>, the body including the quoted original.
+    /// </summary>
+    private async Task ReloadDraftAsync(bool replaceBody)
+    {
+        var saved = await _session.Client.GetItemAsync(_draftId!);
+        _draftId = saved.ItemId;
+        Attachments.Clear();
+        _removedAttachmentIds.Clear();
+        ExistingAttachments.Clear();
+        foreach (var a in saved.Attachments.Where(a => !a.IsInline)) ExistingAttachments.Add(a);
+        OnPropertyChanged(nameof(AttachmentsSizeText));
+        if (!replaceBody) return;
+        OnPropertyChanged(nameof(IsResponse));
+        BodyReplaced?.Invoke(this, await ToEditorHtmlAsync(saved));
+    }
+
+    /// <summary>The body of a saved draft for the editor, with inline images loaded and the head kept aside.</summary>
+    private async Task<string> ToEditorHtmlAsync(MailDetail saved)
+    {
+        if (!saved.IsHtml) return MailFormat.PlainTextToHtml(saved.Body);
+        _bodyHead = MailFormat.ExtractHead(saved.Body);
+        var html = MailFormat.ExtractBodyHtml(saved.Body);
+
+        long loaded = 0;
+        foreach (var a in saved.Attachments.Where(a => !a.IsItemAttachment && MailFormat.ReferencesContentId(html, a.ContentId)))
+        {
+            if (loaded + a.Size > MaxInlineImageBytes) break;
+            AttachmentContent content;
+            try
+            {
+                content = await _session.Client.GetAttachmentAsync(a);
+            }
+            catch (EwsException)
+            {
+                continue; // stays a cid: reference: broken in the editor, intact in the message
+            }
+            loaded += content.Content.Length;
+            var data = $"data:{content.ContentType ?? a.ContentType ?? "image/png"};base64,{Convert.ToBase64String(content.Content)}";
+            _inlineImages[a.ContentId!.Trim('<', '>')] = data;
+            html = MailFormat.ReplaceContentId(html, a.ContentId!, data);
+        }
+        return html;
+    }
+
+    /// <summary>The editor's HTML as the draft's body: inline images back to cid: and the original head restored.</summary>
+    private string FromEditorHtml(string html)
+    {
+        foreach (var (cid, data) in _inlineImages) html = html.Replace(data, "cid:" + cid, StringComparison.Ordinal);
+        return _bodyHead is null ? html : $"<html><head>{_bodyHead}</head><body>{html}</body></html>";
     }
 
     private async Task<OutgoingMessage?> BuildMessageAsync(bool requireRecipients)
@@ -250,7 +380,7 @@ public sealed partial class ComposeViewModel : ObservableObject
             Subject = Subject.Trim(),
             HtmlBody = _draftId is null
                 ? MailFormat.WrapComposedHtml(html, _session.Preferences.ComposeFontFamily, _session.Preferences.ComposeFontSize)
-                : html,
+                : FromEditorHtml(html),
             Importance = IsHighImportance ? Importance.High : Importance.Normal,
             Attachments = Attachments.ToList(),
         };
@@ -275,12 +405,12 @@ public sealed partial class ComposeViewModel : ObservableObject
 
     private static string Join(IEnumerable<MailboxAddress> addresses)
     {
-        var text = string.Join("; ", addresses.Where(a => a.Address.Length > 0).Select(Format));
+        var text = string.Join("; ", addresses.Where(a => a.Address.Length > 0).Select(FormatRecipient));
         return text.Length == 0 ? "" : text + "; ";
     }
 
     // Names such as "Yılmaz, Ali" are quoted so the separator inside them is not treated as a recipient boundary.
-    private static string Format(MailboxAddress m) =>
+    public static string FormatRecipient(MailboxAddress m) =>
         string.IsNullOrWhiteSpace(m.Name) || m.Name == m.Address ? m.Address
         : m.Name.IndexOfAny([',', ';']) >= 0 ? $"\"{m.Name.Replace("\"", "")}\" <{m.Address}>"
         : $"{m.Name} <{m.Address}>";

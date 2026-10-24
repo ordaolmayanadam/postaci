@@ -403,6 +403,10 @@ public sealed partial class MainViewModel : ObservableObject
     [RelayCommand]
     private void NewMail() => RequestCompose(new ComposeViewModel(_session, ComposeMode.New, null));
 
+    /// <summary>A new message to <paramref name="address"/> (from a person card).</summary>
+    public void NewMailTo(MailboxAddress address) =>
+        RequestCompose(new ComposeViewModel(_session, ComposeMode.New, null) { To = ComposeViewModel.FormatRecipient(address) + "; " });
+
     private void RequestCompose(ComposeViewModel compose)
     {
         // Sending or saving changes the Drafts folder; keep it current if it is on screen.
