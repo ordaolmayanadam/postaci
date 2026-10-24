@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Page
+    x:Class="ExchangeMail.App.Views.ShellPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <NavigationView
+        x:Name="Nav"
+        IsBackButtonVisible="Collapsed"
+        IsPaneToggleButtonVisible="True"
+        IsSettingsVisible="True"
+        OpenPaneLength="220"
+        PaneDisplayMode="LeftCompact"
+        SelectionChanged="OnNavigationSelectionChanged">
+        <NavigationView.MenuItems>
+            <NavigationViewItem x:Name="MailItem" Content="Posta" Icon="Mail" Tag="mail">
+                <NavigationViewItem.KeyboardAccelerators>
+                    <KeyboardAccelerator Key="Number1" Modifiers="Control" Invoked="OnNavigationAccelerator" />
+                </NavigationViewItem.KeyboardAccelerators>
+            </NavigationViewItem>
+            <NavigationViewItem x:Name="CalendarItem" Content="Takvim" Icon="Calendar" Tag="calendar">
+                <NavigationViewItem.KeyboardAccelerators>
+                    <KeyboardAccelerator Key="Number2" Modifiers="Control" Invoked="OnNavigationAccelerator" />
+                </NavigationViewItem.KeyboardAccelerators>
+            </NavigationViewItem>
+            <NavigationViewItem x:Name="ContactsItem" Content="Kişiler" Icon="People" Tag="contacts">
+                <NavigationViewItem.KeyboardAccelerators>
+                    <KeyboardAccelerator Key="Number3" Modifiers="Control" Invoked="OnNavigationAccelerator" />
+                </NavigationViewItem.KeyboardAccelerators>
+            </NavigationViewItem>
+        </NavigationView.MenuItems>
+
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+            <InfoBar
+                Margin="8,0,8,8"
+                IsClosable="False"
+                IsOpen="{x:Bind AutoReply.IsActive, Mode=OneWay}"
+                Message="{x:Bind AutoReply.BannerText, Mode=OneWay}"
+                Severity="Warning">
+                <InfoBar.ActionButton>
+                    <Button Content="Kapat" Command="{x:Bind AutoReply.TurnOffCommand}" />
+                </InfoBar.ActionButton>
+            </InfoBar>
+            <Frame x:Name="ContentFrame" Grid.Row="1" />
+        </Grid>
+    </NavigationView>
+</Page>

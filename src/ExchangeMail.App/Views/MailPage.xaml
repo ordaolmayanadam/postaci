@@ -1,0 +1,428 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Page
+    x:Class="ExchangeMail.App.Views.MailPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:h="using:ExchangeMail.App.Helpers"
+    xmlns:vm="using:ExchangeMail.ViewModels"
+    NavigationCacheMode="Required">
+
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="260" />
+            <ColumnDefinition Width="400" MinWidth="320" />
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+
+        <!--  Folders  -->
+        <Grid Padding="8,0,8,8" RowSpacing="4">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+
+            <Button
+                Margin="4,4,4,12"
+                HorizontalAlignment="Stretch"
+                Style="{StaticResource AccentButtonStyle}"
+                Command="{x:Bind ViewModel.NewMailCommand}"
+                ToolTipService.ToolTip="Yeni posta (Ctrl+N)">
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                    <FontIcon Glyph="&#xE710;" FontSize="14" />
+                    <TextBlock Text="Yeni posta" />
+                </StackPanel>
+                <Button.KeyboardAccelerators>
+                    <KeyboardAccelerator Key="N" Modifiers="Control" />
+                </Button.KeyboardAccelerators>
+            </Button>
+
+            <StackPanel Grid.Row="1" Margin="12,0,0,8">
+                <TextBlock Text="{x:Bind ViewModel.AccountEmail}" Style="{StaticResource BodyStrongTextBlockStyle}" TextTrimming="CharacterEllipsis" />
+                <TextBlock Text="{x:Bind ViewModel.ServerHost}" Style="{StaticResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+            </StackPanel>
+
+            <ListView
+                Grid.Row="2"
+                ItemsSource="{x:Bind ViewModel.Folders}"
+                SelectedItem="{x:Bind ViewModel.SelectedFolder, Mode=TwoWay}"
+                SelectionMode="Single">
+                <ListView.ItemTemplate>
+                    <DataTemplate x:DataType="vm:FolderViewModel">
+                        <Grid Height="36" Padding="{x:Bind h:Ui.Indent(Depth)}" ColumnSpacing="12">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <FontIcon Glyph="{x:Bind Glyph}" FontSize="15" />
+                            <TextBlock
+                                Grid.Column="1"
+                                VerticalAlignment="Center"
+                                Text="{x:Bind DisplayName}"
+                                FontWeight="{x:Bind h:Ui.BoldIf(HasUnread), Mode=OneWay}"
+                                TextTrimming="CharacterEllipsis" />
+                            <TextBlock
+                                Grid.Column="2"
+                                VerticalAlignment="Center"
+                                Text="{x:Bind UnreadText, Mode=OneWay}"
+                                FontWeight="SemiBold"
+                                Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}" />
+                        </Grid>
+                    </DataTemplate>
+                </ListView.ItemTemplate>
+            </ListView>
+        </Grid>
+
+        <!--  Message list  -->
+        <Grid
+            Grid.Column="1"
+            Background="{ThemeResource LayerFillColorDefaultBrush}"
+            BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+            BorderThickness="1,1,0,0"
+            CornerRadius="8,0,0,0">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+
+            <StackPanel Padding="12,12,12,4" Spacing="10">
+                <AutoSuggestBox
+                    x:Name="SearchBox"
+                    PlaceholderText="Ara (ör. rapor, from:ali, hasattachment:yes)"
+                    QueryIcon="Find"
+                    Text="{x:Bind ViewModel.SearchText, Mode=TwoWay}"
+                    QuerySubmitted="OnSearchSubmitted">
+                    <AutoSuggestBox.KeyboardAccelerators>
+                        <KeyboardAccelerator Key="E" Modifiers="Control" Invoked="OnFocusSearch" />
+                    </AutoSuggestBox.KeyboardAccelerators>
+                </AutoSuggestBox>
+                <Grid>
+                    <TextBlock
+                        Text="{x:Bind ViewModel.SelectedFolder.DisplayName, Mode=OneWay}"
+                        Style="{StaticResource SubtitleTextBlockStyle}"
+                        TextTrimming="CharacterEllipsis" />
+                    <StackPanel HorizontalAlignment="Right" Orientation="Horizontal" Spacing="8">
+                        <HyperlinkButton
+                            Content="Aramayı temizle"
+                            Command="{x:Bind ViewModel.ClearSearchCommand}"
+                            Visibility="{x:Bind ViewModel.IsSearchActive, Mode=OneWay}" />
+                        <ProgressRing Width="16" Height="16" IsActive="{x:Bind ViewModel.IsLoadingList, Mode=OneWay}" />
+                    </StackPanel>
+                </Grid>
+            </StackPanel>
+
+            <InfoBar
+                Grid.Row="1"
+                Margin="12,4"
+                Severity="Error"
+                IsOpen="{x:Bind h:Ui.HasText(ViewModel.ErrorMessage), Mode=OneWay}"
+                Message="{x:Bind ViewModel.ErrorMessage, Mode=OneWay}"
+                CloseButtonClick="OnErrorClosed" />
+
+            <TextBlock
+                Grid.Row="2"
+                Margin="0,48,0,0"
+                HorizontalAlignment="Center"
+                Text="Bu görünümde öğe yok"
+                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                Visibility="{x:Bind ViewModel.IsListEmpty, Mode=OneWay}" />
+
+            <ListView
+                x:Name="MessageList"
+                Grid.Row="2"
+                ItemsSource="{x:Bind ViewModel.Messages}"
+                SelectedItem="{x:Bind ViewModel.SelectedMessage, Mode=TwoWay}"
+                SelectionMode="Single"
+                DoubleTapped="OnMessageDoubleTapped"
+                KeyDown="OnMessageListKeyDown">
+                <ListView.ItemTemplate>
+                    <DataTemplate x:DataType="vm:MessageItemViewModel">
+                        <Grid Padding="0,8" ColumnSpacing="10">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="3" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+                            <Rectangle
+                                Fill="{ThemeResource AccentFillColorDefaultBrush}"
+                                RadiusX="1.5"
+                                RadiusY="1.5"
+                                Visibility="{x:Bind IsUnread, Mode=OneWay}" />
+                            <StackPanel Grid.Column="1" Spacing="2">
+                                <Grid ColumnSpacing="6">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock
+                                        Text="{x:Bind Sender}"
+                                        FontWeight="{x:Bind h:Ui.BoldIf(IsUnread), Mode=OneWay}"
+                                        TextTrimming="CharacterEllipsis" />
+                                    <FontIcon
+                                        Grid.Column="1"
+                                        Glyph="&#xE787;"
+                                        FontSize="12"
+                                        ToolTipService.ToolTip="Toplantı"
+                                        Visibility="{x:Bind IsMeeting}" />
+                                    <FontIcon
+                                        Grid.Column="2"
+                                        Glyph="&#xE8C9;"
+                                        FontSize="12"
+                                        Foreground="{ThemeResource SystemFillColorCriticalBrush}"
+                                        ToolTipService.ToolTip="Yüksek önem"
+                                        Visibility="{x:Bind IsHighImportance}" />
+                                    <FontIcon
+                                        Grid.Column="3"
+                                        Glyph="&#xE723;"
+                                        FontSize="12"
+                                        ToolTipService.ToolTip="Ek var"
+                                        Visibility="{x:Bind HasAttachments}" />
+                                    <TextBlock
+                                        Grid.Column="4"
+                                        VerticalAlignment="Center"
+                                        Text="{x:Bind DateText}"
+                                        Style="{StaticResource CaptionTextBlockStyle}"
+                                        Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                </Grid>
+                                <TextBlock
+                                    Text="{x:Bind Subject}"
+                                    FontWeight="{x:Bind h:Ui.BoldIf(IsUnread), Mode=OneWay}"
+                                    TextTrimming="CharacterEllipsis" />
+                                <TextBlock
+                                    Text="{x:Bind Preview}"
+                                    MaxLines="1"
+                                    Style="{StaticResource CaptionTextBlockStyle}"
+                                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                    TextTrimming="CharacterEllipsis"
+                                    TextWrapping="NoWrap" />
+                            </StackPanel>
+                        </Grid>
+                    </DataTemplate>
+                </ListView.ItemTemplate>
+                <ListView.Footer>
+                    <Button
+                        Margin="0,8,0,16"
+                        HorizontalAlignment="Center"
+                        Content="Daha fazla yükle"
+                        Command="{x:Bind ViewModel.LoadMoreCommand}"
+                        Visibility="{x:Bind ViewModel.HasMore, Mode=OneWay}" />
+                </ListView.Footer>
+            </ListView>
+
+            <TextBlock
+                Grid.Row="3"
+                Margin="16,6"
+                Text="{x:Bind ViewModel.StatusText, Mode=OneWay}"
+                Style="{StaticResource CaptionTextBlockStyle}"
+                Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+        </Grid>
+
+        <!--  Reading pane  -->
+        <Grid
+            Grid.Column="2"
+            Background="{ThemeResource LayerFillColorDefaultBrush}"
+            BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+            BorderThickness="1,1,0,0">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+
+            <CommandBar HorizontalAlignment="Left" Background="Transparent" DefaultLabelPosition="Right">
+                <AppBarButton
+                    Icon="Edit"
+                    Label="Taslağı düzenle"
+                    Command="{x:Bind ViewModel.EditDraftCommand}"
+                    Visibility="{x:Bind ViewModel.IsDraftsFolder, Mode=OneWay}" />
+                <AppBarButton Icon="MailReply" Label="Yanıtla" Command="{x:Bind ViewModel.ReplyCommand}">
+                    <AppBarButton.KeyboardAccelerators>
+                        <KeyboardAccelerator Key="R" Modifiers="Control" />
+                    </AppBarButton.KeyboardAccelerators>
+                </AppBarButton>
+                <AppBarButton Icon="MailReplyAll" Label="Tümünü yanıtla" Command="{x:Bind ViewModel.ReplyAllCommand}">
+                    <AppBarButton.KeyboardAccelerators>
+                        <KeyboardAccelerator Key="R" Modifiers="Control,Shift" />
+                    </AppBarButton.KeyboardAccelerators>
+                </AppBarButton>
+                <AppBarButton Icon="MailForward" Label="İlet" Command="{x:Bind ViewModel.ForwardCommand}">
+                    <AppBarButton.KeyboardAccelerators>
+                        <KeyboardAccelerator Key="F" Modifiers="Control" />
+                    </AppBarButton.KeyboardAccelerators>
+                </AppBarButton>
+                <AppBarSeparator />
+                <AppBarButton Icon="Delete" Label="Sil" Command="{x:Bind ViewModel.DeleteCommand}" />
+                <AppBarButton Icon="MoveToFolder" Label="Taşı" IsEnabled="{x:Bind h:Ui.IsNotNull(ViewModel.SelectedMessage), Mode=OneWay}">
+                    <AppBarButton.Flyout>
+                        <MenuFlyout x:Name="MoveFlyout" Opening="OnMoveFlyoutOpening" />
+                    </AppBarButton.Flyout>
+                </AppBarButton>
+                <AppBarButton Icon="Read" Label="Okundu / okunmadı" Command="{x:Bind ViewModel.ToggleReadCommand}">
+                    <AppBarButton.KeyboardAccelerators>
+                        <KeyboardAccelerator Key="Q" Modifiers="Control" />
+                    </AppBarButton.KeyboardAccelerators>
+                </AppBarButton>
+                <AppBarButton Icon="Refresh" Label="Yenile" Command="{x:Bind ViewModel.RefreshCommand}">
+                    <AppBarButton.KeyboardAccelerators>
+                        <KeyboardAccelerator Key="F5" />
+                    </AppBarButton.KeyboardAccelerators>
+                </AppBarButton>
+            </CommandBar>
+
+            <StackPanel
+                Grid.Row="1"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                Spacing="8"
+                Visibility="{x:Bind ViewModel.ShowPlaceholder, Mode=OneWay}">
+                <FontIcon Glyph="&#xE715;" FontSize="48" Foreground="{ThemeResource TextFillColorTertiaryBrush}" />
+                <TextBlock Text="Okumak için bir öğe seçin" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+            </StackPanel>
+
+            <ProgressRing
+                Grid.Row="1"
+                Width="32"
+                Height="32"
+                IsActive="{x:Bind ViewModel.IsLoadingMessage, Mode=OneWay}" />
+
+            <Grid
+                Grid.Row="1"
+                Padding="24,4,24,24"
+                RowSpacing="12"
+                Visibility="{x:Bind ViewModel.HasCurrent, Mode=OneWay}">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+
+                <StackPanel Spacing="12">
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <FontIcon
+                            Glyph="&#xE8C9;"
+                            FontSize="16"
+                            Foreground="{ThemeResource SystemFillColorCriticalBrush}"
+                            Visibility="{x:Bind ViewModel.Current.IsHighImportance, Mode=OneWay, FallbackValue=Collapsed}" />
+                        <TextBlock
+                            Text="{x:Bind ViewModel.Current.Subject, Mode=OneWay}"
+                            Style="{StaticResource SubtitleTextBlockStyle}"
+                            IsTextSelectionEnabled="True"
+                            TextWrapping="Wrap" />
+                    </StackPanel>
+                    <Grid ColumnSpacing="12">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <PersonPicture
+                            Width="40"
+                            Height="40"
+                            VerticalAlignment="Top"
+                            DisplayName="{x:Bind ViewModel.Current.FromName, Mode=OneWay}" />
+                        <StackPanel Grid.Column="1" Spacing="2">
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <TextBlock Text="{x:Bind ViewModel.Current.FromName, Mode=OneWay}" FontWeight="SemiBold" IsTextSelectionEnabled="True" />
+                                <TextBlock Text="{x:Bind ViewModel.Current.FromAddress, Mode=OneWay}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" IsTextSelectionEnabled="True" />
+                            </StackPanel>
+                            <Grid ColumnSpacing="6">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Text="Kime:" Style="{StaticResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                <TextBlock Grid.Column="1" Text="{x:Bind ViewModel.Current.ToText, Mode=OneWay}" Style="{StaticResource CaptionTextBlockStyle}" IsTextSelectionEnabled="True" TextWrapping="Wrap" />
+                            </Grid>
+                            <Grid ColumnSpacing="6" Visibility="{x:Bind ViewModel.Current.HasCc, Mode=OneWay, FallbackValue=Collapsed}">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Text="Bilgi:" Style="{StaticResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                <TextBlock Grid.Column="1" Text="{x:Bind ViewModel.Current.CcText, Mode=OneWay}" Style="{StaticResource CaptionTextBlockStyle}" IsTextSelectionEnabled="True" TextWrapping="Wrap" />
+                            </Grid>
+                            <TextBlock Text="{x:Bind ViewModel.Current.DateText, Mode=OneWay}" Style="{StaticResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                        </StackPanel>
+                    </Grid>
+                </StackPanel>
+
+                <GridView
+                    Grid.Row="1"
+                    MaxHeight="140"
+                    IsItemClickEnabled="True"
+                    ItemClick="OnAttachmentClick"
+                    ItemsSource="{x:Bind ViewModel.Current.Attachments, Mode=OneWay}"
+                    SelectionMode="None"
+                    ToolTipService.ToolTip="Kaydetmek için tıklayın"
+                    Visibility="{x:Bind ViewModel.Current.HasAttachments, Mode=OneWay, FallbackValue=Collapsed}">
+                    <GridView.ItemTemplate>
+                        <DataTemplate x:DataType="vm:AttachmentViewModel">
+                            <Grid
+                                Width="220"
+                                Padding="10,6"
+                                Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                                BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                                BorderThickness="1"
+                                ColumnSpacing="10"
+                                CornerRadius="4">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <FontIcon Glyph="{x:Bind Glyph}" FontSize="20" />
+                                <StackPanel Grid.Column="1">
+                                    <TextBlock Text="{x:Bind Name}" TextTrimming="CharacterEllipsis" />
+                                    <TextBlock Text="{x:Bind SizeText}" Style="{StaticResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                </StackPanel>
+                            </Grid>
+                        </DataTemplate>
+                    </GridView.ItemTemplate>
+                </GridView>
+
+                <StackPanel Grid.Row="2" Spacing="8">
+                    <InfoBar
+                        Title="Toplantı daveti"
+                        Severity="Informational"
+                        IsClosable="False"
+                        IsOpen="{x:Bind ViewModel.IsMeetingRequest, Mode=OneWay}"
+                        Message="Yanıtınız düzenleyene gönderilir ve toplantı takviminize işlenir.">
+                        <InfoBar.Content>
+                            <StackPanel Margin="0,0,0,12" Orientation="Horizontal" Spacing="8">
+                                <Button
+                                    Content="Kabul et"
+                                    Style="{StaticResource AccentButtonStyle}"
+                                    Command="{x:Bind ViewModel.RespondToMeetingCommand}"
+                                    CommandParameter="Accept" />
+                                <Button Content="Belki" Command="{x:Bind ViewModel.RespondToMeetingCommand}" CommandParameter="Tentative" />
+                                <Button Content="Reddet" Command="{x:Bind ViewModel.RespondToMeetingCommand}" CommandParameter="Decline" />
+                            </StackPanel>
+                        </InfoBar.Content>
+                    </InfoBar>
+                    <InfoBar
+                        Severity="Informational"
+                        IsClosable="False"
+                        IsOpen="{x:Bind ViewModel.Current.ShowRemoteContentBanner, Mode=OneWay, FallbackValue=False}"
+                        Message="Gizliliğiniz için bu iletideki uzak resimler engellendi.">
+                        <InfoBar.ActionButton>
+                            <Button Content="Resimleri göster" Click="OnShowRemoteContent" />
+                        </InfoBar.ActionButton>
+                    </InfoBar>
+                </StackPanel>
+
+                <Border
+                    Grid.Row="3"
+                    Background="White"
+                    BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                    BorderThickness="1"
+                    CornerRadius="6">
+                    <WebView2 x:Name="BodyView" />
+                </Border>
+            </Grid>
+        </Grid>
+    </Grid>
+</Page>

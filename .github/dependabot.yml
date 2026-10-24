@@ -1,0 +1,19 @@
+version: 2
+updates:
+  - package-ecosystem: nuget
+    directories:
+      - "/src/ExchangeMail.App"
+      - "/src/ExchangeMail.ViewModels"
+      - "/tests/ExchangeMail.Core.Tests"
+    schedule:
+      interval: weekly
+    groups:
+      windows-app-sdk:
+        patterns: ["Microsoft.WindowsAppSDK*", "Microsoft.Windows.SDK.BuildTools*"]
+      test:
+        patterns: ["xunit*", "Microsoft.NET.Test.Sdk"]
+
+  - package-ecosystem: github-actions
+    directory: "/"
+    schedule:
+      interval: weekly

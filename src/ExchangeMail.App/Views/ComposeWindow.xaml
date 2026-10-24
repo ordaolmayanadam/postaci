@@ -1,0 +1,234 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Window
+    x:Class="ExchangeMail.App.Views.ComposeWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:h="using:ExchangeMail.App.Helpers"
+    xmlns:controls="using:ExchangeMail.App.Controls"
+    xmlns:models="using:ExchangeMail.Core.Models">
+
+    <Window.SystemBackdrop>
+        <MicaBackdrop Kind="BaseAlt" />
+    </Window.SystemBackdrop>
+
+    <Grid
+        x:Name="Root"
+        AllowDrop="True"
+        DragOver="OnDragOver"
+        Drop="OnDrop">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="48" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <Grid x:Name="TitleBarArea" Padding="16,0,0,0">
+            <TextBlock
+                VerticalAlignment="Center"
+                Text="{x:Bind ViewModel.WindowTitle, Mode=OneWay}"
+                Style="{StaticResource CaptionTextBlockStyle}"
+                TextTrimming="CharacterEllipsis" />
+        </Grid>
+
+        <CommandBar Grid.Row="1" HorizontalAlignment="Left" Background="Transparent" DefaultLabelPosition="Right">
+            <AppBarButton Icon="Send" Label="Gönder" Command="{x:Bind ViewModel.SendCommand}">
+                <AppBarButton.KeyboardAccelerators>
+                    <KeyboardAccelerator Key="Enter" Modifiers="Control" />
+                </AppBarButton.KeyboardAccelerators>
+            </AppBarButton>
+            <AppBarSeparator />
+            <AppBarButton Icon="Attach" Label="Dosya ekle" Click="OnAttachClick" />
+            <AppBarButton Icon="Save" Label="Taslak kaydet" Command="{x:Bind ViewModel.SaveDraftCommand}">
+                <AppBarButton.KeyboardAccelerators>
+                    <KeyboardAccelerator Key="S" Modifiers="Control" />
+                </AppBarButton.KeyboardAccelerators>
+            </AppBarButton>
+            <AppBarToggleButton Icon="Important" Label="Yüksek önem" IsChecked="{x:Bind ViewModel.IsHighImportance, Mode=TwoWay}" />
+            <AppBarToggleButton Label="Gizli" IsChecked="{x:Bind ViewModel.ShowBcc, Mode=TwoWay}">
+                <AppBarToggleButton.Icon>
+                    <FontIcon Glyph="&#xE716;" />
+                </AppBarToggleButton.Icon>
+            </AppBarToggleButton>
+        </CommandBar>
+
+        <StackPanel Grid.Row="2" Padding="16,0" Spacing="8">
+            <ProgressBar IsIndeterminate="True" Visibility="{x:Bind ViewModel.IsBusy, Mode=OneWay}" />
+            <InfoBar
+                Severity="Error"
+                IsOpen="{x:Bind h:Ui.HasText(ViewModel.ErrorMessage), Mode=OneWay}"
+                Message="{x:Bind ViewModel.ErrorMessage, Mode=OneWay}"
+                CloseButtonClick="OnErrorClosed" />
+            <InfoBar
+                Severity="Success"
+                IsOpen="{x:Bind h:Ui.HasText(ViewModel.InfoMessage), Mode=OneWay}"
+                Message="{x:Bind ViewModel.InfoMessage, Mode=OneWay}"
+                IsClosable="False" />
+        </StackPanel>
+
+        <Grid
+            Grid.Row="3"
+            Padding="16,8"
+            ColumnSpacing="12"
+            RowSpacing="8">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="56" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+
+            <TextBlock VerticalAlignment="Center" Text="Kime" />
+            <AutoSuggestBox
+                x:Name="ToBox"
+                Grid.Column="1"
+                PlaceholderText="Ad yazıp listeden seçin veya adres girin (; ile ayırın)"
+                Text="{x:Bind ViewModel.To, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                UpdateTextOnSelect="False"
+                TextChanged="OnRecipientTextChanged"
+                QuerySubmitted="OnRecipientQuerySubmitted" />
+
+            <TextBlock Grid.Row="1" VerticalAlignment="Center" Text="Bilgi" />
+            <AutoSuggestBox
+                x:Name="CcBox"
+                Grid.Row="1"
+                Grid.Column="1"
+                Text="{x:Bind ViewModel.Cc, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                UpdateTextOnSelect="False"
+                TextChanged="OnRecipientTextChanged"
+                QuerySubmitted="OnRecipientQuerySubmitted" />
+
+            <TextBlock
+                Grid.Row="2"
+                VerticalAlignment="Center"
+                Text="Gizli"
+                Visibility="{x:Bind ViewModel.ShowBcc, Mode=OneWay}" />
+            <AutoSuggestBox
+                x:Name="BccBox"
+                Grid.Row="2"
+                Grid.Column="1"
+                Text="{x:Bind ViewModel.Bcc, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                UpdateTextOnSelect="False"
+                TextChanged="OnRecipientTextChanged"
+                QuerySubmitted="OnRecipientQuerySubmitted"
+                Visibility="{x:Bind ViewModel.ShowBcc, Mode=OneWay}" />
+
+            <TextBlock Grid.Row="3" VerticalAlignment="Center" Text="Konu" />
+            <TextBox
+                Grid.Row="3"
+                Grid.Column="1"
+                Text="{x:Bind ViewModel.Subject, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+        </Grid>
+
+        <Grid Grid.Row="4" Padding="16,0,16,8" RowSpacing="6">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+            <controls:HtmlEditor x:Name="Editor" />
+            <TextBlock
+                Grid.Row="1"
+                Style="{StaticResource CaptionTextBlockStyle}"
+                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                TextTrimming="CharacterEllipsis"
+                Visibility="{x:Bind ViewModel.IsResponse, Mode=OneWay}">
+                <Run Text="Özgün ileti gönderilirken alta eklenecek:" />
+                <Run Text="{x:Bind ViewModel.OriginalSummary}" />
+            </TextBlock>
+        </Grid>
+
+        <StackPanel Grid.Row="5" Padding="16,0,16,12" Spacing="4">
+            <TextBlock Style="{StaticResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}">
+                <Run Text="Ekler · toplam" />
+                <Run Text="{x:Bind ViewModel.AttachmentsSizeText, Mode=OneWay}" />
+                <Run Text="· dosyaları pencereye sürükleyip bırakabilirsiniz" />
+            </TextBlock>
+            <ListView
+                MaxHeight="80"
+                ItemsSource="{x:Bind ViewModel.ExistingAttachments}"
+                SelectionMode="None">
+                <ListView.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <ItemsWrapGrid Orientation="Horizontal" />
+                    </ItemsPanelTemplate>
+                </ListView.ItemsPanel>
+                <ListView.ItemTemplate>
+                    <DataTemplate x:DataType="models:AttachmentInfo">
+                        <Grid
+                            Width="220"
+                            Padding="8,4"
+                            Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                            BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                            BorderThickness="1"
+                            ColumnSpacing="8"
+                            CornerRadius="4">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <FontIcon Glyph="&#xE723;" FontSize="16" />
+                            <TextBlock Grid.Column="1" VerticalAlignment="Center" Text="{x:Bind Name}" TextTrimming="CharacterEllipsis" />
+                            <Button
+                                Grid.Column="2"
+                                Padding="4"
+                                Background="Transparent"
+                                BorderThickness="0"
+                                Click="OnRemoveExistingAttachment"
+                                Tag="{x:Bind}"
+                                ToolTipService.ToolTip="Taslaktan kaldır">
+                                <FontIcon Glyph="&#xE711;" FontSize="12" />
+                            </Button>
+                        </Grid>
+                    </DataTemplate>
+                </ListView.ItemTemplate>
+            </ListView>
+            <ListView
+                MaxHeight="120"
+                ItemsSource="{x:Bind ViewModel.Attachments}"
+                SelectionMode="None">
+                <ListView.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <ItemsWrapGrid Orientation="Horizontal" />
+                    </ItemsPanelTemplate>
+                </ListView.ItemsPanel>
+                <ListView.ItemTemplate>
+                    <DataTemplate x:DataType="models:OutgoingAttachment">
+                        <Grid
+                            Width="220"
+                            Padding="8,4"
+                            Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                            BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                            BorderThickness="1"
+                            ColumnSpacing="8"
+                            CornerRadius="4">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <FontIcon Glyph="&#xE8A5;" FontSize="16" />
+                            <TextBlock Grid.Column="1" VerticalAlignment="Center" Text="{x:Bind Name}" TextTrimming="CharacterEllipsis" />
+                            <Button
+                                Grid.Column="2"
+                                Padding="4"
+                                Background="Transparent"
+                                BorderThickness="0"
+                                Click="OnRemoveAttachment"
+                                Tag="{x:Bind}"
+                                ToolTipService.ToolTip="Kaldır">
+                                <FontIcon Glyph="&#xE711;" FontSize="12" />
+                            </Button>
+                        </Grid>
+                    </DataTemplate>
+                </ListView.ItemTemplate>
+            </ListView>
+        </StackPanel>
+    </Grid>
+</Window>

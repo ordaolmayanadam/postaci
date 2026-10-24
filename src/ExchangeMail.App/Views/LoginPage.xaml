@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Page
+    x:Class="ExchangeMail.App.Views.LoginPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:h="using:ExchangeMail.App.Helpers">
+
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <Grid
+            Width="460"
+            Margin="24"
+            Padding="32"
+            HorizontalAlignment="Center"
+            VerticalAlignment="Center"
+            Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+            BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+            BorderThickness="1"
+            CornerRadius="8">
+            <StackPanel Spacing="16">
+                <StackPanel Spacing="4">
+                    <StackPanel Margin="0,0,0,8" Orientation="Horizontal" Spacing="12">
+                        <Image Width="40" Height="40" Source="ms-appx:///Assets/Postaci-256.png" />
+                        <TextBlock VerticalAlignment="Center" Text="Postacı" Style="{StaticResource TitleTextBlockStyle}" />
+                    </StackPanel>
+                    <TextBlock Text="Exchange hesabına bağlan" Style="{StaticResource SubtitleTextBlockStyle}" />
+                    <TextBlock
+                        Text="Şirket içi Exchange Server 2016 / 2019 / SE (Exchange Web Services)"
+                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                        TextWrapping="Wrap" />
+                </StackPanel>
+
+                <TextBox
+                    Header="E-posta adresi"
+                    PlaceholderText="ad.soyad@sirket.com.tr"
+                    InputScope="EmailSmtpAddress"
+                    Text="{x:Bind ViewModel.Email, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+
+                <ToggleSwitch
+                    Header="Kimlik doğrulama"
+                    OnContent="Windows oturumumu kullan (tek oturum açma)"
+                    OffContent="Kullanıcı adı ve parola"
+                    IsOn="{x:Bind ViewModel.UseWindowsAuth, Mode=TwoWay}" />
+
+                <StackPanel Spacing="16" Visibility="{x:Bind ViewModel.IsPasswordLogin, Mode=OneWay}">
+                    <TextBox
+                        Header="Kullanıcı adı"
+                        PlaceholderText="ŞİRKET\kullanici (boş bırakılırsa e-posta adresi)"
+                        Text="{x:Bind ViewModel.UserName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                    <PasswordBox
+                        x:Name="PasswordInput"
+                        Header="Parola"
+                        KeyDown="OnPasswordKeyDown"
+                        PasswordChanged="OnPasswordChanged" />
+                    <CheckBox
+                        Content="Parolayı Windows Kimlik Bilgisi Yöneticisi'nde sakla"
+                        IsChecked="{x:Bind ViewModel.RememberPassword, Mode=TwoWay}" />
+                </StackPanel>
+
+                <Expander
+                    Header="Gelişmiş"
+                    HorizontalAlignment="Stretch"
+                    HorizontalContentAlignment="Stretch">
+                    <TextBox
+                        Header="EWS adresi"
+                        PlaceholderText="https://mail.sirket.com.tr/EWS/Exchange.asmx"
+                        Description="Boş bırakılırsa Autodiscover ile bulunur."
+                        Text="{x:Bind ViewModel.EwsUrl, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                </Expander>
+
+                <InfoBar
+                    Severity="Error"
+                    IsClosable="False"
+                    IsOpen="{x:Bind h:Ui.HasText(ViewModel.ErrorMessage), Mode=OneWay}"
+                    Message="{x:Bind ViewModel.ErrorMessage, Mode=OneWay}" />
+
+                <StackPanel Orientation="Horizontal" Spacing="12">
+                    <Button
+                        MinWidth="120"
+                        Content="Bağlan"
+                        Style="{StaticResource AccentButtonStyle}"
+                        Command="{x:Bind ViewModel.ConnectCommand}" />
+                    <ProgressRing Width="20" Height="20" IsActive="{x:Bind ViewModel.IsBusy, Mode=OneWay}" />
+                    <TextBlock
+                        VerticalAlignment="Center"
+                        Text="{x:Bind ViewModel.StatusText, Mode=OneWay}"
+                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                        TextWrapping="Wrap" />
+                </StackPanel>
+            </StackPanel>
+        </Grid>
+    </ScrollViewer>
+</Page>

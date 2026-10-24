@@ -1,0 +1,454 @@
+using System.Collections.ObjectModel;
+using System.Globalization;
+using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
+using ExchangeMail.Core.Ews;
+using ExchangeMail.Core.Models;
+
+namespace ExchangeMail.ViewModels;
+
+public enum CalendarRange { Day, Week, Month }
+
+public sealed partial class CalendarViewModel : ObservableObject
+{
+    private readonly MailSession _session;
+    private CancellationTokenSource? _loadCts;
+    private CancellationTokenSource? _detailCts;
+    private bool _initialized;
+
+    public CalendarViewModel(MailSession session)
+    {
+        _session = session;
+        Events.CollectionChanged += (_, _) => OnPropertyChanged(nameof(IsEmpty));
+    }
+
+    public ObservableCollection<CalendarEntryViewModel> Events { get; } = [];
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(RangeText))]
+    private DateTime _anchorDate = DateTime.Today;
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(RangeText), nameof(RangeIndex), nameof(IsGridMode), nameof(IsListMode), nameof(DayCount))]
+    private CalendarRange _range = CalendarRange.Week;
+
+    /// <summary>Day and week are shown as an hour grid, month as an agenda list.</summary>
+    public bool IsGridMode => Range != CalendarRange.Month;
+    public bool IsListMode => !IsGridMode;
+    public int DayCount => Range == CalendarRange.Day ? 1 : 7;
+
+    /// <summary>Raised after the visible range was (re)loaded; the hour grid redraws itself.</summary>
+    public event EventHandler? EventsReloaded;
+
+    /// <summary>Raised by the Edit command; the view shows the editor and calls <see cref="UpdateAsync"/>.</summary>
+    public event EventHandler<CalendarDetailViewModel>? EditRequested;
+
+    /// <summary>ComboBox-friendly view of <see cref="Range"/>.</summary>
+    public int RangeIndex
+    {
+        get => (int)Range;
+        set => Range = (CalendarRange)Math.Clamp(value, 0, 2);
+    }
+
+    [ObservableProperty]
+    private CalendarEntryViewModel? _selectedEvent;
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(HasDetail))]
+    [NotifyCanExecuteChangedFor(nameof(DeleteCommand), nameof(RespondCommand), nameof(EditCommand))]
+    private CalendarDetailViewModel? _detail;
+
+    public bool HasDetail => Detail is not null;
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(IsEmpty))]
+    private bool _isLoading;
+
+    [ObservableProperty] private bool _isLoadingDetail;
+    [ObservableProperty] private string? _errorMessage;
+    [ObservableProperty] private string _statusText = "";
+
+    public bool IsEmpty => Events.Count == 0 && !IsLoading;
+
+    public string RangeText
+    {
+        get
+        {
+            var (start, end) = GetRange();
+            var culture = CultureInfo.CurrentCulture;
+            return Range switch
+            {
+                CalendarRange.Day => start.ToString("D", culture),
+                CalendarRange.Month => start.ToString("MMMM yyyy", culture),
+                _ => $"{start.ToString("d MMMM", culture)} – {end.AddDays(-1).ToString("d MMMM yyyy", culture)}",
+            };
+        }
+    }
+
+    /// <summary>Asks the user a yes/no question; supplied by the view.</summary>
+    public Func<string, string, Task<bool>>? ConfirmAsync { get; set; }
+
+    public string AccountEmail => _session.Account.Email;
+
+    public Task InitializeAsync()
+    {
+        if (_initialized) return Task.CompletedTask;
+        _initialized = true;
+        return LoadAsync();
+    }
+
+    partial void OnAnchorDateChanged(DateTime value) => _ = LoadAsync();
+    partial void OnRangeChanged(CalendarRange value) => _ = LoadAsync();
+    partial void OnSelectedEventChanged(CalendarEntryViewModel? value) => _ = LoadDetailAsync(value);
+
+    public (DateTime Start, DateTime End) GetRange()
+    {
+        var day = AnchorDate.Date;
+        switch (Range)
+        {
+            case CalendarRange.Day:
+                return (day, day.AddDays(1));
+            case CalendarRange.Month:
+                var first = new DateTime(day.Year, day.Month, 1);
+                return (first, first.AddMonths(1));
+            default:
+                var firstDay = CultureInfo.CurrentCulture.DateTimeFormat.FirstDayOfWeek;
+                var start = day.AddDays(-(((int)day.DayOfWeek - (int)firstDay + 7) % 7));
+                return (start, start.AddDays(7));
+        }
+    }
+
+    [RelayCommand]
+    private Task RefreshAsync() => LoadAsync();
+
+    [RelayCommand]
+    private void Today() => AnchorDate = DateTime.Today;
+
+    [RelayCommand]
+    private void Previous() => AnchorDate = Range switch
+    {
+        CalendarRange.Day => AnchorDate.AddDays(-1),
+        CalendarRange.Month => AnchorDate.AddMonths(-1),
+        _ => AnchorDate.AddDays(-7),
+    };
+
+    [RelayCommand]
+    private void Next() => AnchorDate = Range switch
+    {
+        CalendarRange.Day => AnchorDate.AddDays(1),
+        CalendarRange.Month => AnchorDate.AddMonths(1),
+        _ => AnchorDate.AddDays(7),
+    };
+
+    public async Task LoadAsync()
+    {
+        _loadCts?.Cancel();
+        var cts = _loadCts = new CancellationTokenSource();
+        var (start, end) = GetRange();
+        IsLoading = true;
+        ErrorMessage = null;
+        try
+        {
+            var events = await _session.Client.FindAppointmentsAsync(new DateTimeOffset(start), new DateTimeOffset(end), cts.Token);
+            if (cts.IsCancellationRequested) return;
+
+            var selectedId = SelectedEvent?.Event.ItemId.Id;
+            Events.Clear();
+            DateTime? lastDay = null;
+            foreach (var e in events)
+            {
+                // Events that started before the visible range are listed under its first day.
+                var day = e.Start.ToLocalTime().Date < start ? start : e.Start.ToLocalTime().Date;
+                Events.Add(new CalendarEntryViewModel(e, day, showDayHeader: day != lastDay));
+                lastDay = day;
+            }
+            SelectedEvent = Events.FirstOrDefault(e => e.Event.ItemId.Id == selectedId);
+            StatusText = events.Count == 0 ? "" : $"{events.Count} etkinlik";
+            EventsReloaded?.Invoke(this, EventArgs.Empty);
+        }
+        catch (OperationCanceledException)
+        {
+        }
+        catch (EwsException ex)
+        {
+            ErrorMessage = "Takvim yüklenemedi: " + ex.Message;
+        }
+        finally
+        {
+            if (_loadCts == cts) IsLoading = false;
+        }
+    }
+
+    private async Task LoadDetailAsync(CalendarEntryViewModel? entry)
+    {
+        _detailCts?.Cancel();
+        if (entry is null)
+        {
+            Detail = null;
+            return;
+        }
+
+        var cts = _detailCts = new CancellationTokenSource();
+        IsLoadingDetail = true;
+        try
+        {
+            var detail = await _session.Client.GetAppointmentAsync(entry.Event.ItemId, cts.Token);
+            if (!cts.IsCancellationRequested)
+                Detail = new CalendarDetailViewModel(detail, _session.Preferences.AlwaysShowRemoteImages);
+        }
+        catch (OperationCanceledException)
+        {
+        }
+        catch (EwsException ex)
+        {
+            if (!cts.IsCancellationRequested)
+            {
+                Detail = null;
+                ErrorMessage = "Etkinlik açılamadı: " + ex.Message;
+            }
+        }
+        finally
+        {
+            if (_detailCts == cts) IsLoadingDetail = false;
+        }
+    }
+
+    /// <summary>Creates an appointment or meeting from the editor dialog and reloads the view.</summary>
+    public async Task<bool> CreateAsync(NewAppointment appointment)
+    {
+        try
+        {
+            await _session.Client.CreateAppointmentAsync(appointment);
+            StatusText = appointment.RequiredAttendees.Count + appointment.OptionalAttendees.Count > 0
+                ? "Toplantı oluşturuldu ve davetler gönderildi."
+                : "Etkinlik oluşturuldu.";
+            AnchorDate = appointment.Start.LocalDateTime.Date;
+            await LoadAsync();
+            return true;
+        }
+        catch (Exception ex) when (ex is EwsException or ArgumentException)
+        {
+            ErrorMessage = "Etkinlik oluşturulamadı: " + ex.Message;
+            return false;
+        }
+    }
+
+    private bool CanEdit() => Detail?.CanEdit == true;
+
+    [RelayCommand(CanExecute = nameof(CanEdit))]
+    private void Edit()
+    {
+        if (Detail is { } detail) EditRequested?.Invoke(this, detail);
+    }
+
+    /// <summary>Saves the editor's changes. Attendees of a meeting receive the update.</summary>
+    public async Task<bool> UpdateAsync(CalendarDetailViewModel original, NewAppointment changes, bool bodyChanged, bool attendeesChanged)
+    {
+        var notify = original.Event.IsMeeting || changes.RequiredAttendees.Count > 0;
+        try
+        {
+            await _session.Client.UpdateAppointmentAsync(original.Event.ItemId, changes, bodyChanged, attendeesChanged, notify);
+            StatusText = notify ? "Toplantı güncellendi; katılımcılara bildirildi." : "Etkinlik güncellendi.";
+            await LoadAsync();
+            if (SelectedEvent is { } selected) await LoadDetailAsync(selected);
+            return true;
+        }
+        catch (Exception ex) when (ex is EwsException or ArgumentException)
+        {
+            ErrorMessage = "Etkinlik güncellenemedi: " + ex.Message;
+            return false;
+        }
+    }
+
+    /// <summary>Moves an event to a new start time, keeping its duration (drag and drop in the grid).</summary>
+    public async Task MoveAsync(CalendarEntryViewModel entry, DateTime newLocalStart)
+    {
+        if (!entry.CanEdit) return;
+        var e = entry.Event;
+        var start = new DateTimeOffset(DateTime.SpecifyKind(newLocalStart, DateTimeKind.Local));
+        if (start == e.Start) return;
+
+        if (e.IsMeeting && ConfirmAsync is not null
+            && !await ConfirmAsync("Toplantıyı taşı", $"Toplantı {start:dd.MM.yyyy HH:mm} saatine taşınacak ve katılımcılara güncelleme gönderilecek. Devam edilsin mi?"))
+        {
+            EventsReloaded?.Invoke(this, EventArgs.Empty); // put the dragged block back
+            return;
+        }
+
+        try
+        {
+            await _session.Client.MoveAppointmentAsync(e.ItemId, start, start + (e.End - e.Start), notifyAttendees: e.IsMeeting);
+            StatusText = "Etkinlik taşındı.";
+        }
+        catch (EwsException ex)
+        {
+            ErrorMessage = "Etkinlik taşınamadı: " + ex.Message;
+        }
+        await LoadAsync();
+    }
+
+    /// <summary>Free/busy of the given attendees and the current user on <paramref name="day"/>.</summary>
+    public async Task<IReadOnlyList<AttendeeAvailability>> GetAvailabilityAsync(IReadOnlyList<string> attendees, DateTime day)
+    {
+        var addresses = new[] { _session.Account.Email }.Concat(attendees)
+            .Distinct(StringComparer.OrdinalIgnoreCase).ToList();
+        var start = new DateTimeOffset(DateTime.SpecifyKind(day.Date, DateTimeKind.Local));
+        return await _session.Client.GetAvailabilityAsync(addresses, start, start.AddDays(1));
+    }
+
+    private bool CanDelete() => Detail?.CanDelete == true;
+
+    [RelayCommand(CanExecute = nameof(CanDelete))]
+    private async Task DeleteAsync()
+    {
+        if (Detail is not { } detail) return;
+        var cancelMeeting = detail.IsOrganizer && detail.Event.IsMeeting && !detail.Event.IsCancelled;
+        var question = cancelMeeting
+            ? "Toplantı iptal edilecek ve katılımcılara iptal bildirimi gönderilecek. Devam edilsin mi?"
+            : "Bu etkinlik takvimden silinecek. Devam edilsin mi?";
+        if (ConfirmAsync is not null && !await ConfirmAsync(cancelMeeting ? "Toplantıyı iptal et" : "Etkinliği sil", question))
+            return;
+
+        try
+        {
+            await _session.Client.DeleteAppointmentAsync(detail.Event.ItemId, sendCancellations: cancelMeeting);
+            SelectedEvent = null;
+            await LoadAsync();
+        }
+        catch (EwsException ex)
+        {
+            ErrorMessage = "Silinemedi: " + ex.Message;
+        }
+    }
+
+    private bool CanRespond(string? response) => Detail?.CanRespond == true;
+
+    /// <param name="response">"Accept", "Tentative" or "Decline".</param>
+    [RelayCommand(CanExecute = nameof(CanRespond))]
+    private async Task RespondAsync(string? response)
+    {
+        if (Detail is not { } detail || !Enum.TryParse<MeetingResponse>(response, out var kind)) return;
+        try
+        {
+            await _session.Client.RespondToMeetingAsync(detail.Event.ItemId, kind);
+            StatusText = kind switch
+            {
+                MeetingResponse.Accept => "Toplantı kabul edildi.",
+                MeetingResponse.Tentative => "Belki yanıtı gönderildi.",
+                _ => "Toplantı reddedildi.",
+            };
+            await LoadAsync();
+        }
+        catch (EwsException ex)
+        {
+            ErrorMessage = "Yanıt gönderilemedi: " + ex.Message;
+        }
+    }
+}
+
+public sealed class CalendarEntryViewModel(CalendarEvent e, DateTime day, bool showDayHeader)
+{
+    public CalendarEvent Event { get; } = e;
+    public bool ShowDayHeader { get; } = showDayHeader;
+
+    public string DayHeader
+    {
+        get
+        {
+            var text = day.ToString("dddd, d MMMM", CultureInfo.CurrentCulture);
+            if (day == DateTime.Today) return "Bugün · " + text;
+            if (day == DateTime.Today.AddDays(1)) return "Yarın · " + text;
+            return text;
+        }
+    }
+
+    public string TimeText => Event.IsAllDay
+        ? "Tüm gün"
+        : $"{Event.Start.ToLocalTime():HH:mm} – {Event.End.ToLocalTime():HH:mm}";
+
+    public string Subject => (Event.IsCancelled ? "İptal edildi: " : "") + (string.IsNullOrWhiteSpace(Event.Subject) ? "(Konu yok)" : Event.Subject);
+    public string Location => Event.Location;
+    public bool HasLocation => !string.IsNullOrWhiteSpace(Event.Location);
+    public string ResponseText => CalendarFormat.Response(Event);
+
+    /// <summary>Colour of the side bar: busy = accent, tentative = amber, free = grey, cancelled = red.</summary>
+    /// <summary>Only your own appointments and meetings you organize can be changed.</summary>
+    public bool CanEdit => (!Event.IsMeeting || Event.MyResponse == ResponseType.Organizer) && !Event.IsCancelled;
+
+    public string StatusColor => Event.IsCancelled ? "#C42B1C"
+        : Event.FreeBusy switch
+        {
+            FreeBusyStatus.Free => "#8A8A8A",
+            FreeBusyStatus.Tentative => "#C19C00",
+            FreeBusyStatus.OOF => "#8764B8",
+            _ => "#0F6CBD",
+        };
+}
+
+public sealed partial class CalendarDetailViewModel(CalendarEventDetail detail, bool allowRemoteContent) : ObservableObject
+{
+    public CalendarEventDetail Source => detail;
+    public CalendarEvent Event => detail.Event;
+    public bool CanEdit => IsOrganizer && !Event.IsCancelled;
+    public string Subject => string.IsNullOrWhiteSpace(Event.Subject) ? "(Konu yok)" : Event.Subject;
+
+    public string WhenText
+    {
+        get
+        {
+            var culture = CultureInfo.CurrentCulture;
+            var start = Event.Start.ToLocalTime();
+            var end = Event.End.ToLocalTime();
+            if (Event.IsAllDay)
+            {
+                var firstDay = start.Date;
+                var lastDay = end.Date.AddDays(-1);
+                return lastDay <= firstDay
+                    ? firstDay.ToString("D", culture) + " · Tüm gün"
+                    : $"{firstDay.ToString("d MMMM", culture)} – {lastDay.ToString("D", culture)} · Tüm gün";
+            }
+            return start.Date == end.Date
+                ? $"{start.ToString("D", culture)} · {start:HH:mm} – {end:HH:mm}"
+                : $"{start.ToString("f", culture)} – {end.ToString("f", culture)}";
+        }
+    }
+
+    public string Location => Event.Location;
+    public bool HasLocation => !string.IsNullOrWhiteSpace(Event.Location);
+    public string OrganizerText => Event.Organizer is { } o ? "Düzenleyen: " + o.Display : "";
+    public bool IsOrganizer => Event.MyResponse == ResponseType.Organizer || !Event.IsMeeting;
+    public string ResponseText => CalendarFormat.Response(Event);
+
+    public string AttendeesText => string.Join(", ", detail.RequiredAttendees.Select(CalendarFormat.Attendee));
+    public string OptionalAttendeesText => string.Join(", ", detail.OptionalAttendees.Select(CalendarFormat.Attendee));
+    public bool HasAttendees => detail.RequiredAttendees.Count > 0;
+    public bool HasOptionalAttendees => detail.OptionalAttendees.Count > 0;
+
+    /// <summary>Attendees can accept/decline; organizers cannot.</summary>
+    public bool CanRespond => Event.IsMeeting && !IsOrganizer && !Event.IsCancelled;
+
+    /// <summary>Organizers cancel, attendees remove cancelled meetings; attendees decline instead of deleting.</summary>
+    public bool CanDelete => IsOrganizer || Event.IsCancelled;
+
+    public string DisplayHtml => MailFormat.PrepareForDisplay(detail.Body, detail.IsHtml, allowRemoteContent);
+}
+
+public static class CalendarFormat
+{
+    public static string Response(CalendarEvent e) => !e.IsMeeting ? "" : e.MyResponse switch
+    {
+        ResponseType.Organizer => "Düzenleyen sizsiniz",
+        ResponseType.Accept => "Kabul edildi",
+        ResponseType.Tentative => "Belki",
+        ResponseType.Decline => "Reddedildi",
+        _ => "Yanıt bekleniyor",
+    };
+
+    public static string Attendee(Attendee a) => a.Mailbox.Display + a.Response switch
+    {
+        ResponseType.Accept => " ✓",
+        ResponseType.Decline => " ✗",
+        ResponseType.Tentative => " ?",
+        _ => "",
+    };
+}

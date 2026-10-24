@@ -1,0 +1,70 @@
+name: Hata bildirimi
+description: Postacı'da beklenmeyen bir davranış veya hata bildirin
+labels: [hata]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Teşekkürler! Lütfen **posta içeriği, gerçek e-posta adresleri, kişi adları, sunucu adları, parola veya
+        kurum içi bilgi paylaşmayın**. Hata mesajlarındaki bu tür bilgileri `***` ile maskeleyin.
+  - type: textarea
+    id: what
+    attributes:
+      label: Ne oldu?
+      description: Hatayı kısaca anlatın.
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Yeniden oluşturma adımları
+      placeholder: |
+        1. Takvim sayfasını açın
+        2. Hafta görünümüne geçin
+        3. Bir etkinliği sürükleyin
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Beklenen davranış
+    validations:
+      required: true
+  - type: textarea
+    id: error
+    attributes:
+      label: Hata mesajı
+      description: Ekranda görünen hata metni (maskelenmiş). Derleme hatasıysa çıktının ilgili kısmı.
+      render: text
+  - type: input
+    id: version
+    attributes:
+      label: Postacı sürümü
+      description: Ayarlar → Hakkında'da görünür, ya da derlediğiniz commit.
+      placeholder: "1.0.0"
+    validations:
+      required: true
+  - type: dropdown
+    id: windows
+    attributes:
+      label: Windows sürümü
+      options: [Windows 11, Windows 10, Diğer]
+    validations:
+      required: true
+  - type: dropdown
+    id: exchange
+    attributes:
+      label: Exchange sürümü
+      options: [Exchange Server SE, Exchange 2019, Exchange 2016, Bilmiyorum]
+  - type: dropdown
+    id: auth
+    attributes:
+      label: Kimlik doğrulama
+      options: [Windows oturumu, Kullanıcı adı ve parola]
+  - type: checkboxes
+    id: privacy
+    attributes:
+      label: Gizlilik
+      options:
+        - label: Bu bildirimde kişisel veya kurum içi bilgi bulunmadığını kontrol ettim.
+          required: true

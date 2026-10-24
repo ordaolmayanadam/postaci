@@ -1,0 +1,21 @@
+# Build output
+bin/
+obj/
+publish/
+TestResults/
+AppPackages/
+BundleArtifacts/
+
+# IDE
+.vs/
+.vscode/
+.idea/
+*.user
+*.suo
+
+# Packaged sources / release archives
+*.zip
+
+# OS
+Thumbs.db
+.DS_Store
