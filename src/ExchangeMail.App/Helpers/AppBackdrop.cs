@@ -57,9 +57,13 @@ public sealed partial class AppBackdrop : SystemBackdrop
         _configuration = null;
     }
 
+    /// <summary>
+    /// WinUI has already updated <see cref="_configuration"/> (and through it the controller) to the new theme; only
+    /// the dark tint is ours to switch. The base method is not called: this backdrop needs nothing from it, and calling
+    /// it from a derived backdrop throws ArgumentException ("target") on theme changes.
+    /// </summary>
     protected override void OnDefaultSystemBackdropConfigurationChanged(ICompositionSupportsSystemBackdrop target, XamlRoot xamlRoot)
     {
-        base.OnDefaultSystemBackdropConfigurationChanged(target, xamlRoot);
         try
         {
             if (_configuration is { } configuration) ApplyTheme(configuration.Theme);
