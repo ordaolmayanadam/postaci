@@ -51,6 +51,8 @@ public sealed partial class ComposeWindow : Window
         };
         AppWindow.Closing += OnClosing;
         Root.RequestedTheme = App.MainWindow.CurrentTheme;
+        WindowHelper.ApplyCaptionTheme(this, Root.ActualTheme);
+        Root.ActualThemeChanged += (sender, _) => WindowHelper.ApplyCaptionTheme(this, sender.ActualTheme);
         Root.Loaded += async (_, _) =>
         {
             try

@@ -37,8 +37,10 @@
                         <KeyboardAccelerator Key="N" Modifiers="Control" />
                     </Button.KeyboardAccelerators>
                 </Button>
-                <!--  Disabled while running (async commands don't overlap), which doubles as progress feedback.  -->
+                <!--  Disabled while running (async commands don't overlap), which doubles as progress feedback.
+                      Stretch: as tall as the New mail button next to it.  -->
                 <Button
+                    VerticalAlignment="Stretch"
                     AutomationProperties.Name="{h:L Key=Mail_SendReceive}"
                     Command="{x:Bind ViewModel.SendReceiveCommand}"
                     ToolTipService.ToolTip="{h:L Key=Mail_SendReceiveTooltip}">

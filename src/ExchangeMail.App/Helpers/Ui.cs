@@ -127,6 +127,32 @@ public static class WindowHelper
     [DllImport("user32.dll")]
     private static extern uint GetDpiForWindow(IntPtr hwnd);
 
+    /// <summary>
+    /// Colors of the minimize/maximize/close buttons for <paramref name="theme"/>. With the content extended into the
+    /// title bar they otherwise follow the Windows theme, so they turn invisible when Postacı uses the other theme.
+    /// </summary>
+    public static void ApplyCaptionTheme(Window window, ElementTheme theme)
+    {
+        try
+        {
+            var bar = window.AppWindow.TitleBar;
+            var dark = theme == ElementTheme.Dark;
+            byte fg = dark ? (byte)0xFF : (byte)0x00;
+            bar.ButtonBackgroundColor = Microsoft.UI.Colors.Transparent;
+            bar.ButtonInactiveBackgroundColor = Microsoft.UI.Colors.Transparent;
+            bar.ButtonForegroundColor = Windows.UI.Color.FromArgb(0xFF, fg, fg, fg);
+            bar.ButtonInactiveForegroundColor = Windows.UI.Color.FromArgb(0x80, fg, fg, fg);
+            bar.ButtonHoverForegroundColor = Windows.UI.Color.FromArgb(0xFF, fg, fg, fg);
+            bar.ButtonHoverBackgroundColor = Windows.UI.Color.FromArgb(dark ? (byte)0x18 : (byte)0x12, fg, fg, fg);
+            bar.ButtonPressedForegroundColor = Windows.UI.Color.FromArgb(0xC0, fg, fg, fg);
+            bar.ButtonPressedBackgroundColor = Windows.UI.Color.FromArgb(dark ? (byte)0x10 : (byte)0x0C, fg, fg, fg);
+        }
+        catch (Exception ex)
+        {
+            ViewModels.Diagnostics.Log("Caption button colors", ex);
+        }
+    }
+
     /// <summary>Resizes a window using effective (DPI-independent) pixels.</summary>
     public static void Resize(Window window, int width, int height)
     {

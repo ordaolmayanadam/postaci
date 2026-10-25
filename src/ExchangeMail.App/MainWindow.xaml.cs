@@ -28,6 +28,8 @@ public sealed partial class MainWindow : Window
         AppWindow.SetIcon(IconPath);
         WindowHelper.Resize(this, 1440, 900);
         ApplyTheme(App.Preferences.Theme);
+        // "Use Windows setting" follows Windows while running; keep the caption buttons in step.
+        if (Content is FrameworkElement themed) themed.ActualThemeChanged += (sender, _) => WindowHelper.ApplyCaptionTheme(this, sender.ActualTheme);
         // Plain text (no style) inherits the interface font and size from the frame.
         if (App.InterfaceFontFamily is { } font) RootFrame.FontFamily = font;
         if (Ui.TextScale != 1) RootFrame.FontSize = 14 * Ui.TextScale;
@@ -54,7 +56,9 @@ public sealed partial class MainWindow : Window
 
     public void ApplyTheme(AppTheme theme)
     {
-        if (Content is FrameworkElement root) root.RequestedTheme = Ui.ToElementTheme(theme);
+        if (Content is not FrameworkElement root) return;
+        root.RequestedTheme = Ui.ToElementTheme(theme);
+        WindowHelper.ApplyCaptionTheme(this, root.ActualTheme);
     }
 
     public void ShowLogin(bool autoConnect)

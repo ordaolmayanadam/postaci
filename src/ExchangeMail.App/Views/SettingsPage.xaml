@@ -535,6 +535,11 @@
                         Style="{StaticResource CaptionTextBlockStyle}"
                         Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                         TextWrapping="Wrap" />
+                    <HyperlinkButton
+                        Margin="-12,4,0,0"
+                        Click="OnOpenDiagnostics"
+                        Content="{h:L Key=Settings_OpenDiagnostics}"
+                        ToolTipService.ToolTip="{h:L Key=Settings_OpenDiagnosticsHint}" />
                 </StackPanel>
             </Grid>
         </StackPanel>

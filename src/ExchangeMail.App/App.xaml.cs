@@ -18,6 +18,18 @@ public partial class App : Application
 
         HtmlViewer.CleanupTempFiles();
 
+        // Crashes and lost async errors go to the diagnostics log (Settings → About), so they can be reported.
+        UnhandledException += (_, e) => Diagnostics.Log("Unhandled UI exception", e.Exception);
+        AppDomain.CurrentDomain.UnhandledException += (_, e) =>
+        {
+            if (e.ExceptionObject is Exception ex) Diagnostics.Log("Unhandled exception", ex);
+        };
+        TaskScheduler.UnobservedTaskException += (_, e) =>
+        {
+            Diagnostics.Log("Unobserved task exception", e.Exception);
+            e.SetObserved();
+        };
+
         InitializeComponent();
     }
 

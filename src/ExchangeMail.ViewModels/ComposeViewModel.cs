@@ -12,6 +12,9 @@ public sealed partial class ComposeViewModel : ObservableObject
     private static readonly string[] ForwardPrefixes = ["İLT:", "ILT:", "FW:", "FWD:", "WG:"];
 
     private readonly MailSession _session;
+
+    /// <summary>The message replied to or forwarded.</summary>
+    private readonly MailDetail? _original;
     private readonly EwsItemId? _referenceId;
     private readonly List<string> _removedAttachmentIds = [];
 
@@ -42,6 +45,7 @@ public sealed partial class ComposeViewModel : ObservableObject
 
         _session = session;
         Mode = mode;
+        _original = original;
         Attachments.CollectionChanged += (_, _) => OnAttachmentsChanged();
         ExistingAttachments.CollectionChanged += (_, _) => OnAttachmentsChanged();
         _referenceId = original?.ItemId;
@@ -184,6 +188,42 @@ public sealed partial class ComposeViewModel : ObservableObject
         OnPropertyChanged(nameof(AttachmentsHeader));
     }
 
+    /// <summary>
+    /// Files of the original that a reply can take along. Exchange (like Outlook) leaves them out of replies; forwards
+    /// already carry them.
+    /// </summary>
+    private IReadOnlyList<AttachmentInfo> OriginalFiles =>
+        Mode is ComposeMode.Reply or ComposeMode.ReplyAll && !_originalAttachmentsAdded
+            ? _original?.Attachments.Where(a => !a.IsInline).ToList() ?? []
+            : [];
+
+    private bool _originalAttachmentsAdded;
+
+    public bool CanAddOriginalAttachments => OriginalFiles.Count > 0;
+    public string AddOriginalAttachmentsText => Loc.Format(Strings.Compose_AddOriginalAttachments, OriginalFiles.Count);
+
+    /// <summary>Downloads the original's files and attaches them to this reply.</summary>
+    [RelayCommand]
+    private async Task AddOriginalAttachmentsAsync()
+    {
+        var files = OriginalFiles;
+        if (files.Count == 0) return;
+        try
+        {
+            foreach (var file in files)
+            {
+                var content = await _session.Client.GetAttachmentAsync(file);
+                Attachments.Add(new OutgoingAttachment(content.FileName, content.ContentType ?? MailFormat.GuessContentType(content.FileName), content.Content));
+            }
+            _originalAttachmentsAdded = true;
+            OnPropertyChanged(nameof(CanAddOriginalAttachments));
+        }
+        catch (EwsException ex)
+        {
+            ErrorMessage = Loc.Format(Strings.Compose_AddOriginalAttachmentsFailed, ex.Message);
+        }
+    }
+
     /// <summary>The quoted original of a reply/forward is being loaded into the editor.</summary>
     [ObservableProperty] private bool _isLoadingOriginal;
 
@@ -276,21 +316,36 @@ public sealed partial class ComposeViewModel : ObservableObject
 
     private bool CanSubmit() => !IsBusy;
 
+    /// <summary>A send is under way (or done). IsBusy only starts once the body is read, which leaves a gap.</summary>
+    private bool _sending;
+
     [RelayCommand(CanExecute = nameof(CanSubmit))]
     private async Task SendAsync()
     {
-        var message = await BuildMessageAsync(requireRecipients: true);
-        if (message is null) return;
-
-        if (string.IsNullOrWhiteSpace(Subject) && ConfirmAsync is not null
-            && !await ConfirmAsync(Strings.Compose_NoSubjectTitle, Strings.Compose_NoSubjectQuestion))
-            return;
-
-        await RunAsync(async () =>
+        // A second click or Ctrl+Enter while the first send is still being prepared must not send twice.
+        if (_sending) return;
+        _sending = true;
+        var sent = false;
+        try
         {
-            await _session.Client.SendAsync(message);
-            Sent?.Invoke(this, EventArgs.Empty);
-        });
+            var message = await BuildMessageAsync(requireRecipients: true);
+            if (message is null) return;
+
+            if (string.IsNullOrWhiteSpace(Subject) && ConfirmAsync is not null
+                && !await ConfirmAsync(Strings.Compose_NoSubjectTitle, Strings.Compose_NoSubjectQuestion))
+                return;
+
+            await RunAsync(async () =>
+            {
+                await _session.Client.SendAsync(message);
+                sent = true;
+                Sent?.Invoke(this, EventArgs.Empty);
+            });
+        }
+        finally
+        {
+            if (!sent) _sending = false; // a failed or cancelled send can be tried again
+        }
     }
 
     [RelayCommand(CanExecute = nameof(CanSubmit))]

@@ -238,6 +238,7 @@ for new mail. To quit completely, right-click the tray icon and choose **Exit**.
 | Empty message body / "Could not start WebView2" | WebView2 Runtime is missing. Install it [from Microsoft](https://developer.microsoft.com/microsoft-edge/webview2/). |
 | No notifications | Check that Postacı is allowed under Windows Settings → Notifications and that Do Not Disturb is off. Notifications must also be enabled in Postacı's Settings. |
 | Password requested on every launch | **Save the password in Windows Credential Manager** must be checked when connecting. Check that a `Postaci:<user>` entry exists in Credential Manager. |
+| The app closes or something silently doesn't work | **Settings → About → Open diagnostics log**: errors and crashes are written to `%LOCALAPPDATA%\Postaci\postaci.log` (no mail content). When reporting a bug, include the relevant lines with server names and addresses hidden. |
 | Calendar times are shifted | Check the Windows time zone; Postacı sends the Windows time zone to Exchange with calendar requests. |
 
 When reporting a bug, please use the [bug template](.github/ISSUE_TEMPLATE/bug_report.yml) and **do not share real

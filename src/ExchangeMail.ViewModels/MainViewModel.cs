@@ -488,9 +488,44 @@ public sealed partial class MainViewModel : ObservableObject
     private void RequestCompose(ComposeViewModel compose)
     {
         // Sending or saving changes the Drafts folder; keep it current if it is on screen.
-        compose.Sent += (_, _) => RefreshDraftsIfShown();
+        compose.Sent += (_, _) =>
+        {
+            RefreshDraftsIfShown();
+            _ = RefreshAfterSendAsync();
+        };
         compose.DraftSaved += (_, _) => RefreshDraftsIfShown();
         ComposeRequested?.Invoke(this, compose);
+    }
+
+    /// <summary>
+    /// Shows the result of a send without waiting for the next poll: the copy in Sent Items and, for mail to oneself,
+    /// the delivery to the inbox (which takes Exchange a moment).
+    /// </summary>
+    private async Task RefreshAfterSendAsync()
+    {
+        foreach (var delay in new[] { 1500, 5000 })
+        {
+            await Task.Delay(delay);
+            await BackgroundRefreshAsync();
+        }
+    }
+
+    private bool _retryScheduled;
+
+    /// <summary>A poll found the list busy loading; look again shortly instead of waiting for the next tick.</summary>
+    private async Task RetrySoonAsync()
+    {
+        if (_retryScheduled) return;
+        _retryScheduled = true;
+        try
+        {
+            await Task.Delay(2000);
+        }
+        finally
+        {
+            _retryScheduled = false;
+        }
+        await BackgroundRefreshAsync();
     }
 
     private void RefreshDraftsIfShown()
@@ -639,8 +674,9 @@ public sealed partial class MainViewModel : ObservableObject
         {
             return await PollAsync();
         }
-        catch (EwsException)
+        catch (EwsException ex)
         {
+            Diagnostics.Log("Background refresh", ex);
             return 0; // transient; the next tick will try again
         }
     }
@@ -692,19 +728,21 @@ public sealed partial class MainViewModel : ObservableObject
             var inbox = Inbox;
             MailPage? inboxPage = null;
             var added = 0;
+            if (SelectedFolder is not null && IsLoadingList) _ = RetrySoonAsync();
             if (SelectedFolder is { } folder && !IsSearchActive && !IsLoadingList)
             {
                 if (UsesConversations)
                 {
                     var conversations = await Client.FindConversationsAsync(folder.Id, 0, 25);
-                    // An opened conversation keeps its messages right under it; reordering around it would split them,
-                    // so the list waits until it is closed (folder counts and notifications still update).
-                    if (!Messages.Any(m => m.IsExpanded))
+                    var changed = conversations.Items.Where(c => !Messages.Any(m => m.Conversation is { } k && Unchanged(k, c))).ToList();
+                    var newest = await NewestMessagesAsync(changed, CancellationToken.None);
+                    if (folder == SelectedFolder && !IsLoadingList && UsesConversations)
                     {
-                        var changed = conversations.Items.Where(c => !Messages.Any(m => m.Conversation is { } k && Unchanged(k, c))).ToList();
-                        var newest = await NewestMessagesAsync(changed, CancellationToken.None);
-                        if (folder == SelectedFolder && !IsLoadingList && UsesConversations && !Messages.Any(m => m.IsExpanded))
-                            added = MergeConversations(folder, conversations, newest);
+                        // An opened conversation keeps its messages right under it, so while one is open only new
+                        // conversations are added (at the top, where they can't split a group); the rest waits.
+                        added = Messages.Any(m => m.IsExpanded)
+                            ? InsertNewConversations(folder, conversations, newest)
+                            : MergeConversations(folder, conversations, newest);
                     }
                 }
                 else
@@ -755,6 +793,16 @@ public sealed partial class MainViewModel : ObservableObject
             if (index < 0) Messages.Insert(i, row);
             else if (index != i) Messages.Move(index, i);
         }
+        _nextOffset += added;
+        return added;
+    }
+
+    private int InsertNewConversations(FolderViewModel folder, ConversationPage page, Dictionary<string, MailSummary> newest)
+    {
+        var known = Messages.Select(m => m.Conversation?.ConversationId).OfType<string>().ToHashSet();
+        var added = 0;
+        foreach (var fresh in page.Items.Where(c => !known.Contains(c.ConversationId)))
+            Messages.Insert(added++, MessageItemViewModel.ForConversation(fresh, folder.ShowsRecipients, newest.GetValueOrDefault(fresh.ConversationId)));
         _nextOffset += added;
         return added;
     }

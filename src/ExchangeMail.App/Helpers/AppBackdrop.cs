@@ -19,10 +19,16 @@ public sealed partial class AppBackdrop : SystemBackdrop
     private MicaController? _mica;
     private DesktopAcrylicController? _acrylic;
 
+    /// <summary>
+    /// The configuration WinUI keeps in sync with the window's theme. It is fetched once: asking for it again from
+    /// the change callback can re-enter that callback.
+    /// </summary>
+    private SystemBackdropConfiguration? _configuration;
+
     protected override void OnTargetConnected(ICompositionSupportsSystemBackdrop connectedTarget, XamlRoot xamlRoot)
     {
         base.OnTargetConnected(connectedTarget, xamlRoot);
-        var configuration = GetDefaultSystemBackdropConfiguration(connectedTarget, xamlRoot);
+        var configuration = _configuration = GetDefaultSystemBackdropConfiguration(connectedTarget, xamlRoot);
         if (MicaController.IsSupported())
         {
             _mica = new MicaController();
@@ -48,12 +54,21 @@ public sealed partial class AppBackdrop : SystemBackdrop
         _acrylic?.RemoveSystemBackdropTarget(disconnectedTarget);
         _acrylic?.Dispose();
         _acrylic = null;
+        _configuration = null;
     }
 
     protected override void OnDefaultSystemBackdropConfigurationChanged(ICompositionSupportsSystemBackdrop target, XamlRoot xamlRoot)
     {
         base.OnDefaultSystemBackdropConfigurationChanged(target, xamlRoot);
-        ApplyTheme(GetDefaultSystemBackdropConfiguration(target, xamlRoot).Theme);
+        try
+        {
+            if (_configuration is { } configuration) ApplyTheme(configuration.Theme);
+        }
+        catch (Exception ex)
+        {
+            // A wrong tint is better than a crash while the theme changes.
+            ViewModels.Diagnostics.Log("Backdrop theme change", ex);
+        }
     }
 
     private void ApplyTheme(SystemBackdropTheme theme)

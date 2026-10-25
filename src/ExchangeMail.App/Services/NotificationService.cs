@@ -26,7 +26,7 @@ public sealed class NotificationService
         catch (Exception ex)
         {
             // Notifications are a convenience; mail keeps working without them.
-            Debug.WriteLine("Notifications are unavailable: " + ex);
+            ViewModels.Diagnostics.Log("Notification registration", ex);
         }
     }
 
@@ -73,7 +73,7 @@ public sealed class NotificationService
         }
         catch (Exception ex)
         {
-            Debug.WriteLine(ex);
+            ViewModels.Diagnostics.Log("New mail notification", ex);
         }
     }
 
@@ -102,7 +102,7 @@ public sealed class NotificationService
         }
         catch (Exception ex)
         {
-            Debug.WriteLine(ex);
+            ViewModels.Diagnostics.Log("Badge notification", ex);
         }
     }
 

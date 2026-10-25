@@ -295,6 +295,12 @@
   <data name="Common_Yes" xml:space="preserve">
     <value>Yes</value>
   </data>
+  <data name="Compose_AddOriginalAttachments" xml:space="preserve">
+    <value>Add the original's attachments ({0})</value>
+  </data>
+  <data name="Compose_AddOriginalAttachmentsFailed" xml:space="preserve">
+    <value>Could not add the original attachments: {0}</value>
+  </data>
   <data name="Compose_Attach" xml:space="preserve">
     <value>Attach file</value>
   </data>
@@ -1050,6 +1056,12 @@
   </data>
   <data name="Settings_OnlyDuringRange" xml:space="preserve">
     <value>Only send during this time range</value>
+  </data>
+  <data name="Settings_OpenDiagnostics" xml:space="preserve">
+    <value>Open diagnostics log</value>
+  </data>
+  <data name="Settings_OpenDiagnosticsHint" xml:space="preserve">
+    <value>Error and crash records, without mail content. Hide server names and addresses before sharing it.</value>
   </data>
   <data name="Settings_OverrideFonts" xml:space="preserve">
     <value>Also replace fonts set by messages with this font</value>

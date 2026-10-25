@@ -180,6 +180,57 @@ public class PersonAndForwardTests
         Assert.False(store.LoadPreferences().CompactFolderList);
     }
 
+    [Fact]
+    public async Task A_second_send_while_the_first_is_preparing_is_ignored()
+    {
+        var server = new FakeEwsServer().On("CreateItem", Ok("CreateItem"));
+        var vm = new ComposeViewModel(new MailSession(server.CreateClient(), new AccountSettings { Email = "ben@sirket.com" }), ComposeMode.New, null)
+        {
+            To = "ayse@sirket.com; ",
+            Subject = "Merhaba",
+        };
+        var body = new TaskCompletionSource<string>();
+        vm.ReadBodyHtmlAsync = () => body.Task;
+        var sent = 0;
+        vm.Sent += (_, _) => sent++;
+
+        var first = vm.SendCommand.ExecuteAsync(null);
+        var second = vm.SendCommand.ExecuteAsync(null); // e.g. Ctrl+Enter right after the click
+        body.SetResult("<p>Merhaba</p>");
+        await Task.WhenAll(first, second);
+
+        Assert.Single(server.Operations, "CreateItem");
+        Assert.Equal(1, sent);
+    }
+
+    [Fact]
+    public async Task A_reply_can_take_the_original_attachments_along()
+    {
+        var server = new FakeEwsServer()
+            .On("GetAttachment", Ok("GetAttachment", """<m:Attachments><t:FileAttachment><t:AttachmentId Id="A1" /><t:Name>teklif.pdf</t:Name><t:ContentType>application/pdf</t:ContentType><t:Content>AQID</t:Content></t:FileAttachment></m:Attachments>"""))
+            .On("GetAttachment", Ok("GetAttachment", """<m:Attachments><t:FileAttachment><t:AttachmentId Id="A2" /><t:Name>liste.xlsx</t:Name><t:Content>BAUG</t:Content></t:FileAttachment></m:Attachments>"""));
+        var original = new MailDetail(new EwsItemId("O", "o1"), "Teklif", new MailboxAddress("Ali", "ali@sirket.com"), [], [], [],
+            null, DateTimeOffset.Now, "<p>Ekte</p>", true, true, Importance.Normal,
+            [
+                new AttachmentInfo("A1", "teklif.pdf", "application/pdf", null, 3, false, false),
+                new AttachmentInfo("A2", "liste.xlsx", null, null, 3, false, false),
+                new AttachmentInfo("LOGO", "logo.png", "image/png", "logo@x", 3, true, false),
+            ]);
+        var session = new MailSession(server.CreateClient(), new AccountSettings { Email = "ben@sirket.com" });
+
+        var reply = new ComposeViewModel(session, ComposeMode.Reply, original);
+        Assert.True(reply.CanAddOriginalAttachments);
+        Assert.Equal("Özgün iletinin eklerini ekle (2)", reply.AddOriginalAttachmentsText); // inline images don't count
+
+        await reply.AddOriginalAttachmentsCommand.ExecuteAsync(null);
+
+        Assert.Equal(["teklif.pdf", "liste.xlsx"], reply.Attachments.Select(a => a.Name));
+        Assert.Equal([1, 2, 3], reply.Attachments[0].Content);
+        Assert.False(reply.CanAddOriginalAttachments);
+        // Forwards already carry them.
+        Assert.False(new ComposeViewModel(session, ComposeMode.Forward, original).CanAddOriginalAttachments);
+    }
+
     private sealed class NoCredentials : ICredentialStore
     {
         public string? GetPassword(string userName) => null;

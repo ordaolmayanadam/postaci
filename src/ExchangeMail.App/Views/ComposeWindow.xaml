@@ -160,6 +160,7 @@
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*" />
                     <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
                 <StackPanel Orientation="Horizontal" Spacing="8">
                     <FontIcon Glyph="&#xE723;" FontSize="14" />
@@ -168,8 +169,14 @@
                         Text="{x:Bind ViewModel.AttachmentsHeader, Mode=OneWay}"
                         Style="{StaticResource CaptionTextBlockStyle}" />
                 </StackPanel>
-                <TextBlock
+                <HyperlinkButton
                     Grid.Column="1"
+                    Padding="4,0"
+                    Command="{x:Bind ViewModel.AddOriginalAttachmentsCommand}"
+                    Content="{x:Bind ViewModel.AddOriginalAttachmentsText}"
+                    Visibility="{x:Bind ViewModel.CanAddOriginalAttachments, Mode=OneWay}" />
+                <TextBlock
+                    Grid.Column="2"
                     VerticalAlignment="Center"
                     Text="{h:L Key=Compose_DropHere}"
                     Style="{StaticResource CaptionTextBlockStyle}"

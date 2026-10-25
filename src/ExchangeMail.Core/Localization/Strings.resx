@@ -295,6 +295,12 @@
   <data name="Common_Yes" xml:space="preserve">
     <value>Evet</value>
   </data>
+  <data name="Compose_AddOriginalAttachments" xml:space="preserve">
+    <value>Özgün iletinin eklerini ekle ({0})</value>
+  </data>
+  <data name="Compose_AddOriginalAttachmentsFailed" xml:space="preserve">
+    <value>Özgün ekler eklenemedi: {0}</value>
+  </data>
   <data name="Compose_Attach" xml:space="preserve">
     <value>Dosya ekle</value>
   </data>
@@ -1050,6 +1056,12 @@
   </data>
   <data name="Settings_OnlyDuringRange" xml:space="preserve">
     <value>Yalnızca bu zaman aralığında gönder</value>
+  </data>
+  <data name="Settings_OpenDiagnostics" xml:space="preserve">
+    <value>Tanılama günlüğünü aç</value>
+  </data>
+  <data name="Settings_OpenDiagnosticsHint" xml:space="preserve">
+    <value>Hata ve çökme kayıtları; ileti içeriği içermez. Paylaşmadan önce sunucu ve adres bilgilerini gizleyin.</value>
   </data>
   <data name="Settings_OverrideFonts" xml:space="preserve">
     <value>İletilerin kendi yazı tiplerini de bu yazı tipiyle değiştir</value>

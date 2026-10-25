@@ -62,7 +62,7 @@ public sealed partial class ShellPage : Page
         _pollTimer.Tick += async (_, _) =>
         {
             try { await Mail.BackgroundRefreshAsync(); }
-            catch (Exception) { /* transient; the next tick retries */ }
+            catch (Exception ex) { Diagnostics.Log("Poll", ex); /* the next tick retries */ }
         };
         _pollTimer.Start();
 
@@ -92,7 +92,9 @@ public sealed partial class ShellPage : Page
 
     private void OnNewMailArrived(object? sender, IReadOnlyList<ExchangeMail.Core.Models.MailSummary> items)
     {
-        if (_session?.Preferences.ShowNotifications == true) App.Notifications.ShowNewMail(items);
+        var show = _session?.Preferences.ShowNotifications == true;
+        Diagnostics.Log($"New mail in the inbox: {items.Count}, notification {(show ? "shown" : "off in Settings")}");
+        if (show) App.Notifications.ShowNewMail(items);
     }
 
     private void OnMailPropertyChanged(object? sender, PropertyChangedEventArgs e)
@@ -106,7 +108,7 @@ public sealed partial class ShellPage : Page
     public async void RefreshNow()
     {
         try { await Mail.BackgroundRefreshAsync(); }
-        catch (Exception) { /* transient */ }
+        catch (Exception ex) { Diagnostics.Log("Refresh", ex); }
     }
 
     private async void OnNotificationClicked(object? sender, string? itemId)

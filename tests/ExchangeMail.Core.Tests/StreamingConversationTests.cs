@@ -228,6 +228,47 @@ public class StreamingConversationTests
         Assert.Single(vm.Messages);
     }
 
+    [Fact]
+    public async Task New_conversations_appear_on_top_while_another_is_open()
+    {
+        const string counts = """
+            <m:GetFolderResponse><m:ResponseMessages>
+              <m:GetFolderResponseMessage ResponseClass="Success"><m:ResponseCode>NoError</m:ResponseCode><m:Folders><t:Folder><t:FolderId Id="INBOX" /><t:TotalCount>4</t:TotalCount><t:UnreadCount>2</t:UnreadCount></t:Folder></m:Folders></m:GetFolderResponseMessage>
+            </m:ResponseMessages></m:GetFolderResponse>
+            """;
+        var withNew = Conversations.Replace("<m:Conversations>", """
+            <m:Conversations>
+            <t:Conversation><t:ConversationId Id="C3" /><t:ConversationTopic>Yeni</t:ConversationTopic>
+              <t:UniqueSenders><t:String>Ben</t:String></t:UniqueSenders><t:LastDeliveryTime>2026-10-21T09:00:00Z</t:LastDeliveryTime>
+              <t:MessageCount>1</t:MessageCount><t:GlobalMessageCount>2</t:GlobalMessageCount><t:UnreadCount>1</t:UnreadCount>
+              <t:ItemIds><t:ItemId Id="I9" ChangeKey="k9" /></t:ItemIds></t:Conversation>
+            """);
+        var server = new FakeEwsServer()
+            .On("GetFolder", WellKnownFolders)
+            .On("FindFolder", InboxOnly)
+            .On("FindConversation", Conversations)
+            .On("GetItem", Summaries)
+            .On("GetConversationItems", Thread)
+            .On("GetFolder", counts)
+            .On("FindConversation", withNew)
+            .On("GetItem", $"<m:GetItemResponse><m:ResponseMessages>{Summary("I9", "Ben", "2026-10-21T09:00:00Z", "Kendime not", false)}</m:ResponseMessages></m:GetItemResponse>")
+            .On("FindItem", NoItems);
+        var session = new MailSession(server.CreateClient(), new AccountSettings { Email = "ben@sirket.com" });
+        session.Preferences.ConversationView = true;
+        var vm = new MainViewModel(session);
+        await vm.InitializeAsync();
+        await WaitUntil(() => vm.Messages.Count == 2 && !vm.IsLoadingList);
+        await vm.ToggleConversationCommand.ExecuteAsync(vm.Messages[0]);
+
+        var added = await vm.BackgroundRefreshAsync();
+
+        Assert.Equal(1, added);
+        Assert.Equal(["I9", "I2", "S1", "I2", "I1", "I3"], vm.Messages.Select(m => m.Id.Id));
+        Assert.Equal("Kendime not", vm.Messages[0].Preview);
+        Assert.True(vm.Messages[1].IsExpanded); // the open conversation and its messages stay together
+        Assert.Equal(2, vm.SelectedFolder!.UnreadCount);
+    }
+
     // ---- Streaming ----
 
     [Fact]

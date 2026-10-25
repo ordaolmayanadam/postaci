@@ -34,6 +34,7 @@ public sealed class MailboxWatcher(EwsClient client)
             {
                 var subscription = await client.SubscribeToStreamingAsync(ct);
                 IsConnected = true;
+                Diagnostics.Log("Streaming notifications connected");
                 if (hadOutage) Changed?.Invoke(this, []);
                 hadOutage = false;
                 delay = FirstRetryDelay;
@@ -47,6 +48,7 @@ public sealed class MailboxWatcher(EwsClient client)
             catch (Exception ex) when (ex is EwsException or HttpRequestException or IOException)
             {
                 // Lost subscription, server restart, network or a proxy that cuts long requests: try again later.
+                Diagnostics.Log($"Streaming notifications (retry in {delay.TotalSeconds:0} s)", ex);
             }
 
             IsConnected = false;

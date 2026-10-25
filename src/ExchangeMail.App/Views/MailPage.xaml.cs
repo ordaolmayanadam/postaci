@@ -49,12 +49,12 @@ public sealed partial class MailPage : Page
     }
 
     /// <summary>
-    /// Folder row height: compact (28 px) or the standard list spacing (40 px). The style covers rows created later;
+    /// Folder row height: compact (32 px) or the standard list spacing (40 px). The style covers rows created later;
     /// rows already on screen are adjusted directly, so a change in Settings applies right away without reloading.
     /// </summary>
     private void ApplyFolderDensity(bool compact)
     {
-        var minHeight = compact ? 28d : 40d;
+        var minHeight = compact ? 32d : 40d;
         var padding = compact ? new Thickness(12, 0, 8, 0) : new Thickness(14, 0, 12, 0);
 
         var style = new Style(typeof(ListViewItem));
