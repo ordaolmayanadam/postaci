@@ -285,6 +285,9 @@ public sealed partial class MainViewModel : ObservableObject
             Messages.Clear();
         }
         foreach (var c in page.Items) Messages.Add(ConversationRow(c, folder, newest, counts));
+        // What is already in the inbox is not new mail; the conversations list every item they have here.
+        if (reset && folder.WellKnown == WellKnownFolder.Inbox)
+            _knownInboxIds ??= page.Items.SelectMany(c => c.ItemIds).Select(i => i.Id).ToHashSet();
         _nextOffset = page.NextOffset;
         HasMore = !page.IsLastPage;
         StatusText = Loc.Count(page.TotalCount, Strings.Mail_ConversationCount_One, Strings.Mail_ConversationCount);

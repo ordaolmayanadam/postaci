@@ -233,6 +233,47 @@ public class StreamingConversationTests
     }
 
     [Fact]
+    public async Task New_mail_is_reported_in_conversation_view_from_the_first_check()
+    {
+        const string counts = """
+            <m:GetFolderResponse><m:ResponseMessages>
+              <m:GetFolderResponseMessage ResponseClass="Success"><m:ResponseCode>NoError</m:ResponseCode><m:Folders><t:Folder><t:FolderId Id="INBOX" /><t:TotalCount>4</t:TotalCount><t:UnreadCount>2</t:UnreadCount></t:Folder></m:Folders></m:GetFolderResponseMessage>
+            </m:ResponseMessages></m:GetFolderResponse>
+            """;
+        // The inbox as the check sees it: a message delivered since the conversations were listed, and older ones.
+        const string inbox = """
+            <m:FindItemResponse><m:ResponseMessages><m:FindItemResponseMessage ResponseClass="Success"><m:ResponseCode>NoError</m:ResponseCode>
+              <m:RootFolder IndexedPagingOffset="3" TotalItemsInView="3" IncludesLastItemInRange="true"><t:Items>
+                <t:Message><t:ItemId Id="N1" ChangeKey="n" /><t:Subject>Kendime</t:Subject><t:DateTimeReceived>2026-10-21T09:00:00Z</t:DateTimeReceived><t:IsRead>false</t:IsRead></t:Message>
+                <t:Message><t:ItemId Id="I2" ChangeKey="k2" /><t:Subject>YNT: Bütçe</t:Subject><t:DateTimeReceived>2026-10-20T08:00:00Z</t:DateTimeReceived><t:IsRead>false</t:IsRead></t:Message>
+                <t:Message><t:ItemId Id="I1" ChangeKey="k1" /><t:Subject>Bütçe</t:Subject><t:DateTimeReceived>2026-10-20T07:00:00Z</t:DateTimeReceived><t:IsRead>true</t:IsRead></t:Message>
+              </t:Items></m:RootFolder>
+            </m:FindItemResponseMessage></m:ResponseMessages></m:FindItemResponse>
+            """;
+        var server = new FakeEwsServer()
+            .On("GetFolder", WellKnownFolders)
+            .On("FindFolder", InboxOnly)
+            .On("FindConversation", Conversations)
+            .On("GetItem", Summaries)
+            .On("GetConversationItems", Thread)
+            .On("GetFolder", counts)
+            .On("FindConversation", Conversations)
+            .On("FindItem", inbox);
+        var session = new MailSession(server.CreateClient(), new AccountSettings { Email = "ben@sirket.com" });
+        session.Preferences.ConversationView = true;
+        var vm = new MainViewModel(session);
+        await vm.InitializeAsync();
+        await WaitUntil(() => vm.Messages.Count == 2 && !vm.IsLoadingList);
+        IReadOnlyList<MailSummary>? notified = null;
+        vm.NewMailArrived += (_, items) => notified = items;
+
+        await vm.BackgroundRefreshAsync();
+
+        // Only the new message: I2 is unread too, but was already in a listed conversation.
+        Assert.Equal(["N1"], notified?.Select(m => m.ItemId.Id));
+    }
+
+    [Fact]
     public async Task New_conversations_appear_on_top_while_another_is_open()
     {
         const string counts = """
