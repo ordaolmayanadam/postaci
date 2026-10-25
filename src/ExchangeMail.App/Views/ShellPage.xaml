@@ -37,11 +37,13 @@
                 <RowDefinition Height="*" />
             </Grid.RowDefinitions>
             <InfoBar
+                x:Name="AutoReplyBanner"
                 Margin="8,0,8,8"
                 IsClosable="False"
                 IsOpen="{x:Bind AutoReply.IsActive, Mode=OneWay}"
                 Message="{x:Bind AutoReply.BannerText, Mode=OneWay}"
-                Severity="Warning">
+                Severity="Warning"
+                Visibility="{x:Bind AutoReplyBanner.IsOpen, Mode=OneWay}">
                 <InfoBar.ActionButton>
                     <Button Content="{h:L Key=AutoReply_TurnOff}" Command="{x:Bind AutoReply.TurnOffCommand}" />
                 </InfoBar.ActionButton>

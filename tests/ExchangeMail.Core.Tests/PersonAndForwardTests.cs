@@ -149,6 +149,8 @@ public class PersonAndForwardTests
         Assert.DoesNotContain("<style>", html); // the head is kept aside
         Assert.Equal(["teklif.pdf"], vm.ExistingAttachments.Select(a => a.Name));
         Assert.True(vm.HasAnyAttachments);
+        Assert.True(vm.HasExistingAttachments);
+        Assert.False(vm.HasNewAttachments); // its list stays hidden
         Assert.StartsWith("Ekler · toplam", vm.AttachmentsHeader);
         Assert.False(vm.IsLoadingOriginal);
         Assert.Null(vm.ErrorMessage);

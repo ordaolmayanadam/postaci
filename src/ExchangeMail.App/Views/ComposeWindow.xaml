@@ -54,20 +54,24 @@
         <StackPanel Grid.Row="2" Padding="16,0" Spacing="8">
             <ProgressBar IsIndeterminate="True" Visibility="{x:Bind ViewModel.IsBusy, Mode=OneWay}" />
             <InfoBar
+                x:Name="ErrorInfo"
                 Severity="Error"
                 IsOpen="{x:Bind h:Ui.HasText(ViewModel.ErrorMessage), Mode=OneWay}"
                 Message="{x:Bind ViewModel.ErrorMessage, Mode=OneWay}"
-                CloseButtonClick="OnErrorClosed" />
+                CloseButtonClick="OnErrorClosed"
+                Visibility="{x:Bind ErrorInfo.IsOpen, Mode=OneWay}" />
             <!--  Replies/forwards: the quoted original is on its way into the editor.  -->
             <ProgressBar
                 IsIndeterminate="True"
                 ToolTipService.ToolTip="{h:L Key=Compose_LoadingOriginal}"
                 Visibility="{x:Bind ViewModel.IsLoadingOriginal, Mode=OneWay}" />
             <InfoBar
+                x:Name="SavedInfo"
                 Severity="Success"
                 IsOpen="{x:Bind h:Ui.HasText(ViewModel.InfoMessage), Mode=OneWay}"
                 Message="{x:Bind ViewModel.InfoMessage, Mode=OneWay}"
-                IsClosable="False" />
+                IsClosable="False"
+                Visibility="{x:Bind SavedInfo.IsOpen, Mode=OneWay}" />
         </StackPanel>
 
         <Grid
@@ -76,7 +80,8 @@
             ColumnSpacing="12"
             RowSpacing="8">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="56" />
+                <!--  As wide as the longest label, in either language and at any text size.  -->
+                <ColumnDefinition Width="Auto" />
                 <ColumnDefinition Width="*" />
             </Grid.ColumnDefinitions>
             <Grid.RowDefinitions>
@@ -128,7 +133,7 @@
                 Text="{x:Bind ViewModel.Subject, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
         </Grid>
 
-        <Grid Grid.Row="4" Padding="16,0,16,8" RowSpacing="6">
+        <Grid Grid.Row="4" Padding="16,0,16,8" RowSpacing="8">
             <Grid.RowDefinitions>
                 <RowDefinition Height="*" />
                 <RowDefinition Height="Auto" />
@@ -152,116 +157,118 @@
             Margin="16,4,16,12"
             Padding="12,8"
             Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
-            CornerRadius="8"
+            CornerRadius="{StaticResource ControlCornerRadius}"
             Style="{StaticResource AttachmentAreaStyle}">
-        <StackPanel Spacing="6">
-            <Grid ColumnSpacing="12">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="Auto" />
-                    <ColumnDefinition Width="Auto" />
-                </Grid.ColumnDefinitions>
-                <StackPanel Orientation="Horizontal" Spacing="8">
-                    <FontIcon Glyph="&#xE723;" FontSize="14" />
+            <StackPanel Spacing="8">
+                <Grid ColumnSpacing="12">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <FontIcon Glyph="&#xE723;" FontSize="14" />
+                        <TextBlock
+                            VerticalAlignment="Center"
+                            Text="{x:Bind ViewModel.AttachmentsHeader, Mode=OneWay}"
+                            Style="{StaticResource CaptionTextBlockStyle}" />
+                    </StackPanel>
+                    <HyperlinkButton
+                        Grid.Column="1"
+                        Padding="4,0"
+                        Command="{x:Bind ViewModel.AddOriginalAttachmentsCommand}"
+                        Content="{x:Bind ViewModel.AddOriginalAttachmentsText}"
+                        Visibility="{x:Bind ViewModel.CanAddOriginalAttachments, Mode=OneWay}" />
                     <TextBlock
+                        Grid.Column="2"
                         VerticalAlignment="Center"
-                        Text="{x:Bind ViewModel.AttachmentsHeader, Mode=OneWay}"
-                        Style="{StaticResource CaptionTextBlockStyle}" />
-                </StackPanel>
-                <HyperlinkButton
-                    Grid.Column="1"
-                    Padding="4,0"
-                    Command="{x:Bind ViewModel.AddOriginalAttachmentsCommand}"
-                    Content="{x:Bind ViewModel.AddOriginalAttachmentsText}"
-                    Visibility="{x:Bind ViewModel.CanAddOriginalAttachments, Mode=OneWay}" />
-                <TextBlock
-                    Grid.Column="2"
-                    VerticalAlignment="Center"
-                    Text="{h:L Key=Compose_DropHere}"
-                    Style="{StaticResource CaptionTextBlockStyle}"
-                    Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
-            </Grid>
-            <ListView
-                MaxHeight="80"
-                ItemsSource="{x:Bind ViewModel.ExistingAttachments}"
-                SelectionMode="None">
-                <ListView.ItemsPanel>
-                    <ItemsPanelTemplate>
-                        <ItemsWrapGrid Orientation="Horizontal" />
-                    </ItemsPanelTemplate>
-                </ListView.ItemsPanel>
-                <ListView.ItemTemplate>
-                    <DataTemplate x:DataType="models:AttachmentInfo">
-                        <Grid
-                            Width="220"
-                            Padding="8,4"
-                            Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
-                            BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
-                            BorderThickness="1"
-                            ColumnSpacing="8"
-                            CornerRadius="4">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="Auto" />
-                                <ColumnDefinition Width="*" />
-                                <ColumnDefinition Width="Auto" />
-                            </Grid.ColumnDefinitions>
-                            <FontIcon Glyph="&#xE723;" FontSize="16" />
-                            <TextBlock Grid.Column="1" VerticalAlignment="Center" Text="{x:Bind Name}" TextTrimming="CharacterEllipsis" />
-                            <Button
-                                Grid.Column="2"
-                                Padding="4"
-                                Background="Transparent"
-                                BorderThickness="0"
-                                Click="OnRemoveExistingAttachment"
-                                Tag="{x:Bind}"
-                                ToolTipService.ToolTip="{h:L Key=Compose_RemoveFromDraft}">
-                                <FontIcon Glyph="&#xE711;" FontSize="12" />
-                            </Button>
-                        </Grid>
-                    </DataTemplate>
-                </ListView.ItemTemplate>
-            </ListView>
-            <ListView
-                MaxHeight="120"
-                ItemsSource="{x:Bind ViewModel.Attachments}"
-                SelectionMode="None">
-                <ListView.ItemsPanel>
-                    <ItemsPanelTemplate>
-                        <ItemsWrapGrid Orientation="Horizontal" />
-                    </ItemsPanelTemplate>
-                </ListView.ItemsPanel>
-                <ListView.ItemTemplate>
-                    <DataTemplate x:DataType="models:OutgoingAttachment">
-                        <Grid
-                            Width="220"
-                            Padding="8,4"
-                            Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
-                            BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
-                            BorderThickness="1"
-                            ColumnSpacing="8"
-                            CornerRadius="4">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="Auto" />
-                                <ColumnDefinition Width="*" />
-                                <ColumnDefinition Width="Auto" />
-                            </Grid.ColumnDefinitions>
-                            <FontIcon Glyph="&#xE8A5;" FontSize="16" />
-                            <TextBlock Grid.Column="1" VerticalAlignment="Center" Text="{x:Bind Name}" TextTrimming="CharacterEllipsis" />
-                            <Button
-                                Grid.Column="2"
-                                Padding="4"
-                                Background="Transparent"
-                                BorderThickness="0"
-                                Click="OnRemoveAttachment"
-                                Tag="{x:Bind}"
-                                ToolTipService.ToolTip="{h:L Key=Common_Remove}">
-                                <FontIcon Glyph="&#xE711;" FontSize="12" />
-                            </Button>
-                        </Grid>
-                    </DataTemplate>
-                </ListView.ItemTemplate>
-            </ListView>
-        </StackPanel>
+                        Text="{h:L Key=Compose_DropHere}"
+                        Style="{StaticResource CaptionTextBlockStyle}"
+                        Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                </Grid>
+                <ListView
+                    MaxHeight="80"
+                    ItemsSource="{x:Bind ViewModel.ExistingAttachments}"
+                    SelectionMode="None"
+                    Visibility="{x:Bind ViewModel.HasExistingAttachments, Mode=OneWay}">
+                    <ListView.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <ItemsWrapGrid Orientation="Horizontal" />
+                        </ItemsPanelTemplate>
+                    </ListView.ItemsPanel>
+                    <ListView.ItemTemplate>
+                        <DataTemplate x:DataType="models:AttachmentInfo">
+                            <Grid
+                                Width="220"
+                                Padding="8,4"
+                                Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                                BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                                BorderThickness="1"
+                                ColumnSpacing="8"
+                                CornerRadius="{StaticResource ControlCornerRadius}">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <FontIcon Glyph="&#xE723;" FontSize="16" />
+                                <TextBlock Grid.Column="1" VerticalAlignment="Center" Text="{x:Bind Name}" TextTrimming="CharacterEllipsis" />
+                                <Button
+                                    Grid.Column="2"
+                                    Padding="4"
+                                    Background="Transparent"
+                                    BorderThickness="0"
+                                    Click="OnRemoveExistingAttachment"
+                                    Tag="{x:Bind}"
+                                    ToolTipService.ToolTip="{h:L Key=Compose_RemoveFromDraft}">
+                                    <FontIcon Glyph="&#xE711;" FontSize="12" />
+                                </Button>
+                            </Grid>
+                        </DataTemplate>
+                    </ListView.ItemTemplate>
+                </ListView>
+                <ListView
+                    MaxHeight="120"
+                    ItemsSource="{x:Bind ViewModel.Attachments}"
+                    SelectionMode="None"
+                    Visibility="{x:Bind ViewModel.HasNewAttachments, Mode=OneWay}">
+                    <ListView.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <ItemsWrapGrid Orientation="Horizontal" />
+                        </ItemsPanelTemplate>
+                    </ListView.ItemsPanel>
+                    <ListView.ItemTemplate>
+                        <DataTemplate x:DataType="models:OutgoingAttachment">
+                            <Grid
+                                Width="220"
+                                Padding="8,4"
+                                Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                                BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                                BorderThickness="1"
+                                ColumnSpacing="8"
+                                CornerRadius="{StaticResource ControlCornerRadius}">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <FontIcon Glyph="&#xE8A5;" FontSize="16" />
+                                <TextBlock Grid.Column="1" VerticalAlignment="Center" Text="{x:Bind Name}" TextTrimming="CharacterEllipsis" />
+                                <Button
+                                    Grid.Column="2"
+                                    Padding="4"
+                                    Background="Transparent"
+                                    BorderThickness="0"
+                                    Click="OnRemoveAttachment"
+                                    Tag="{x:Bind}"
+                                    ToolTipService.ToolTip="{h:L Key=Common_Remove}">
+                                    <FontIcon Glyph="&#xE711;" FontSize="12" />
+                                </Button>
+                            </Grid>
+                        </DataTemplate>
+                    </ListView.ItemTemplate>
+                </ListView>
+            </StackPanel>
         </Border>
     </Grid>
 </Window>

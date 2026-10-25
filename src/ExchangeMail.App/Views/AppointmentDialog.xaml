@@ -85,7 +85,7 @@
                 Header="{h:L Key=Appointment_Description}"
                 TextWrapping="Wrap" />
 
-            <InfoBar x:Name="ErrorBar" IsClosable="False" Severity="Error" />
+            <InfoBar x:Name="ErrorBar" IsClosable="False" Severity="Error" Visibility="{x:Bind ErrorBar.IsOpen, Mode=OneWay}" />
         </StackPanel>
     </ScrollViewer>
 </ContentDialog>

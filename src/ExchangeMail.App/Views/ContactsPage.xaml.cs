@@ -11,6 +11,10 @@ public sealed partial class ContactsPage : Page
     public ContactsPage()
     {
         InitializeComponent();
+
+        var preferences = App.Preferences;
+        Ui.RestoreWidth(ListColumn, preferences.ContactsListPaneWidth);
+        Ui.SaveWidthOnResize(ListSplitter, ListColumn, w => preferences.ContactsListPaneWidth = w);
     }
 
     public ContactsViewModel ViewModel { get; private set; } = null!;

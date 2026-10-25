@@ -14,27 +14,32 @@
             <Setter Property="Background" Value="{ThemeResource CardBackgroundFillColorDefaultBrush}" />
             <Setter Property="BorderBrush" Value="{ThemeResource CardStrokeColorDefaultBrush}" />
             <Setter Property="BorderThickness" Value="1" />
-            <Setter Property="CornerRadius" Value="8" />
+            <Setter Property="CornerRadius" Value="{StaticResource ControlCornerRadius}" />
         </Style>
+        <!--  Spacing as in the Windows settings pages: cards 4 px apart, groups set off by their header.  -->
         <Style x:Key="SectionStyle" TargetType="TextBlock" BasedOn="{StaticResource BodyStrongTextBlockStyle}">
-            <Setter Property="Margin" Value="4,20,0,4" />
+            <Setter Property="Margin" Value="1,28,0,4" />
         </Style>
     </Page.Resources>
 
     <ScrollViewer VerticalScrollBarVisibility="Auto">
-        <StackPanel MaxWidth="820" Padding="32,8,32,32" HorizontalAlignment="Stretch" Spacing="6">
+        <StackPanel MaxWidth="820" Padding="32,8,32,32" HorizontalAlignment="Stretch" Spacing="4">
             <TextBlock Text="{h:L Key=Nav_Settings}" Style="{StaticResource TitleTextBlockStyle}" />
 
             <InfoBar
+                x:Name="ErrorInfo"
                 Severity="Error"
                 IsOpen="{x:Bind h:Ui.HasText(ViewModel.ErrorMessage), Mode=OneWay}"
                 Message="{x:Bind ViewModel.ErrorMessage, Mode=OneWay}"
-                IsClosable="False" />
+                IsClosable="False"
+                Visibility="{x:Bind ErrorInfo.IsOpen, Mode=OneWay}" />
             <InfoBar
+                x:Name="SavedInfo"
                 Severity="Success"
                 IsOpen="{x:Bind h:Ui.HasText(ViewModel.InfoMessage), Mode=OneWay}"
                 Message="{x:Bind ViewModel.InfoMessage, Mode=OneWay}"
-                IsClosable="False" />
+                IsClosable="False"
+                Visibility="{x:Bind SavedInfo.IsOpen, Mode=OneWay}" />
 
             <!--  Mail  -->
             <TextBlock Text="{h:L Key=Nav_Mail}" Style="{StaticResource SectionStyle}" />
@@ -157,77 +162,72 @@
 
             <!--  Automatic replies  -->
             <TextBlock Text="{h:L Key=Settings_AutoReplies}" Style="{StaticResource SectionStyle}" />
-            <Grid Style="{StaticResource CardStyle}" RowSpacing="12">
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="Auto" />
-                </Grid.RowDefinitions>
-                <ToggleSwitch
-                    Header="{h:L Key=Settings_SendAutoReplies}"
-                    IsOn="{x:Bind ViewModel.AutoReply.IsEnabled, Mode=TwoWay}"
-                    OffContent="{h:L Key=Common_Off}"
-                    OnContent="{h:L Key=Common_On}" />
-                <StackPanel Grid.Row="1" Spacing="8" Visibility="{x:Bind ViewModel.AutoReply.IsEnabled, Mode=OneWay}">
-                    <CheckBox Content="{h:L Key=Settings_OnlyDuringRange}" IsChecked="{x:Bind ViewModel.AutoReply.IsScheduled, Mode=TwoWay}" />
-                    <StackPanel
-                        Orientation="Horizontal"
-                        Spacing="8"
-                        Visibility="{x:Bind ViewModel.AutoReply.CanEditSchedule, Mode=OneWay}">
-                        <CalendarDatePicker Header="{h:L Key=Common_Start}" Date="{x:Bind ViewModel.AutoReply.StartDate, Mode=TwoWay}" />
-                        <TimePicker
-                            Header="{h:L Key=Common_Time}"
-                            ClockIdentifier="24HourClock"
-                            MinuteIncrement="30"
-                            Time="{x:Bind ViewModel.AutoReply.StartTime, Mode=TwoWay}" />
-                        <CalendarDatePicker Margin="16,0,0,0" Header="{h:L Key=Common_End}" Date="{x:Bind ViewModel.AutoReply.EndDate, Mode=TwoWay}" />
-                        <TimePicker
-                            Header="{h:L Key=Common_Time}"
-                            ClockIdentifier="24HourClock"
-                            MinuteIncrement="30"
-                            Time="{x:Bind ViewModel.AutoReply.EndTime, Mode=TwoWay}" />
+            <!--  A stack, not grid rows: hidden parts (schedule, external reply, closed messages) leave no gap.  -->
+            <Grid Style="{StaticResource CardStyle}">
+                <StackPanel Spacing="12">
+                    <ToggleSwitch
+                        Header="{h:L Key=Settings_SendAutoReplies}"
+                        IsOn="{x:Bind ViewModel.AutoReply.IsEnabled, Mode=TwoWay}"
+                        OffContent="{h:L Key=Common_Off}"
+                        OnContent="{h:L Key=Common_On}" />
+                    <StackPanel Spacing="8" Visibility="{x:Bind ViewModel.AutoReply.IsEnabled, Mode=OneWay}">
+                        <CheckBox Content="{h:L Key=Settings_OnlyDuringRange}" IsChecked="{x:Bind ViewModel.AutoReply.IsScheduled, Mode=TwoWay}" />
+                        <StackPanel
+                            Orientation="Horizontal"
+                            Spacing="8"
+                            Visibility="{x:Bind ViewModel.AutoReply.CanEditSchedule, Mode=OneWay}">
+                            <CalendarDatePicker Header="{h:L Key=Common_Start}" Date="{x:Bind ViewModel.AutoReply.StartDate, Mode=TwoWay}" />
+                            <TimePicker
+                                Header="{h:L Key=Common_Time}"
+                                ClockIdentifier="24HourClock"
+                                MinuteIncrement="30"
+                                Time="{x:Bind ViewModel.AutoReply.StartTime, Mode=TwoWay}" />
+                            <CalendarDatePicker Margin="16,0,0,0" Header="{h:L Key=Common_End}" Date="{x:Bind ViewModel.AutoReply.EndDate, Mode=TwoWay}" />
+                            <TimePicker
+                                Header="{h:L Key=Common_Time}"
+                                ClockIdentifier="24HourClock"
+                                MinuteIncrement="30"
+                                Time="{x:Bind ViewModel.AutoReply.EndTime, Mode=TwoWay}" />
+                        </StackPanel>
                     </StackPanel>
-                </StackPanel>
-                <TextBox
-                    Grid.Row="2"
-                    MinHeight="90"
-                    AcceptsReturn="True"
-                    Header="{h:L Key=Settings_InternalReply}"
-                    PlaceholderText="{h:L Key=Settings_InternalReplyPlaceholder}"
-                    Text="{x:Bind ViewModel.AutoReply.InternalMessage, Mode=TwoWay}"
-                    TextWrapping="Wrap" />
-                <CheckBox Grid.Row="3" Content="{h:L Key=Settings_ReplyExternal}" IsChecked="{x:Bind ViewModel.AutoReply.ReplyToExternal, Mode=TwoWay}" />
-                <StackPanel Grid.Row="4" Spacing="8" Visibility="{x:Bind ViewModel.AutoReply.CanEditExternal, Mode=OneWay}">
-                    <RadioButtons MaxColumns="2" SelectedIndex="{x:Bind ViewModel.AutoReply.ExternalAudienceIndex, Mode=TwoWay}">
-                        <RadioButton Content="{h:L Key=Settings_ExternalContactsOnly}" />
-                        <RadioButton Content="{h:L Key=Settings_ExternalEveryone}" />
-                    </RadioButtons>
                     <TextBox
                         MinHeight="90"
                         AcceptsReturn="True"
-                        Header="{h:L Key=Settings_ExternalReply}"
-                        Text="{x:Bind ViewModel.AutoReply.ExternalMessage, Mode=TwoWay}"
+                        Header="{h:L Key=Settings_InternalReply}"
+                        PlaceholderText="{h:L Key=Settings_InternalReplyPlaceholder}"
+                        Text="{x:Bind ViewModel.AutoReply.InternalMessage, Mode=TwoWay}"
                         TextWrapping="Wrap" />
-                </StackPanel>
-                <StackPanel Grid.Row="5" Orientation="Horizontal" Spacing="12">
-                    <Button Content="{h:L Key=Settings_SaveAutoReplies}" Command="{x:Bind ViewModel.AutoReply.SaveCommand}" Style="{StaticResource AccentButtonStyle}" />
-                    <ProgressRing Width="20" Height="20" IsActive="{x:Bind ViewModel.AutoReply.IsBusy, Mode=OneWay}" />
-                </StackPanel>
-                <StackPanel Grid.Row="6" Spacing="4">
+                    <CheckBox Content="{h:L Key=Settings_ReplyExternal}" IsChecked="{x:Bind ViewModel.AutoReply.ReplyToExternal, Mode=TwoWay}" />
+                    <StackPanel Spacing="8" Visibility="{x:Bind ViewModel.AutoReply.CanEditExternal, Mode=OneWay}">
+                        <RadioButtons MaxColumns="2" SelectedIndex="{x:Bind ViewModel.AutoReply.ExternalAudienceIndex, Mode=TwoWay}">
+                            <RadioButton Content="{h:L Key=Settings_ExternalContactsOnly}" />
+                            <RadioButton Content="{h:L Key=Settings_ExternalEveryone}" />
+                        </RadioButtons>
+                        <TextBox
+                            MinHeight="90"
+                            AcceptsReturn="True"
+                            Header="{h:L Key=Settings_ExternalReply}"
+                            Text="{x:Bind ViewModel.AutoReply.ExternalMessage, Mode=TwoWay}"
+                            TextWrapping="Wrap" />
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal" Spacing="12">
+                        <Button Content="{h:L Key=Settings_SaveAutoReplies}" Command="{x:Bind ViewModel.AutoReply.SaveCommand}" Style="{StaticResource AccentButtonStyle}" />
+                        <ProgressRing Width="20" Height="20" IsActive="{x:Bind ViewModel.AutoReply.IsBusy, Mode=OneWay}" />
+                    </StackPanel>
                     <InfoBar
+                        x:Name="AutoReplyErrorInfo"
                         Severity="Error"
                         IsClosable="False"
                         IsOpen="{x:Bind h:Ui.HasText(ViewModel.AutoReply.ErrorMessage), Mode=OneWay}"
-                        Message="{x:Bind ViewModel.AutoReply.ErrorMessage, Mode=OneWay}" />
+                        Message="{x:Bind ViewModel.AutoReply.ErrorMessage, Mode=OneWay}"
+                        Visibility="{x:Bind AutoReplyErrorInfo.IsOpen, Mode=OneWay}" />
                     <InfoBar
+                        x:Name="AutoReplySavedInfo"
                         Severity="Success"
                         IsClosable="False"
                         IsOpen="{x:Bind h:Ui.HasText(ViewModel.AutoReply.InfoMessage), Mode=OneWay}"
-                        Message="{x:Bind ViewModel.AutoReply.InfoMessage, Mode=OneWay}" />
+                        Message="{x:Bind ViewModel.AutoReply.InfoMessage, Mode=OneWay}"
+                        Visibility="{x:Bind AutoReplySavedInfo.IsOpen, Mode=OneWay}" />
                 </StackPanel>
             </Grid>
 
@@ -308,7 +308,8 @@
                 </ComboBox>
             </Grid>
 
-            <Grid Style="{StaticResource CardStyle}" RowSpacing="10">
+            <!--  Margins instead of RowSpacing in the cards with a restart notice: a hidden notice leaves no gap.  -->
+            <Grid Style="{StaticResource CardStyle}">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*" />
                     <ColumnDefinition Width="Auto" />
@@ -332,12 +333,15 @@
                     <ComboBoxItem Content="English" />
                 </ComboBox>
                 <InfoBar
+                    x:Name="LanguageRestartInfo"
                     Grid.Row="1"
+                    Margin="0,8,0,0"
                     Grid.ColumnSpan="2"
                     IsClosable="False"
                     IsOpen="{x:Bind ViewModel.IsLanguageRestartNeeded, Mode=OneWay}"
                     Message="{h:L Key=Settings_LanguageRestartNeeded}"
-                    Severity="Informational">
+                    Severity="Informational"
+                    Visibility="{x:Bind LanguageRestartInfo.IsOpen, Mode=OneWay}">
                     <InfoBar.ActionButton>
                         <Button Content="{h:L Key=Settings_RestartNow}" Command="{x:Bind ViewModel.RestartCommand}" />
                     </InfoBar.ActionButton>
@@ -347,7 +351,7 @@
             <!--  Fonts  -->
             <TextBlock Text="{h:L Key=Settings_Fonts}" Style="{StaticResource SectionStyle}" />
 
-            <Grid Style="{StaticResource CardStyle}" RowSpacing="10">
+            <Grid Style="{StaticResource CardStyle}">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*" />
                     <ColumnDefinition Width="Auto" />
@@ -381,23 +385,27 @@
                 <TextBlock
                     Grid.Row="1"
                     Grid.ColumnSpan="2"
+                    Margin="0,8,0,0"
                     Text="{h:L Key=Settings_InterfaceSample}"
                     FontFamily="{x:Bind h:Ui.Font(ViewModel.UiFontChoice), Mode=OneWay}"
                     FontSize="{x:Bind h:Ui.UiPreviewSize(ViewModel.UiTextScaleIndex), Mode=OneWay}" />
                 <InfoBar
+                    x:Name="FontRestartInfo"
                     Grid.Row="2"
+                    Margin="0,8,0,0"
                     Grid.ColumnSpan="2"
                     IsClosable="False"
                     IsOpen="{x:Bind ViewModel.IsRestartNeeded, Mode=OneWay}"
                     Message="{h:L Key=Settings_FontRestartNeeded}"
-                    Severity="Informational">
+                    Severity="Informational"
+                    Visibility="{x:Bind FontRestartInfo.IsOpen, Mode=OneWay}">
                     <InfoBar.ActionButton>
                         <Button Content="{h:L Key=Settings_RestartNow}" Command="{x:Bind ViewModel.RestartCommand}" />
                     </InfoBar.ActionButton>
                 </InfoBar>
             </Grid>
 
-            <Grid Style="{StaticResource CardStyle}" RowSpacing="10">
+            <Grid Style="{StaticResource CardStyle}" RowSpacing="8">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*" />
                     <ColumnDefinition Width="Auto" />
@@ -446,7 +454,7 @@
                     TextWrapping="Wrap" />
             </Grid>
 
-            <Grid Style="{StaticResource CardStyle}" RowSpacing="10">
+            <Grid Style="{StaticResource CardStyle}" RowSpacing="8">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*" />
                     <ColumnDefinition Width="Auto" />
@@ -490,7 +498,7 @@
 
             <!--  Account  -->
             <TextBlock Text="{h:L Key=Settings_Account}" Style="{StaticResource SectionStyle}" />
-            <Grid Style="{StaticResource CardStyle}" RowSpacing="10">
+            <Grid Style="{StaticResource CardStyle}" RowSpacing="8">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto" />
                     <ColumnDefinition Width="*" />
@@ -536,7 +544,8 @@
                         Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                         TextWrapping="Wrap" />
                     <HyperlinkButton
-                        Margin="-12,4,0,0"
+                        Margin="0,4,0,0"
+                        Padding="0"
                         Click="OnOpenDiagnostics"
                         Content="{h:L Key=Settings_OpenDiagnostics}"
                         ToolTipService.ToolTip="{h:L Key=Settings_OpenDiagnosticsHint}" />

@@ -178,6 +178,10 @@ public sealed partial class ComposeViewModel : ObservableObject
 
     public bool HasAnyAttachments => Attachments.Count + ExistingAttachments.Count > 0;
 
+    /// <summary>The lists of the attachment area are shown only when they have files, so empty ones leave no gap.</summary>
+    public bool HasExistingAttachments => ExistingAttachments.Count > 0;
+    public bool HasNewAttachments => Attachments.Count > 0;
+
     /// <summary>"Attachments", or "Attachments · total 1.2 MB" once there are some.</summary>
     public string AttachmentsHeader => HasAnyAttachments ? $"{Strings.Compose_AttachmentsTotal} {AttachmentsSizeText}" : Strings.Compose_Attachments;
 
@@ -185,6 +189,8 @@ public sealed partial class ComposeViewModel : ObservableObject
     {
         OnPropertyChanged(nameof(AttachmentsSizeText));
         OnPropertyChanged(nameof(HasAnyAttachments));
+        OnPropertyChanged(nameof(HasExistingAttachments));
+        OnPropertyChanged(nameof(HasNewAttachments));
         OnPropertyChanged(nameof(AttachmentsHeader));
     }
 

@@ -4,12 +4,13 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:h="using:ExchangeMail.App.Helpers"
+    xmlns:toolkit="using:CommunityToolkit.WinUI.Controls"
     xmlns:vm="using:ExchangeMail.ViewModels"
     NavigationCacheMode="Required">
 
     <Grid>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="400" MinWidth="320" />
+            <ColumnDefinition x:Name="ListColumn" Width="400" MinWidth="320" MaxWidth="900" />
             <ColumnDefinition Width="*" />
         </Grid.ColumnDefinitions>
 
@@ -26,13 +27,13 @@
                 <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
 
-            <StackPanel Padding="12,12,12,4" Spacing="10">
+            <StackPanel Padding="12,12,12,4" Spacing="8">
                 <Grid>
                     <TextBlock Text="{h:L Key=Nav_Contacts}" Style="{StaticResource SubtitleTextBlockStyle}" />
                     <StackPanel HorizontalAlignment="Right" Orientation="Horizontal" Spacing="8">
                         <ProgressRing Width="16" Height="16" IsActive="{x:Bind ViewModel.IsLoading, Mode=OneWay}" />
                         <Button Click="OnNewContact" ToolTipService.ToolTip="{h:L Key=Contacts_NewTooltip}">
-                            <StackPanel Orientation="Horizontal" Spacing="6">
+                            <StackPanel Orientation="Horizontal" Spacing="8">
                                 <FontIcon Glyph="&#xE8FA;" FontSize="14" />
                                 <TextBlock Text="{h:L Key=Contacts_New}" />
                             </StackPanel>
@@ -55,12 +56,14 @@
             </StackPanel>
 
             <InfoBar
+                x:Name="ErrorInfo"
                 Grid.Row="1"
                 Margin="12,4"
                 Severity="Error"
                 IsOpen="{x:Bind h:Ui.HasText(ViewModel.ErrorMessage), Mode=OneWay}"
                 Message="{x:Bind ViewModel.ErrorMessage, Mode=OneWay}"
-                CloseButtonClick="OnErrorClosed" />
+                CloseButtonClick="OnErrorClosed"
+                Visibility="{x:Bind ErrorInfo.IsOpen, Mode=OneWay}" />
 
             <TextBlock
                 Grid.Row="2"
@@ -108,20 +111,49 @@
 
             <TextBlock
                 Grid.Row="3"
-                Margin="16,6"
+                Margin="16,8"
                 Text="{x:Bind ViewModel.StatusText, Mode=OneWay}"
                 Style="{StaticResource CaptionTextBlockStyle}"
                 Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                 TextWrapping="Wrap" />
         </Grid>
 
-        <!--  Details  -->
+        <!--  Details: actions in a command bar, as in the mail and calendar reading panes.  -->
         <Grid
             Grid.Column="1"
             Background="{ThemeResource LayerFillColorDefaultBrush}"
             BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
             BorderThickness="1,1,0,0">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+
+            <CommandBar
+                HorizontalAlignment="Left"
+                Background="Transparent"
+                DefaultLabelPosition="Right"
+                Visibility="{x:Bind ViewModel.HasSelection, Mode=OneWay}">
+                <AppBarButton Icon="Mail" Label="{h:L Key=Contacts_SendEmail}" Command="{x:Bind ViewModel.SendMailCommand}" />
+                <AppBarButton
+                    Icon="AddFriend"
+                    Label="{h:L Key=Contacts_AddToMine}"
+                    Command="{x:Bind ViewModel.AddToContactsCommand}"
+                    Visibility="{x:Bind ViewModel.Selected.IsDirectoryEntry, Mode=OneWay, FallbackValue=Collapsed}" />
+                <AppBarButton
+                    Icon="Edit"
+                    Label="{h:L Key=Common_Edit}"
+                    Command="{x:Bind ViewModel.EditCommand}"
+                    Visibility="{x:Bind h:Ui.VisibleIfNot(ViewModel.IsDirectory), Mode=OneWay}" />
+                <AppBarButton
+                    Icon="Delete"
+                    Label="{h:L Key=Common_Delete}"
+                    Command="{x:Bind ViewModel.DeleteCommand}"
+                    Visibility="{x:Bind h:Ui.VisibleIfNot(ViewModel.IsDirectory), Mode=OneWay}" />
+            </CommandBar>
+
             <StackPanel
+                Grid.Row="1"
                 HorizontalAlignment="Center"
                 VerticalAlignment="Center"
                 Spacing="8"
@@ -130,79 +162,60 @@
                 <TextBlock Text="{h:L Key=Contacts_SelectContact}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
             </StackPanel>
 
-            <StackPanel
-                MaxWidth="640"
-                Padding="40,32"
-                HorizontalAlignment="Left"
-                Spacing="20"
-                Visibility="{x:Bind ViewModel.HasSelection, Mode=OneWay}">
-                <StackPanel Orientation="Horizontal" Spacing="20">
-                    <PersonPicture Width="72" Height="72" DisplayName="{x:Bind ViewModel.Selected.DisplayName, Mode=OneWay}" />
-                    <StackPanel VerticalAlignment="Center" Spacing="4">
-                        <TextBlock
-                            Text="{x:Bind ViewModel.Selected.DisplayName, Mode=OneWay}"
-                            Style="{StaticResource SubtitleTextBlockStyle}"
-                            IsTextSelectionEnabled="True" />
-                        <TextBlock
-                            Text="{x:Bind ViewModel.Selected.Subtitle, Mode=OneWay}"
-                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                            IsTextSelectionEnabled="True"
-                            TextWrapping="Wrap" />
+            <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" Visibility="{x:Bind ViewModel.HasSelection, Mode=OneWay}">
+                <StackPanel
+                    MaxWidth="640"
+                    Padding="24,4,24,24"
+                    HorizontalAlignment="Left"
+                    Spacing="24">
+                    <StackPanel Orientation="Horizontal" Spacing="16">
+                        <PersonPicture Width="72" Height="72" DisplayName="{x:Bind ViewModel.Selected.DisplayName, Mode=OneWay}" />
+                        <StackPanel VerticalAlignment="Center" Spacing="4">
+                            <TextBlock
+                                Text="{x:Bind ViewModel.Selected.DisplayName, Mode=OneWay}"
+                                Style="{StaticResource SubtitleTextBlockStyle}"
+                                IsTextSelectionEnabled="True" />
+                            <TextBlock
+                                Text="{x:Bind ViewModel.Selected.Subtitle, Mode=OneWay}"
+                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                IsTextSelectionEnabled="True"
+                                TextWrapping="Wrap" />
+                        </StackPanel>
                     </StackPanel>
-                </StackPanel>
 
-                <StackPanel Orientation="Horizontal" Spacing="8">
-                    <Button Command="{x:Bind ViewModel.SendMailCommand}" Style="{StaticResource AccentButtonStyle}">
-                        <StackPanel Orientation="Horizontal" Spacing="8">
-                            <FontIcon Glyph="&#xE715;" FontSize="14" />
-                            <TextBlock Text="{h:L Key=Contacts_SendEmail}" />
-                        </StackPanel>
-                    </Button>
-                    <Button Command="{x:Bind ViewModel.AddToContactsCommand}" Visibility="{x:Bind ViewModel.Selected.IsDirectoryEntry, Mode=OneWay, FallbackValue=Collapsed}">
-                        <StackPanel Orientation="Horizontal" Spacing="8">
-                            <FontIcon Glyph="&#xE8FA;" FontSize="14" />
-                            <TextBlock Text="{h:L Key=Contacts_AddToMine}" />
-                        </StackPanel>
-                    </Button>
-                    <Button Command="{x:Bind ViewModel.EditCommand}" Visibility="{x:Bind h:Ui.VisibleIfNot(ViewModel.IsDirectory), Mode=OneWay}">
-                        <StackPanel Orientation="Horizontal" Spacing="8">
-                            <FontIcon Glyph="&#xE70F;" FontSize="14" />
-                            <TextBlock Text="{h:L Key=Common_Edit}" />
-                        </StackPanel>
-                    </Button>
-                    <Button Command="{x:Bind ViewModel.DeleteCommand}" Visibility="{x:Bind h:Ui.VisibleIfNot(ViewModel.IsDirectory), Mode=OneWay}">
-                        <StackPanel Orientation="Horizontal" Spacing="8">
-                            <FontIcon Glyph="&#xE74D;" FontSize="14" />
-                            <TextBlock Text="{h:L Key=Common_Delete}" />
-                        </StackPanel>
-                    </Button>
+                    <Grid
+                        Padding="16"
+                        Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                        BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                        BorderThickness="1"
+                        ColumnSpacing="24"
+                        CornerRadius="{StaticResource ControlCornerRadius}"
+                        RowSpacing="12">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+                        <TextBlock Text="{h:L Key=Common_Email}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                        <TextBlock Grid.Column="1" Text="{x:Bind ViewModel.Selected.Email, Mode=OneWay}" IsTextSelectionEnabled="True" />
+                        <TextBlock Grid.Row="1" Text="{h:L Key=Contacts_BusinessPhone}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                        <TextBlock Grid.Row="1" Grid.Column="1" Text="{x:Bind ViewModel.Selected.BusinessPhone, Mode=OneWay}" IsTextSelectionEnabled="True" />
+                        <TextBlock Grid.Row="2" Text="{h:L Key=Contacts_MobilePhone}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                        <TextBlock Grid.Row="2" Grid.Column="1" Text="{x:Bind ViewModel.Selected.MobilePhone, Mode=OneWay}" IsTextSelectionEnabled="True" />
+                    </Grid>
                 </StackPanel>
-
-                <Grid
-                    Padding="16"
-                    Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
-                    BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
-                    BorderThickness="1"
-                    ColumnSpacing="24"
-                    CornerRadius="8"
-                    RowSpacing="12">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="Auto" />
-                        <ColumnDefinition Width="*" />
-                    </Grid.ColumnDefinitions>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="Auto" />
-                    </Grid.RowDefinitions>
-                    <TextBlock Text="{h:L Key=Common_Email}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
-                    <TextBlock Grid.Column="1" Text="{x:Bind ViewModel.Selected.Email, Mode=OneWay}" IsTextSelectionEnabled="True" />
-                    <TextBlock Grid.Row="1" Text="{h:L Key=Contacts_BusinessPhone}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
-                    <TextBlock Grid.Row="1" Grid.Column="1" Text="{x:Bind ViewModel.Selected.BusinessPhone, Mode=OneWay}" IsTextSelectionEnabled="True" />
-                    <TextBlock Grid.Row="2" Text="{h:L Key=Contacts_MobilePhone}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
-                    <TextBlock Grid.Row="2" Grid.Column="1" Text="{x:Bind ViewModel.Selected.MobilePhone, Mode=OneWay}" IsTextSelectionEnabled="True" />
-                </Grid>
-            </StackPanel>
+            </ScrollViewer>
         </Grid>
+
+        <!--  Splitters go last so they sit above the panes they overlap.  -->
+        <toolkit:GridSplitter
+            x:Name="ListSplitter"
+            AutomationProperties.Name="{h:L Key=Common_ResizeColumn}"
+            Grid.Column="1"
+            Style="{StaticResource PaneSplitterStyle}" />
     </Grid>
 </Page>

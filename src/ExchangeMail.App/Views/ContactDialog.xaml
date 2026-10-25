@@ -11,28 +11,30 @@
     PrimaryButtonText="{h:L Key=Common_Save}">
 
     <ScrollViewer MaxHeight="600" VerticalScrollBarVisibility="Auto">
-        <Grid Width="460" Padding="0,0,12,0" ColumnSpacing="12" RowSpacing="12">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*" />
-                <ColumnDefinition Width="*" />
-            </Grid.ColumnDefinitions>
-            <Grid.RowDefinitions>
-                <RowDefinition Height="Auto" />
-                <RowDefinition Height="Auto" />
-                <RowDefinition Height="Auto" />
-                <RowDefinition Height="Auto" />
-                <RowDefinition Height="Auto" />
-                <RowDefinition Height="Auto" />
-            </Grid.RowDefinitions>
-            <TextBox x:Name="GivenNameBox" Header="{h:L Key=Contacts_GivenName}" />
-            <TextBox x:Name="SurnameBox" Grid.Column="1" Header="{h:L Key=Contacts_Surname}" />
-            <TextBox x:Name="EmailBox" Grid.Row="1" Grid.ColumnSpan="2" Header="{h:L Key=Common_Email}" InputScope="EmailSmtpAddress" />
-            <TextBox x:Name="CompanyBox" Grid.Row="2" Grid.ColumnSpan="2" Header="{h:L Key=Contacts_Company}" />
-            <TextBox x:Name="JobTitleBox" Grid.Row="3" Header="{h:L Key=Contacts_JobTitle}" />
-            <TextBox x:Name="DepartmentBox" Grid.Row="3" Grid.Column="1" Header="{h:L Key=Contacts_Department}" />
-            <TextBox x:Name="BusinessPhoneBox" Grid.Row="4" Header="{h:L Key=Contacts_BusinessPhone}" InputScope="TelephoneNumber" />
-            <TextBox x:Name="MobilePhoneBox" Grid.Row="4" Grid.Column="1" Header="{h:L Key=Contacts_MobilePhone}" InputScope="TelephoneNumber" />
-            <InfoBar x:Name="ErrorBar" Grid.Row="5" Grid.ColumnSpan="2" IsClosable="False" Severity="Error" />
-        </Grid>
+        <!--  The error sits outside the grid so that, while hidden, it adds no row spacing.  -->
+        <StackPanel Width="460" Padding="0,0,12,0" Spacing="12">
+            <Grid ColumnSpacing="12" RowSpacing="12">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+                <TextBox x:Name="GivenNameBox" Header="{h:L Key=Contacts_GivenName}" />
+                <TextBox x:Name="SurnameBox" Grid.Column="1" Header="{h:L Key=Contacts_Surname}" />
+                <TextBox x:Name="EmailBox" Grid.Row="1" Grid.ColumnSpan="2" Header="{h:L Key=Common_Email}" InputScope="EmailSmtpAddress" />
+                <TextBox x:Name="CompanyBox" Grid.Row="2" Grid.ColumnSpan="2" Header="{h:L Key=Contacts_Company}" />
+                <TextBox x:Name="JobTitleBox" Grid.Row="3" Header="{h:L Key=Contacts_JobTitle}" />
+                <TextBox x:Name="DepartmentBox" Grid.Row="3" Grid.Column="1" Header="{h:L Key=Contacts_Department}" />
+                <TextBox x:Name="BusinessPhoneBox" Grid.Row="4" Header="{h:L Key=Contacts_BusinessPhone}" InputScope="TelephoneNumber" />
+                <TextBox x:Name="MobilePhoneBox" Grid.Row="4" Grid.Column="1" Header="{h:L Key=Contacts_MobilePhone}" InputScope="TelephoneNumber" />
+            </Grid>
+            <InfoBar x:Name="ErrorBar" IsClosable="False" Severity="Error" Visibility="{x:Bind ErrorBar.IsOpen, Mode=OneWay}" />
+        </StackPanel>
     </ScrollViewer>
 </ContentDialog>

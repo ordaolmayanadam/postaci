@@ -68,10 +68,12 @@
                 </Expander>
 
                 <InfoBar
+                    x:Name="ErrorInfo"
                     Severity="Error"
                     IsClosable="False"
                     IsOpen="{x:Bind h:Ui.HasText(ViewModel.ErrorMessage), Mode=OneWay}"
-                    Message="{x:Bind ViewModel.ErrorMessage, Mode=OneWay}" />
+                    Message="{x:Bind ViewModel.ErrorMessage, Mode=OneWay}"
+                    Visibility="{x:Bind ErrorInfo.IsOpen, Mode=OneWay}" />
 
                 <StackPanel Orientation="Horizontal" Spacing="12">
                     <Button
