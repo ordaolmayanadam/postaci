@@ -143,7 +143,9 @@ for new mail. To quit completely, right-click the tray icon and choose **Exit**.
   messages appear at the top of the list within seconds, and read state changed in other clients (Outlook, OWA, phone)
   is synchronized. If the connection drops, Postacı reconnects by itself and meanwhile keeps polling at the interval
   set in Settings (every minute by default).
-- **Conversation view:** the button in the list header groups messages by conversation. Selecting a conversation shows
+- **Conversation view:** the button in the list header groups messages by conversation; each row shows the newest
+  message's preview and the number of messages. The chevron on conversations with several messages (or the → / ← keys)
+  opens and closes the conversation's messages indented under it; each can be opened on its own. Selecting a conversation shows
   all of its messages (including your replies in Sent Items) in the reading pane, newest first, without repeated
   quotes. Reply answers the newest message from someone else in the conversation.
 - **Multi-select:** select several messages with Ctrl/Shift-click or Ctrl+A; delete, move and read/unread apply to all

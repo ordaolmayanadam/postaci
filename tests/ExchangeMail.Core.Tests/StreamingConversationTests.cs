@@ -75,6 +75,23 @@ public class StreamingConversationTests
     private static string Ok(string operation, string inner) =>
         $"""<m:{operation}Response><m:ResponseMessages><m:{operation}ResponseMessage ResponseClass="Success"><m:ResponseCode>NoError</m:ResponseCode>{inner}</m:{operation}ResponseMessage></m:ResponseMessages></m:{operation}Response>""";
 
+    /// <summary>The batch GetItem that supplies each conversation row's newest message (preview and sender).</summary>
+    private static string Summaries => $"""
+        <m:GetItemResponse><m:ResponseMessages>
+          {Summary("I1", "Ali Veli", "2026-10-20T07:00:00Z", "İlk taslak ekte.", false)}
+          {Summary("I2", "Ayşe Kaya", "2026-10-20T08:00:00Z", "Rakamlar uygun.", false)}
+          {Summary("I3", "Mehmet", "2026-10-19T09:00:00Z", "Tek iletinin önizlemesi", true)}
+        </m:ResponseMessages></m:GetItemResponse>
+        """;
+
+    private static string Summary(string id, string from, string received, string preview, bool read) => $"""
+        <m:GetItemResponseMessage ResponseClass="Success"><m:ResponseCode>NoError</m:ResponseCode><m:Items><t:Message>
+          <t:ItemId Id="{id}" ChangeKey="c" /><t:Subject>Konu</t:Subject>
+          <t:From><t:Mailbox><t:Name>{from}</t:Name><t:EmailAddress>{from.Split(' ')[0].ToLowerInvariant()}@sirket.com</t:EmailAddress></t:Mailbox></t:From>
+          <t:DateTimeReceived>{received}</t:DateTimeReceived><t:IsRead>{(read ? "true" : "false")}</t:IsRead><t:Preview>{preview}</t:Preview>
+        </t:Message></m:Items></m:GetItemResponseMessage>
+        """;
+
     private static string StreamBatch(string notifications, string status) =>
         Ok("GetStreamingEvents", $"<m:Notifications>{notifications}</m:Notifications><m:ConnectionStatus>{status}</m:ConnectionStatus>");
 
@@ -129,6 +146,7 @@ public class StreamingConversationTests
             .On("GetFolder", WellKnownFolders)
             .On("FindFolder", InboxOnly)
             .On("FindConversation", Conversations)
+            .On("GetItem", Summaries)
             .On("UpdateItem", Ok("UpdateItem", """<m:Items><t:Message><t:ItemId Id="I1" ChangeKey="k9" /></t:Message></m:Items>""") )
             .On("GetConversationItems", Thread)
             .On("GetItem", Ok("GetItem", """
@@ -144,6 +162,13 @@ public class StreamingConversationTests
         Assert.Equal("Ali Veli, Ayşe Kaya", vm.Messages[0].Sender);
         Assert.Equal("3", vm.Messages[0].CountText);
         Assert.False(vm.Messages[1].HasCount);
+        // Rows show the newest message of the conversation: its preview, and its sender when there is only one.
+        Assert.Equal("Rakamlar uygun.", vm.Messages[0].Preview);
+        Assert.Equal("I2", vm.Messages[0].Id.Id);
+        Assert.Equal(("Mehmet", "Tek iletinin önizlemesi"), (vm.Messages[1].Sender, vm.Messages[1].Preview));
+        Assert.True(vm.Messages[0].CanExpand);
+        Assert.False(vm.Messages[1].CanExpand);
+        Assert.Equal(3, server.Request("GetItem").Descendants(T + "ItemId").Count()); // one batch for the page
         Assert.Equal(1, vm.Messages[0].UnreadItems);
 
         vm.SetSelection([vm.Messages[0]]);
@@ -153,7 +178,7 @@ public class StreamingConversationTests
         Assert.Equal(["I1", "I2"], server.Request("UpdateItem").Descendants(T + "ItemId").Select(i => (string?)i.Attribute("Id")));
         Assert.True(vm.Messages[0].IsRead);
         // Replies go to the newest message from someone else, not to our own reply.
-        Assert.Equal("I2", (string?)server.Request("GetItem").Descendants(T + "ItemId").Single().Attribute("Id"));
+        Assert.Equal("I2", (string?)server.Requests.Last(r => r.Name.LocalName == "GetItem").Descendants(T + "ItemId").Single().Attribute("Id"));
         Assert.True(vm.Current!.IsThread);
         Assert.Equal("Konuşmada 3 ileti", vm.Current.ThreadText);
         var html = vm.Current.DisplayHtml;
@@ -164,6 +189,43 @@ public class StreamingConversationTests
         Assert.True(html.IndexOf("&lt;script&gt;", StringComparison.Ordinal) < html.IndexOf("İlk taslak", StringComparison.Ordinal)); // newest first
         // Every request is routed to the signed-in mailbox.
         Assert.All(server.AnchorMailboxes, a => Assert.Equal("ben@sirket.com", a));
+    }
+
+    [Fact]
+    public async Task Opening_a_conversation_lists_its_messages_under_it()
+    {
+        var server = new FakeEwsServer()
+            .On("GetFolder", WellKnownFolders)
+            .On("FindFolder", InboxOnly)
+            .On("FindConversation", Conversations)
+            .On("GetItem", Summaries)
+            .On("GetConversationItems", Thread)
+            .On("DeleteItem", Ok("DeleteItem", ""));
+        var session = new MailSession(server.CreateClient(), new AccountSettings { Email = "ben@sirket.com" });
+        session.Preferences.ConversationView = true;
+        var vm = new MainViewModel(session);
+        await vm.InitializeAsync();
+        await WaitUntil(() => vm.Messages.Count == 2 && !vm.IsLoadingList);
+        var conversation = vm.Messages[0];
+
+        await vm.ToggleConversationCommand.ExecuteAsync(conversation);
+
+        Assert.True(conversation.IsExpanded);
+        Assert.Equal(["I2", "S1", "I2", "I1", "I3"], vm.Messages.Select(m => m.Id.Id));
+        var children = vm.Messages.Skip(1).Take(3).ToList();
+        Assert.All(children, c => Assert.Same(conversation, c.Parent));
+        Assert.Equal(["Ben", "Ayşe Kaya", "Ali Veli"], children.Select(c => c.Sender));
+        Assert.All(children, c => Assert.Equal(28, c.IndentWidth));
+        Assert.False(children[0].ShowSubject);
+
+        // Deleting the conversation takes its listed messages with it.
+        vm.SetSelection([conversation]);
+        await vm.DeleteCommand.ExecuteAsync(null);
+        Assert.Equal(["I3"], vm.Messages.Select(m => m.Id.Id));
+
+        // Toggling a one-message conversation does nothing.
+        await vm.ToggleConversationCommand.ExecuteAsync(vm.Messages[0]);
+        Assert.Single(vm.Messages);
     }
 
     // ---- Streaming ----

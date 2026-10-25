@@ -96,7 +96,8 @@ public sealed record ThreadMessage(
     string Body,
     bool IsHtml,
     string Preview,
-    string ItemClass);
+    string ItemClass,
+    bool IsRead = true);
 
 public sealed record OutgoingAttachment(string Name, string ContentType, byte[] Content);
 

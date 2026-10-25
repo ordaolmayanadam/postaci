@@ -258,16 +258,71 @@ public sealed partial class MainViewModel : ObservableObject
     private async Task LoadConversationsAsync(FolderViewModel folder, bool reset, CancellationToken ct)
     {
         var page = await Client.FindConversationsAsync(folder.Id, reset ? 0 : _nextOffset, PageSize, ct);
+        var newest = await NewestMessagesAsync(page.Items, ct);
         if (ct.IsCancellationRequested) return;
         if (reset)
         {
             SelectedMessage = null;
             Messages.Clear();
         }
-        foreach (var c in page.Items) Messages.Add(MessageItemViewModel.ForConversation(c, folder.ShowsRecipients));
+        foreach (var c in page.Items) Messages.Add(MessageItemViewModel.ForConversation(c, folder.ShowsRecipients, newest.GetValueOrDefault(c.ConversationId)));
         _nextOffset = page.NextOffset;
         HasMore = !page.IsLastPage;
         StatusText = Loc.Count(page.TotalCount, Strings.Mail_ConversationCount_One, Strings.Mail_ConversationCount);
+    }
+
+    /// <summary>
+    /// The newest message of each conversation in this folder, for the row's preview and sender. FindConversation does
+    /// not return previews, so the conversations' items are looked up in one batch; on failure rows just lack previews.
+    /// </summary>
+    private async Task<Dictionary<string, MailSummary>> NewestMessagesAsync(IReadOnlyList<ConversationSummary> conversations, CancellationToken ct)
+    {
+        var owner = new Dictionary<string, string>();
+        foreach (var c in conversations)
+            foreach (var id in c.ItemIds) owner.TryAdd(id.Id, c.ConversationId);
+        if (owner.Count == 0) return [];
+        try
+        {
+            var summaries = await Client.GetItemSummariesAsync(conversations.SelectMany(c => c.ItemIds).ToList(), ct);
+            return summaries
+                .Where(s => owner.ContainsKey(s.ItemId.Id))
+                .GroupBy(s => owner[s.ItemId.Id])
+                .ToDictionary(g => g.Key, g => g.MaxBy(s => s.Received)!);
+        }
+        catch (EwsException)
+        {
+            return [];
+        }
+    }
+
+    /// <summary>Opens or closes a conversation in the list: its messages appear indented under it.</summary>
+    [RelayCommand]
+    private async Task ToggleConversationAsync(MessageItemViewModel? row)
+    {
+        if (row is not { CanExpand: true, Conversation: { } conversation }) return;
+        if (row.IsExpanded)
+        {
+            Collapse(row);
+            return;
+        }
+        try
+        {
+            var thread = await Client.GetConversationItemsAsync(conversation.ConversationId);
+            var index = Messages.IndexOf(row);
+            if (index < 0 || row.IsExpanded) return; // gone or opened twice meanwhile
+            foreach (var message in thread) Messages.Insert(++index, MessageItemViewModel.ForThreadMessage(message, row));
+            row.IsExpanded = true;
+        }
+        catch (EwsException ex)
+        {
+            ErrorMessage = Loc.Format(Strings.Mail_OpenFailed, ex.Message);
+        }
+    }
+
+    private void Collapse(MessageItemViewModel row)
+    {
+        foreach (var child in Messages.Where(m => m.Parent == row).ToList()) Messages.Remove(child);
+        row.IsExpanded = false;
     }
 
     /// <summary>
@@ -529,6 +584,7 @@ public sealed partial class MainViewModel : ObservableObject
         var first = items.Select(Messages.IndexOf).Where(i => i >= 0).DefaultIfEmpty(-1).Min();
         foreach (var item in items)
         {
+            if (item.IsExpanded) Collapse(item); // its messages leave with it
             if (!Messages.Remove(item)) continue;
             if (SelectedFolder is { } folder) folder.UnreadCount = Math.Max(0, folder.UnreadCount - item.UnreadItems);
             _nextOffset = Math.Max(0, _nextOffset - 1);
@@ -641,7 +697,15 @@ public sealed partial class MainViewModel : ObservableObject
                 if (UsesConversations)
                 {
                     var conversations = await Client.FindConversationsAsync(folder.Id, 0, 25);
-                    if (folder == SelectedFolder && !IsLoadingList && UsesConversations) added = MergeConversations(folder, conversations);
+                    // An opened conversation keeps its messages right under it; reordering around it would split them,
+                    // so the list waits until it is closed (folder counts and notifications still update).
+                    if (!Messages.Any(m => m.IsExpanded))
+                    {
+                        var changed = conversations.Items.Where(c => !Messages.Any(m => m.Conversation is { } k && Unchanged(k, c))).ToList();
+                        var newest = await NewestMessagesAsync(changed, CancellationToken.None);
+                        if (folder == SelectedFolder && !IsLoadingList && UsesConversations && !Messages.Any(m => m.IsExpanded))
+                            added = MergeConversations(folder, conversations, newest);
+                    }
                 }
                 else
                 {
@@ -673,7 +737,7 @@ public sealed partial class MainViewModel : ObservableObject
     /// Brings the first conversations up to date: new ones are inserted, ones with new activity move to the top and
     /// get fresh counts. The selected row is kept as it is so the reading pane doesn't jump.
     /// </summary>
-    private int MergeConversations(FolderViewModel folder, ConversationPage page)
+    private int MergeConversations(FolderViewModel folder, ConversationPage page, Dictionary<string, MailSummary> newest)
     {
         var added = 0;
         for (var i = 0; i < page.Items.Count && i <= Messages.Count; i++)
@@ -684,7 +748,7 @@ public sealed partial class MainViewModel : ObservableObject
 
             var row = existing is not null && (existing == SelectedMessage || Unchanged(existing.Conversation!, fresh))
                 ? existing
-                : MessageItemViewModel.ForConversation(fresh, folder.ShowsRecipients);
+                : MessageItemViewModel.ForConversation(fresh, folder.ShowsRecipients, newest.GetValueOrDefault(fresh.ConversationId));
             if (existing is not null && row != existing) Messages[Messages.IndexOf(existing)] = row;
 
             var index = Messages.IndexOf(row);
@@ -693,12 +757,12 @@ public sealed partial class MainViewModel : ObservableObject
         }
         _nextOffset += added;
         return added;
-
-        // The record holds lists, so compare what can change instead of using record equality.
-        static bool Unchanged(ConversationSummary a, ConversationSummary b) =>
-            a.LastDelivery == b.LastDelivery && a.UnreadCount == b.UnreadCount
-            && a.MessageCount == b.MessageCount && a.GlobalMessageCount == b.GlobalMessageCount;
     }
+
+    /// <summary>Same conversation with no new activity. The record holds lists, so compare what can change.</summary>
+    private static bool Unchanged(ConversationSummary a, ConversationSummary b) =>
+        a.ConversationId == b.ConversationId && a.LastDelivery == b.LastDelivery && a.UnreadCount == b.UnreadCount
+        && a.MessageCount == b.MessageCount && a.GlobalMessageCount == b.GlobalMessageCount;
 
     /// <summary>
     /// Whether streamed changes concern mail folders (and are worth a refresh). Calendar and contact changes don't;

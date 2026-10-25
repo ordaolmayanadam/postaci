@@ -204,8 +204,31 @@ public sealed partial class MailPage : Page
         SearchBox.Focus(FocusState.Keyboard);
     }
 
-    private void OnMessageListKeyDown(object sender, KeyRoutedEventArgs e)
+    private async void OnToggleConversation(object sender, RoutedEventArgs e)
     {
+        if (sender is FrameworkElement { Tag: MessageItemViewModel row }) await ViewModel.ToggleConversationCommand.ExecuteAsync(row);
+    }
+
+    private async void OnMessageListKeyDown(object sender, KeyRoutedEventArgs e)
+    {
+        // Right opens the selected conversation, Left closes it (or goes back up from one of its messages).
+        if (e.Key is VirtualKey.Right or VirtualKey.Left && ViewModel.SelectedMessage is { } row)
+        {
+            var open = e.Key == VirtualKey.Right;
+            if (row.CanExpand && row.IsExpanded != open)
+            {
+                e.Handled = true;
+                await ViewModel.ToggleConversationCommand.ExecuteAsync(row);
+                return;
+            }
+            if (!open && row.Parent is { } parent)
+            {
+                e.Handled = true;
+                ViewModel.SelectedMessage = parent;
+                return;
+            }
+        }
+
         if (e.Key == VirtualKey.Delete && ViewModel.DeleteCommand.CanExecute(null))
         {
             e.Handled = true;

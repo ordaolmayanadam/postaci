@@ -823,6 +823,9 @@
   <data name="Mail_SendReceiveTooltip" xml:space="preserve">
     <value>Gönder/Al: yeni postaları şimdi denetle (F9)</value>
   </data>
+  <data name="Mail_ShowConversation" xml:space="preserve">
+    <value>Konuşmanın iletilerini göster veya gizle (→ / ←)</value>
+  </data>
   <data name="Mail_ShowImages" xml:space="preserve">
     <value>Resimleri göster</value>
   </data>

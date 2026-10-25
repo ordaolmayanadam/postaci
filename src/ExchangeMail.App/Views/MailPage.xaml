@@ -179,9 +179,14 @@
                 SelectionChanged="OnMessageSelectionChanged">
                 <ListView.ItemTemplate>
                     <DataTemplate x:DataType="vm:MessageItemViewModel">
-                        <Grid Padding="0,8" ColumnSpacing="10">
+                        <!--
+                            Conversation view: a chevron opens the conversation, and its messages follow indented (IndentWidth),
+                            without repeating the subject.
+                        -->
+                        <Grid Margin="{x:Bind h:Ui.LeftMargin(IndentWidth)}" Padding="0,8" ColumnSpacing="8">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="3" />
+                                <ColumnDefinition Width="Auto" />
                                 <ColumnDefinition Width="*" />
                             </Grid.ColumnDefinitions>
                             <Rectangle
@@ -189,7 +194,23 @@
                                 RadiusX="1.5"
                                 RadiusY="1.5"
                                 Visibility="{x:Bind IsUnread, Mode=OneWay}" />
-                            <StackPanel Grid.Column="1" Spacing="2">
+                            <Grid Grid.Column="1" Width="24" Visibility="{x:Bind HasExpanderColumn}">
+                                <Button
+                                    Width="24"
+                                    Height="24"
+                                    Padding="0"
+                                    VerticalAlignment="Top"
+                                    AutomationProperties.Name="{h:L Key=Mail_ShowConversation}"
+                                    Background="Transparent"
+                                    BorderThickness="0"
+                                    Click="OnToggleConversation"
+                                    Tag="{x:Bind}"
+                                    ToolTipService.ToolTip="{h:L Key=Mail_ShowConversation}"
+                                    Visibility="{x:Bind CanExpand}">
+                                    <FontIcon Glyph="{x:Bind ExpandGlyph, Mode=OneWay}" FontSize="10" />
+                                </Button>
+                            </Grid>
+                            <StackPanel Grid.Column="2" Spacing="2">
                                 <Grid ColumnSpacing="6">
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="*" />
@@ -242,9 +263,11 @@
                                 <TextBlock
                                     Text="{x:Bind Subject}"
                                     FontWeight="{x:Bind h:Ui.BoldIf(IsUnread), Mode=OneWay}"
-                                    TextTrimming="CharacterEllipsis" />
+                                    TextTrimming="CharacterEllipsis"
+                                    Visibility="{x:Bind ShowSubject}" />
                                 <TextBlock
                                     Text="{x:Bind Preview}"
+                                    Visibility="{x:Bind HasPreview}"
                                     MaxLines="1"
                                     Style="{StaticResource CaptionTextBlockStyle}"
                                     Foreground="{ThemeResource TextFillColorSecondaryBrush}"

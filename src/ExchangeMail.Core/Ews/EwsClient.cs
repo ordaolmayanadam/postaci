@@ -179,18 +179,7 @@ public sealed partial class EwsClient : IDisposable
     public async Task<MailPage> FindItemsAsync(string folderId, int offset = 0, int pageSize = 50, string? query = null, CancellationToken ct = default)
     {
         var request = M("FindItem", new XAttribute("Traversal", "Shallow"),
-            M("ItemShape",
-                T("BaseShape", "IdOnly"),
-                T("AdditionalProperties",
-                    Field("item:Subject"),
-                    Field("message:From"),
-                    Field("item:DisplayTo"),
-                    Field("item:DateTimeReceived"),
-                    Field("message:IsRead"),
-                    Field("item:HasAttachments"),
-                    Field("item:Importance"),
-                    Field("item:Preview"),
-                    Field("item:ItemClass"))),
+            M("ItemShape", T("BaseShape", "IdOnly"), T("AdditionalProperties", SummaryFields())),
             M("IndexedPageItemView",
                 new XAttribute("MaxEntriesReturned", pageSize),
                 new XAttribute("Offset", offset),
@@ -636,6 +625,14 @@ public sealed partial class EwsClient : IDisposable
         var text = (string?)message.Element(MNs + "MessageText") ?? code ?? Strings.Ews_UnknownError;
         throw new EwsException(text, code);
     }
+
+    /// <summary>The fields <see cref="ParseSummary"/> reads.</summary>
+    private static XElement[] SummaryFields() =>
+    [
+        Field("item:Subject"), Field("message:From"), Field("item:DisplayTo"), Field("item:DateTimeReceived"),
+        Field("message:IsRead"), Field("item:HasAttachments"), Field("item:Importance"), Field("item:Preview"),
+        Field("item:ItemClass"),
+    ];
 
     private static MailSummary ParseSummary(XElement item) => new(
         ParseItemId(item.Element(TNs + "ItemId")),

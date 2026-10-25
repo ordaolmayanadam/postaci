@@ -95,22 +95,60 @@ public sealed partial class MessageItemViewModel(MailSummary summary, bool showR
     public string CountText => Conversation is { GlobalMessageCount: > 1 } c ? c.GlobalMessageCount.ToString() : "";
     public bool HasCount => CountText.Length > 0;
 
-    public static MessageItemViewModel ForConversation(ConversationSummary c, bool showRecipients)
+    /// <summary>Conversation rows keep a column for the chevron so their text lines up, opened or not.</summary>
+    public bool HasExpanderColumn => Conversation is not null;
+
+    /// <summary>A conversation with several messages can be opened up in the list.</summary>
+    public bool CanExpand => Conversation is { GlobalMessageCount: > 1 };
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(ExpandGlyph))]
+    private bool _isExpanded;
+
+    /// <summary>Segoe Fluent chevron: down when open, right when closed.</summary>
+    public string ExpandGlyph => IsExpanded ? "\uE70D" : "\uE76C";
+
+    /// <summary>For a message shown under its conversation: that conversation's row.</summary>
+    public MessageItemViewModel? Parent { get; private init; }
+
+    public bool IsChild => Parent is not null;
+
+    /// <summary>Messages under a conversation are indented and repeat neither the subject nor the chevron space.</summary>
+    public double IndentWidth => IsChild ? 28 : 0;
+    public bool ShowSubject => !IsChild;
+
+    public bool HasPreview => Preview.Length > 0;
+
+    /// <summary>
+    /// A conversation row. <paramref name="newest"/> (the conversation's newest message in this folder, when known)
+    /// supplies the preview, the id replies and actions start from, and the sender of a one-person conversation.
+    /// </summary>
+    public static MessageItemViewModel ForConversation(ConversationSummary c, bool showRecipients, MailSummary? newest = null)
     {
         var people = showRecipients ? c.Recipients : c.Senders;
+        var from = people.Count > 1 || newest?.From is null
+            ? (people.Count > 0 ? new MailboxAddress(string.Join(", ", people), "") : newest?.From)
+            : newest.From;
         var summary = new MailSummary(
-            c.ItemIds.FirstOrDefault() ?? new EwsItemId("", null),
+            newest?.ItemId ?? c.ItemIds.FirstOrDefault() ?? new EwsItemId("", null),
             c.Topic,
-            people.Count > 0 ? new MailboxAddress(string.Join(", ", people), "") : null,
+            from,
             showRecipients ? string.Join(", ", people) : "",
             c.LastDelivery,
             c.UnreadCount == 0,
             c.HasAttachments,
             c.Importance,
-            "",
-            "IPM.Conversation");
+            newest?.Preview ?? "",
+            newest?.ItemClass ?? "IPM.Conversation");
         return new MessageItemViewModel(summary, showRecipients) { Conversation = c, _conversationUnread = c.UnreadCount };
     }
+
+    /// <summary>One message of an opened conversation, shown under <paramref name="parent"/>.</summary>
+    public static MessageItemViewModel ForThreadMessage(ThreadMessage m, MessageItemViewModel parent) =>
+        new(new MailSummary(m.ItemId, m.Subject, m.From, string.Join("; ", m.To.Select(t => t.Display)),
+                m.Received ?? DateTimeOffset.MinValue, m.IsRead, false, Importance.Normal, m.Preview, m.ItemClass),
+            showRecipients: false)
+        { Parent = parent };
 
     public string Sender => showRecipients
         ? (Summary.DisplayTo.Length > 0 ? Summary.DisplayTo : Strings.Mail_NoRecipient)

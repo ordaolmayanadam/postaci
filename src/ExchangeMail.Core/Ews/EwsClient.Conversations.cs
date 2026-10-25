@@ -44,7 +44,8 @@ public sealed partial class EwsClient
                     Field("item:DateTimeReceived"),
                     Field("item:UniqueBody"),
                     Field("item:Preview"),
-                    Field("item:ItemClass"))),
+                    Field("item:ItemClass"),
+                    Field("message:IsRead"))),
             M("FoldersToIgnore", DistinguishedFolder("deleteditems"), DistinguishedFolder("drafts")),
             M("MaxItemsToReturn", 100),
             M("SortOrder", "DateOrderDescending"),
@@ -86,6 +87,28 @@ public sealed partial class EwsClient
             body?.Value ?? "",
             !string.Equals((string?)body?.Attribute("BodyType"), "Text", StringComparison.OrdinalIgnoreCase),
             ((string?)item.Element(TNs + "Preview") ?? "").Trim(),
-            (string?)item.Element(TNs + "ItemClass") ?? "IPM.Note");
+            (string?)item.Element(TNs + "ItemClass") ?? "IPM.Note",
+            (bool?)item.Element(TNs + "IsRead") ?? true);
+    }
+
+    /// <summary>
+    /// List-row details (sender, date, preview, read state) of many items in one request, e.g. the newest message of
+    /// each conversation on a page. Items that no longer exist are skipped.
+    /// </summary>
+    public async Task<IReadOnlyList<MailSummary>> GetItemSummariesAsync(IReadOnlyCollection<EwsItemId> ids, CancellationToken ct = default)
+    {
+        var result = new List<MailSummary>();
+        foreach (var chunk in ids.Chunk(200))
+        {
+            var request = M("GetItem",
+                M("ItemShape", T("BaseShape", "IdOnly"), T("AdditionalProperties", SummaryFields())),
+                M("ItemIds", chunk.Select(id => ItemIdElement(id with { ChangeKey = null }))));
+            foreach (var message in ResponseMessages(await ExecuteAsync(request, ct)))
+            {
+                if ((string?)message.Attribute("ResponseClass") == "Error") continue; // deleted meanwhile
+                if (message.Element(MNs + "Items")?.Elements().FirstOrDefault() is { } item) result.Add(ParseSummary(item));
+            }
+        }
+        return result;
     }
 }

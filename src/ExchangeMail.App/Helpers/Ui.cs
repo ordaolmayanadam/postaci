@@ -23,6 +23,8 @@ public static class Ui
 
     public static Thickness Indent(int depth) => new(depth * 16, 0, 0, 0);
 
+    public static Thickness LeftMargin(double width) => new(width, 0, 0, 0);
+
     /// <summary>
     /// A theme brush for <paramref name="theme"/>. Application.Resources alone answers for the Windows theme, which is
     /// wrong when Postacı is set to the other one; code-built UI must resolve brushes for its own element's theme.

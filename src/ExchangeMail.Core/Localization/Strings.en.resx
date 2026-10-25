@@ -823,6 +823,9 @@
   <data name="Mail_SendReceiveTooltip" xml:space="preserve">
     <value>Send/Receive: check for new mail now (F9)</value>
   </data>
+  <data name="Mail_ShowConversation" xml:space="preserve">
+    <value>Show or hide the conversation's messages (→ / ←)</value>
+  </data>
   <data name="Mail_ShowImages" xml:space="preserve">
     <value>Show images</value>
   </data>

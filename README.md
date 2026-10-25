@@ -137,7 +137,9 @@ denetlemeye devam eder. Tamamen kapatmak için tepsi simgesine sağ tıklayıp *
   saniyeler içinde listenin başına eklenir, başka istemcilerde (Outlook, OWA, telefon) değişen okundu durumu eşitlenir.
   Bağlantı koparsa Postacı kendiliğinden yeniden bağlanır; bu arada ayarlardaki aralıkla (varsayılan dakikada bir)
   yoklamaya devam eder.
-- **Konuşma görünümü:** liste başlığındaki düğmeyle iletiler konuşmalara göre gruplanır. Bir konuşma seçilince bütün
+- **Konuşma görünümü:** liste başlığındaki düğmeyle iletiler konuşmalara göre gruplanır; her satırda en son iletinin
+  önizlemesi ve konuşmadaki ileti sayısı görünür. Birden fazla iletili konuşmanın solundaki ok (veya → / ← tuşları)
+  konuşmanın iletilerini altında girintili olarak açar ve kapatır; her biri tek başına açılabilir. Bir konuşma seçilince bütün
   iletileri (Gönderilmiş Öğeler'deki yanıtlarınız dahil) okuma bölmesinde yeniden eskiye alt alta, alıntılar
   tekrarlanmadan görünür. Yanıtla, konuşmadaki başkasından gelen en son iletiye yanıt verir.
 - **Çoklu seçim:** Ctrl/Shift ile tıklayarak veya Ctrl+A ile birden fazla ileti seçilir; sil, taşı ve okundu/okunmadı
