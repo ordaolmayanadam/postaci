@@ -5,12 +5,13 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:controls="using:ExchangeMail.App.Controls"
     xmlns:h="using:ExchangeMail.App.Helpers"
+    xmlns:toolkit="using:CommunityToolkit.WinUI.Controls"
     xmlns:vm="using:ExchangeMail.ViewModels"
     NavigationCacheMode="Required">
 
     <Grid>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition x:Name="SidebarColumn" Width="316" MinWidth="200" MaxWidth="480" />
+            <ColumnDefinition x:Name="SidebarColumn" Width="316" MinWidth="264" MaxWidth="480" />
             <ColumnDefinition Width="*" MinWidth="360" />
             <ColumnDefinition x:Name="DetailColumn" Width="400" MinWidth="280" MaxWidth="900" />
         </Grid.ColumnDefinitions>
@@ -31,18 +32,26 @@
                 </Button.KeyboardAccelerators>
             </Button>
             <!--
-                CalendarView lays out at a generous 360 px so weekday headers ("Mo", "We") never wrap, whatever the text
-                styles; the Viewbox then scales the whole month to the column width.
+                The month fills the column (the sidebar's minimum width keeps seven day cells). Lightweight styling:
+                weekday names drop the template's 12 px side padding, which made "Pzt"/"Mon" wrap in narrow columns,
+                and day cells may be smaller than the default 40 px.
             -->
-            <Viewbox Stretch="Uniform" StretchDirection="Both">
-                <CalendarView
-                    x:Name="MonthView"
-                    Width="360"
-                    FontSize="14"
-                    IsTodayHighlighted="True"
-                    SelectedDatesChanged="OnSelectedDatesChanged"
-                    SelectionMode="Single" />
-            </Viewbox>
+            <CalendarView
+                x:Name="MonthView"
+                HorizontalAlignment="Stretch"
+                IsTodayHighlighted="True"
+                SelectedDatesChanged="OnSelectedDatesChanged"
+                SelectionMode="Single">
+                <CalendarView.Resources>
+                    <Thickness x:Key="CalendarViewWeekDayPadding">0,12</Thickness>
+                </CalendarView.Resources>
+                <CalendarView.CalendarViewDayItemStyle>
+                    <Style TargetType="CalendarViewDayItem">
+                        <Setter Property="MinWidth" Value="32" />
+                        <Setter Property="MinHeight" Value="32" />
+                    </Style>
+                </CalendarView.CalendarViewDayItemStyle>
+            </CalendarView>
         </StackPanel>
 
         <!--  Agenda  -->
@@ -270,7 +279,15 @@
         </Grid>
 
         <!--  Splitters go last so they sit above the panes they overlap.  -->
-        <controls:ColumnSplitter x:Name="SidebarSplitter" Grid.Column="1" TargetColumn="0" />
-        <controls:ColumnSplitter x:Name="DetailSplitter" Grid.Column="2" TargetColumn="2" />
+        <toolkit:GridSplitter
+            x:Name="SidebarSplitter"
+            AutomationProperties.Name="{h:L Key=Common_ResizeColumn}"
+            Grid.Column="1"
+            Style="{StaticResource PaneSplitterStyle}" />
+        <toolkit:GridSplitter
+            x:Name="DetailSplitter"
+            AutomationProperties.Name="{h:L Key=Common_ResizeColumn}"
+            Grid.Column="2"
+            Style="{StaticResource PaneSplitterStyle}" />
     </Grid>
 </Page>

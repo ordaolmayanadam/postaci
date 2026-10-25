@@ -17,11 +17,11 @@ public sealed partial class CalendarPage : Page
         _body = new HtmlViewer(BodyView);
 
         var preferences = App.Preferences;
-        // The month view scales with its column; by default it gets its natural size at the chosen text size.
+        // The month view fills its column; by default the column fits its standard 40 px day cells at the chosen text size.
         Ui.RestoreWidth(SidebarColumn, preferences.CalendarSidebarWidth, 300 * Ui.TextScale + 16);
         Ui.RestoreWidth(DetailColumn, preferences.CalendarDetailPaneWidth);
-        SidebarSplitter.Resized += (_, width) => Ui.SaveWidth(w => preferences.CalendarSidebarWidth = w, width);
-        DetailSplitter.Resized += (_, width) => Ui.SaveWidth(w => preferences.CalendarDetailPaneWidth = w, width);
+        Ui.SaveWidthOnResize(SidebarSplitter, SidebarColumn, w => preferences.CalendarSidebarWidth = w);
+        Ui.SaveWidthOnResize(DetailSplitter, DetailColumn, w => preferences.CalendarDetailPaneWidth = w);
 
         WeekGrid.EventSelected += (_, entry) => ViewModel.SelectedEvent = entry;
         WeekGrid.EventOpened += (_, entry) =>

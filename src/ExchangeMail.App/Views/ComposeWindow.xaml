@@ -152,9 +152,8 @@
             Margin="16,4,16,12"
             Padding="12,8"
             Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
-            BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
-            BorderThickness="1"
-            CornerRadius="8">
+            CornerRadius="8"
+            Style="{StaticResource AttachmentAreaStyle}">
         <StackPanel Spacing="6">
             <Grid ColumnSpacing="12">
                 <Grid.ColumnDefinitions>

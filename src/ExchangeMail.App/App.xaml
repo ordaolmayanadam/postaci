@@ -2,12 +2,62 @@
 <Application
     x:Class="ExchangeMail.App.App"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:toolkit="using:CommunityToolkit.WinUI.Controls">
     <Application.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
                 <XamlControlsResources xmlns="using:Microsoft.UI.Xaml.Controls" />
             </ResourceDictionary.MergedDictionaries>
+
+            <!--
+                Resize handle on the left edge of a pane's column: resizes the column to its left, or, when that one
+                is the star (*) column, the pane's own column.
+            -->
+            <Style x:Key="PaneSplitterStyle" TargetType="toolkit:GridSplitter">
+                <Setter Property="Width" Value="8" />
+                <Setter Property="HorizontalAlignment" Value="Left" />
+                <Setter Property="ResizeBehavior" Value="BasedOnAlignment" />
+                <Setter Property="ResizeDirection" Value="Columns" />
+            </Style>
+
+            <!--
+                Styles that code switches or applies to code-built elements. A brush looked up in code would follow
+                the Windows theme; ThemeResource in a style follows the element's own (Postacı's theme setting).
+            -->
+            <Style x:Key="FolderRowStyle" TargetType="Grid">
+                <!--  Not null, so the whole row is a drop target.  -->
+                <Setter Property="Background" Value="Transparent" />
+            </Style>
+            <Style x:Key="FolderRowDropTargetStyle" TargetType="Grid">
+                <Setter Property="Background" Value="{ThemeResource SubtleFillColorSecondaryBrush}" />
+            </Style>
+
+            <Style x:Key="AttachmentAreaStyle" TargetType="Border">
+                <Setter Property="BorderBrush" Value="{ThemeResource CardStrokeColorDefaultBrush}" />
+                <Setter Property="BorderThickness" Value="1" />
+            </Style>
+            <Style x:Key="AttachmentAreaDropTargetStyle" TargetType="Border">
+                <Setter Property="BorderBrush" Value="{ThemeResource AccentFillColorDefaultBrush}" />
+                <Setter Property="BorderThickness" Value="2" />
+            </Style>
+
+            <Style x:Key="SecondaryTextStyle" TargetType="TextBlock">
+                <Setter Property="Foreground" Value="{ThemeResource TextFillColorSecondaryBrush}" />
+            </Style>
+
+            <!--  The person a card is about, in its organization chain.  -->
+            <Style x:Key="PersonCardSelfStyle" TargetType="StackPanel">
+                <Setter Property="BorderBrush" Value="{ThemeResource AccentFillColorDefaultBrush}" />
+                <Setter Property="BorderThickness" Value="2,0,0,0" />
+                <Setter Property="Padding" Value="8,0,0,0" />
+            </Style>
+
+            <!--  The selected event in the week grid; the chip's own color is its free/busy status.  -->
+            <Style x:Key="SelectedEventChipStyle" TargetType="Border">
+                <Setter Property="BorderBrush" Value="{ThemeResource TextFillColorPrimaryBrush}" />
+                <Setter Property="BorderThickness" Value="2" />
+            </Style>
         </ResourceDictionary>
     </Application.Resources>
 </Application>

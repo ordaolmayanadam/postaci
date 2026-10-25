@@ -20,15 +20,13 @@ public sealed partial class PersonCard : UserControl
     private const double IndentStep = 14;
 
     private readonly PersonCardViewModel _vm;
-    private readonly ElementTheme _theme;
     private readonly Action<MailboxAddress>? _compose;
     private readonly StackPanel _root = new() { Spacing = 12, Width = 340 };
 
-    /// <param name="theme">The theme of the page it opens from; brushes are resolved for it.</param>
+    /// <param name="theme">The theme of the page it opens from (a flyout is outside the page and doesn't inherit it).</param>
     public PersonCard(PersonCardViewModel vm, ElementTheme theme, Action<MailboxAddress>? compose)
     {
         _vm = vm;
-        _theme = theme;
         RequestedTheme = theme;
         _compose = compose;
         Content = new ScrollViewer { Content = _root, MaxHeight = 560, VerticalScrollBarVisibility = ScrollBarVisibility.Auto, Padding = new Thickness(0, 0, 8, 0) };
@@ -132,8 +130,7 @@ public sealed partial class PersonCard : UserControl
         var indent = level * IndentStep;
         if (isSelf)
         {
-            var self = new StackPanel { Margin = new Thickness(indent + 4, 4, 0, 4), BorderThickness = new Thickness(2, 0, 0, 0), Padding = new Thickness(8, 0, 0, 0) };
-            self.BorderBrush = Ui.ThemeBrush("AccentFillColorDefaultBrush", _theme);
+            var self = new StackPanel { Margin = new Thickness(indent + 4, 4, 0, 4), Style = Ui.AppStyle("PersonCardSelfStyle") };
             self.Children.Add(Text(p.DisplayName, 14 * Ui.TextScale, FontWeights.SemiBold));
             if (p.JobTitle is { } title) self.Children.Add(Secondary(title));
             return self;
@@ -167,10 +164,10 @@ public sealed partial class PersonCard : UserControl
     private static TextBlock Section(string text) =>
         new() { Text = text, FontWeight = FontWeights.SemiBold, FontSize = 13 * Ui.TextScale, Margin = new Thickness(0, 4, 0, 0) };
 
-    private TextBlock Secondary(string text)
+    private static TextBlock Secondary(string text)
     {
         var block = Text(text, 12 * Ui.TextScale, FontWeights.Normal, wrap: true);
-        block.Foreground = Ui.ThemeBrush("TextFillColorSecondaryBrush", _theme);
+        block.Style = Ui.AppStyle("SecondaryTextStyle");
         return block;
     }
 

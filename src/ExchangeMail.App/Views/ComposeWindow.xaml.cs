@@ -148,12 +148,8 @@ public sealed partial class ComposeWindow : Window
 
     private void OnDragLeave(object sender, DragEventArgs e) => HighlightAttachmentArea(false);
 
-    private void HighlightAttachmentArea(bool on)
-    {
-        var theme = Ui.ThemeOf(AttachmentArea);
-        AttachmentArea.BorderBrush = Ui.ThemeBrush(on ? "AccentFillColorDefaultBrush" : "CardStrokeColorDefaultBrush", theme);
-        AttachmentArea.BorderThickness = new Thickness(on ? 2 : 1);
-    }
+    private void HighlightAttachmentArea(bool on) =>
+        AttachmentArea.Style = Ui.AppStyle(on ? "AttachmentAreaDropTargetStyle" : "AttachmentAreaStyle");
 
     private async void OnDrop(object sender, DragEventArgs e)
     {

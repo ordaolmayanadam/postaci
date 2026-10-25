@@ -428,8 +428,8 @@ Postacı is distributed under the [MIT License](LICENSE): you may freely use, mo
 including in commercial projects; the only condition is to keep the copyright and license notice with copies. The
 software is provided "as is", without warranty of any kind.
 
-The main components used are open source as well: .NET and the Windows App SDK (MIT), CommunityToolkit.Mvvm (MIT),
-xUnit (Apache 2.0). The Microsoft Edge WebView2 Runtime ships with the operating system and is not redistributed
+The main components used are open source as well: .NET and the Windows App SDK (MIT), CommunityToolkit.Mvvm and
+CommunityToolkit.WinUI.Controls.Sizers (MIT), xUnit (Apache 2.0). The Microsoft Edge WebView2 Runtime ships with the operating system and is not redistributed
 with the app.
 
 Microsoft, Exchange, Outlook and Windows are trademarks of Microsoft Corporation. Postacı is an independent project

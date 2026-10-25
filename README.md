@@ -419,7 +419,7 @@ dağıtabilirsiniz; tek koşul, telif ve lisans metnini kopyalarla birlikte koru
 garanti olmadan sunulur.
 
 Kullanılan başlıca bileşenler de açık kaynak lisanslıdır: .NET ve Windows App SDK (MIT),
-CommunityToolkit.Mvvm (MIT), xUnit (Apache 2.0). Microsoft Edge WebView2 Runtime işletim sistemiyle gelir ve
+CommunityToolkit.Mvvm ve CommunityToolkit.WinUI.Controls.Sizers (MIT), xUnit (Apache 2.0). Microsoft Edge WebView2 Runtime işletim sistemiyle gelir ve
 uygulamayla birlikte dağıtılmaz.
 
 Microsoft, Exchange, Outlook ve Windows, Microsoft Corporation'ın ticari markalarıdır. Postacı bağımsız bir

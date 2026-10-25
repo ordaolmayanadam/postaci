@@ -1,11 +1,13 @@
 using System.Globalization;
 using System.Runtime.InteropServices;
+using CommunityToolkit.WinUI.Controls;
 using Microsoft.UI;
 using Microsoft.UI.Text;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
 using Windows.Graphics;
+using Windows.System;
 using Windows.UI.Text;
 
 namespace ExchangeMail.App.Helpers;
@@ -26,32 +28,10 @@ public static class Ui
     public static Thickness LeftMargin(double width) => new(width, 0, 0, 0);
 
     /// <summary>
-    /// A theme brush for <paramref name="theme"/>. Application.Resources alone answers for the Windows theme, which is
-    /// wrong when Postacı is set to the other one; code-built UI must resolve brushes for its own element's theme.
+    /// A style from App.xaml. Code-built or code-switched elements get their theme brushes this way: ThemeResource in
+    /// a style follows the element's theme, a brush looked up in code would follow the Windows theme.
     /// </summary>
-    public static Brush? ThemeBrush(string key, ElementTheme theme)
-    {
-        var dark = theme == ElementTheme.Dark
-                   || (theme == ElementTheme.Default && Application.Current.RequestedTheme == ApplicationTheme.Dark);
-        string[] names = dark ? ["Dark", "Default"] : ["Light"];
-        if (Find(Application.Current.Resources) is { } found) return found;
-        return Application.Current.Resources.TryGetValue(key, out var value) ? value as Brush : null;
-
-        Brush? Find(ResourceDictionary dictionary)
-        {
-            foreach (var name in names)
-            {
-                if (dictionary.ThemeDictionaries.TryGetValue(name, out var themed) && themed is ResourceDictionary d
-                    && d.TryGetValue(key, out var value) && value is Brush brush)
-                    return brush;
-            }
-            foreach (var merged in dictionary.MergedDictionaries)
-            {
-                if (Find(merged) is { } brush) return brush;
-            }
-            return null;
-        }
-    }
+    public static Style AppStyle(string key) => (Style)Application.Current.Resources[key];
 
     /// <summary>The theme an element is shown in (its own, else the window's).</summary>
     public static ElementTheme ThemeOf(FrameworkElement element) =>
@@ -59,18 +39,30 @@ public static class Ui
         : App.MainWindow?.CurrentTheme is { } t && t != ElementTheme.Default ? t
         : Application.Current.RequestedTheme == ApplicationTheme.Dark ? ElementTheme.Dark : ElementTheme.Light;
 
-    /// <summary>Applies a pane width saved from a <see cref="Controls.ColumnSplitter"/> (0 = keep the default).</summary>
+    /// <summary>Applies a pane width saved by <see cref="SaveWidthOnResize"/> (0 = keep the default).</summary>
     public static void RestoreWidth(ColumnDefinition column, int saved, double? fallback = null)
     {
         double? width = saved > 0 ? saved : fallback;
         if (width is { } w) column.Width = new GridLength(Math.Clamp(w, column.MinWidth, column.MaxWidth));
     }
 
-    /// <summary>Stores a pane width chosen with a splitter in the preferences file.</summary>
-    public static void SaveWidth(Action<int> assign, double width)
+    /// <summary>
+    /// Stores the width of <paramref name="column"/> in the preferences file whenever <paramref name="splitter"/>
+    /// finished resizing it, with the mouse or touch (a completed drag) or with the arrow keys.
+    /// </summary>
+    public static void SaveWidthOnResize(GridSplitter splitter, ColumnDefinition column, Action<int> assign)
     {
-        assign((int)Math.Round(width));
-        App.SavePreferences();
+        splitter.ManipulationCompleted += (_, _) => Save();
+        splitter.KeyUp += (_, e) =>
+        {
+            if (e.Key is VirtualKey.Left or VirtualKey.Right) Save();
+        };
+
+        void Save()
+        {
+            assign((int)Math.Round(column.ActualWidth));
+            App.SavePreferences();
+        }
     }
 
     /// <summary>Interface text size factor chosen in Settings (1 = 100 %); code-built controls multiply by it.</summary>

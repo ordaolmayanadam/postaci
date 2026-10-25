@@ -19,8 +19,6 @@ namespace ExchangeMail.App.Views;
 /// <summary>Mail view. Cached by the shell frame, so it is initialized once per session.</summary>
 public sealed partial class MailPage : Page
 {
-    private static readonly SolidColorBrush NoBrush = new(Microsoft.UI.Colors.Transparent);
-
     private readonly HtmlViewer _body;
     private MessageDetailViewModel? _shownDetail;
 
@@ -38,8 +36,8 @@ public sealed partial class MailPage : Page
         var preferences = App.Preferences;
         Ui.RestoreWidth(FolderColumn, preferences.MailFolderPaneWidth);
         Ui.RestoreWidth(ListColumn, preferences.MailListPaneWidth);
-        FolderSplitter.Resized += (_, width) => Ui.SaveWidth(w => preferences.MailFolderPaneWidth = w, width);
-        ListSplitter.Resized += (_, width) => Ui.SaveWidth(w => preferences.MailListPaneWidth = w, width);
+        Ui.SaveWidthOnResize(FolderSplitter, FolderColumn, w => preferences.MailFolderPaneWidth = w);
+        Ui.SaveWidthOnResize(ListSplitter, ListColumn, w => preferences.MailListPaneWidth = w);
 
         ApplyFolderDensity(preferences.CompactFolderList);
         preferences.PropertyChanged += (_, e) =>
@@ -277,7 +275,7 @@ public sealed partial class MailPage : Page
         {
             e.AcceptedOperation = DataPackageOperation.Move;
             e.DragUIOverride.Caption = Loc.Format(Strings.Mail_MoveToFolder, folder.DisplayName);
-            row.Background = Ui.ThemeBrush("SubtleFillColorSecondaryBrush", Ui.ThemeOf(row));
+            row.Style = Ui.AppStyle("FolderRowDropTargetStyle");
         }
         else
         {
@@ -287,13 +285,13 @@ public sealed partial class MailPage : Page
 
     private void OnFolderDragLeave(object sender, DragEventArgs e)
     {
-        if (sender is Panel row) row.Background = NoBrush;
+        if (sender is Panel row) row.Style = Ui.AppStyle("FolderRowStyle");
     }
 
     private async void OnFolderDrop(object sender, DragEventArgs e)
     {
         if (sender is not Panel { DataContext: FolderViewModel folder } row || _dragged is not { Count: > 0 } items) return;
-        row.Background = NoBrush;
+        row.Style = Ui.AppStyle("FolderRowStyle");
         _dragged = null;
         await ViewModel.MoveAsync(items, folder);
     }
