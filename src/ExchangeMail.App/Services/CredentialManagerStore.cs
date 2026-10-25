@@ -7,8 +7,8 @@ namespace ExchangeMail.App.Services;
 
 /// <summary>
 /// Stores the password in Windows Credential Manager ("Windows Kimlik Bilgileri" → "Genel Kimlik Bilgileri",
-/// entries named Postaci:&lt;user&gt;). Uses the Win32 Cred* API, which works for unpackaged apps
-/// (the WinRT PasswordVault does not reliably persist without package identity).
+/// entries named Postaci:&lt;user&gt;). Uses the Win32 Cred* API: its entries are the same packaged or not, so moving
+/// from the zip releases to the Store package keeps the saved password.
 /// </summary>
 public sealed class CredentialManagerStore : ICredentialStore
 {

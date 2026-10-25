@@ -5,29 +5,46 @@ public static class AppInfo
 {
     public const string Name = "Postacı";
 
-    /// <summary>ASCII form used for folders, the executable and registry/credential keys.</summary>
+    /// <summary>ASCII form used for folders, the executable and credential keys.</summary>
     public const string Id = "Postaci";
 
     /// <summary>Name used by versions before the rename; its data is migrated once.</summary>
     public const string LegacyId = "ExchangeMail";
 
-    public static string DataDirectory { get; } =
-        Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), Id);
+    private static string LocalAppData => Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
 
-    public static string LegacyDataDirectory { get; } =
-        Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), LegacyId);
+    /// <summary>
+    /// Settings, preferences, the WebView2 profile and the diagnostics log. The app points it at its package's app data
+    /// folder with <see cref="UseDataDirectory"/> before anything is read or stored.
+    /// </summary>
+    public static string DataDirectory { get; private set; } = Path.Combine(LocalAppData, Id);
 
-    /// <summary>Copies settings written under the old name, so an upgrade keeps the account.</summary>
-    public static void MigrateLegacyData()
+    /// <summary>
+    /// Where earlier versions kept their data: the unpackaged (zip) releases, and before that the old name. A packaged
+    /// app still sees these folders, so the newest one with settings is copied once.
+    /// </summary>
+    public static IReadOnlyList<string> EarlierDataDirectories { get; } =
+        [Path.Combine(LocalAppData, Id), Path.Combine(LocalAppData, LegacyId)];
+
+    public static void UseDataDirectory(string directory) => DataDirectory = directory;
+
+    /// <summary>Copies settings written by an earlier version, so an upgrade keeps the account and preferences.</summary>
+    public static void MigrateEarlierData() => MigrateEarlierData(DataDirectory, EarlierDataDirectories);
+
+    public static void MigrateEarlierData(string target, IEnumerable<string> earlier)
     {
         try
         {
-            if (!Directory.Exists(LegacyDataDirectory) || File.Exists(Path.Combine(DataDirectory, "settings.json"))) return;
-            Directory.CreateDirectory(DataDirectory);
+            if (File.Exists(Path.Combine(target, "settings.json"))) return;
+            var source = earlier.FirstOrDefault(d =>
+                !string.Equals(Path.GetFullPath(d), Path.GetFullPath(target), StringComparison.OrdinalIgnoreCase)
+                && File.Exists(Path.Combine(d, "settings.json")));
+            if (source is null) return;
+            Directory.CreateDirectory(target);
             foreach (var name in new[] { "settings.json", "preferences.json" })
             {
-                var source = Path.Combine(LegacyDataDirectory, name);
-                if (File.Exists(source)) File.Copy(source, Path.Combine(DataDirectory, name), overwrite: false);
+                var file = Path.Combine(source, name);
+                if (File.Exists(file)) File.Copy(file, Path.Combine(target, name), overwrite: false);
             }
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)

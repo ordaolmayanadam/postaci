@@ -17,7 +17,10 @@ public sealed partial class SettingsPage : Page
     protected override async void OnNavigatedTo(NavigationEventArgs e)
     {
         base.OnNavigatedTo(e);
-        if (e.Parameter is not SettingsViewModel vm || vm == ViewModel) return;
+        if (e.Parameter is not SettingsViewModel vm) return;
+        // Every visit: the startup switch can be changed in Windows Settings meanwhile.
+        _ = vm.LoadStartupAsync();
+        if (vm == ViewModel) return;
         ViewModel = vm;
         ViewModel.RestartRequested += (_, _) => App.Restart();
         Bindings.Update();

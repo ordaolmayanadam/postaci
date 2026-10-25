@@ -1,5 +1,6 @@
 # Every push to main and every pull request: tests on Linux and Windows, then the WinUI app is
-# built and published for x64 and ARM64. The published folders are kept as downloadable artifacts.
+# packaged (MSIX) for x64 and ARM64. The unsigned packages are kept as artifacts for inspection;
+# they install only through the Store, which signs them.
 name: CI
 
 on:
@@ -62,28 +63,37 @@ jobs:
         with:
           dotnet-version: 10.0.x
 
-      - name: Yayımla (self-contained)
+      - name: MSIX paketi (imzasız)
         run: >
-          dotnet publish src/ExchangeMail.App/ExchangeMail.App.csproj
+          dotnet build src/ExchangeMail.App/ExchangeMail.App.csproj
           -c Release
           -r ${{ matrix.rid }}
-          --self-contained
           -p:Platform=${{ matrix.platform }}
-          -o publish/${{ matrix.rid }}
+          -p:GenerateAppxPackageOnBuild=true
+          -p:AppxBundle=Never
+          -p:AppxPackageDir=${{ github.workspace }}/packages/
 
-      - name: Çıktıyı denetle
+      - name: Paketi denetle
         shell: pwsh
         run: |
-          $exe = "publish/${{ matrix.rid }}/Postaci.exe"
-          if (-not (Test-Path $exe)) { throw "$exe oluşmadı" }
-          if (-not (Test-Path "publish/${{ matrix.rid }}/Assets/Postaci.ico")) { throw "Simge dosyaları kopyalanmadı" }
-          if (-not (Test-Path "publish/${{ matrix.rid }}/en/ExchangeMail.Core.resources.dll")) { throw "İngilizce dil kaynakları kopyalanmadı" }
-          "Postaci.exe: {0:N1} MB, klasör: {1:N1} MB" -f ((Get-Item $exe).Length / 1MB),
-            ((Get-ChildItem publish/${{ matrix.rid }} -Recurse | Measure-Object Length -Sum).Sum / 1MB)
+          $msix = Get-ChildItem packages -Recurse -Filter *.msix | Select-Object -First 1
+          if (-not $msix) { throw "MSIX paketi oluşmadı" }
+          Add-Type -AssemblyName System.IO.Compression.FileSystem
+          $zip = [IO.Compression.ZipFile]::OpenRead($msix.FullName)
+          try {
+            $names = $zip.Entries.FullName
+            foreach ($required in "Postaci.exe", "AppxManifest.xml", "resources.pri", "en/ExchangeMail.Core.resources.dll", "Assets/Square44x44Logo.targetsize-48.png") {
+              if ($names -notcontains $required) { throw "Pakette $required yok" }
+            }
+            $reader = New-Object IO.StreamReader ($zip.GetEntry("AppxManifest.xml").Open())
+            $manifest = $reader.ReadToEnd(); $reader.Close()
+            if ($manifest -notmatch 'PackageDependency Name="Microsoft\.WindowsAppRuntime') { throw "Windows App Runtime bağımlılığı manifestte yok" }
+          } finally { $zip.Dispose() }
+          "{0}: {1:N1} MB" -f $msix.Name, ($msix.Length / 1MB)
 
       - uses: actions/upload-artifact@v7
         with:
-          name: Postaci-${{ matrix.rid }}
-          path: publish/${{ matrix.rid }}
+          name: Postaci-${{ matrix.rid }}-msix
+          path: packages/**/*.msix
           retention-days: 14
           if-no-files-found: error

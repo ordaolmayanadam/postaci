@@ -1,7 +1,7 @@
 {
   "profiles": {
-    "ExchangeMail (Unpackaged)": {
-      "commandName": "Project"
+    "Postaci (Package)": {
+      "commandName": "MsixPackage"
     }
   }
 }

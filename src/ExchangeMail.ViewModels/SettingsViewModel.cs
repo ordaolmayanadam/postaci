@@ -56,23 +56,63 @@ public sealed partial class SettingsViewModel : ObservableObject
 
     public bool CanStartWithWindows => Startup is not null;
 
+    private bool _startWithWindows;
+
+    /// <summary>The switch; turning it on may not succeed (see <see cref="ApplyStartupState"/>).</summary>
     public bool StartWithWindows
     {
-        get => Startup?.IsEnabled ?? false;
+        get => _startWithWindows;
         set
         {
-            if (Startup is null || Startup.IsEnabled == value) return;
-            try
-            {
-                Startup.SetEnabled(value);
-                ErrorMessage = null;
-            }
-            catch (Exception ex) when (ex is UnauthorizedAccessException or IOException or System.Security.SecurityException)
-            {
-                ErrorMessage = Loc.Format(Strings.Settings_StartupChangeFailed, ex.Message);
-            }
+            if (Startup is null || _startWithWindows == value) return;
+            _startWithWindows = value;
             OnPropertyChanged();
+            _ = ChangeStartupAsync(value);
         }
+    }
+
+    /// <summary>Reads the current state; Windows can change it outside the app (Settings → Apps → Startup).</summary>
+    public async Task LoadStartupAsync()
+    {
+        if (Startup is null) return;
+        try
+        {
+            ApplyStartupState(await Startup.GetStateAsync(), reportBlocked: false);
+        }
+        catch (Exception ex)
+        {
+            Diagnostics.Log("Startup state", ex);
+        }
+    }
+
+    private async Task ChangeStartupAsync(bool enabled)
+    {
+        try
+        {
+            ApplyStartupState(await Startup!.SetEnabledAsync(enabled), reportBlocked: enabled);
+        }
+        catch (Exception ex)
+        {
+            ErrorMessage = Loc.Format(Strings.Settings_StartupChangeFailed, ex.Message);
+            await LoadStartupAsync();
+        }
+    }
+
+    /// <summary>Shows the actual state; when turning it on was refused, says where it can be changed.</summary>
+    private void ApplyStartupState(StartupState state, bool reportBlocked)
+    {
+        var enabled = state is StartupState.Enabled or StartupState.EnabledByPolicy;
+        if (reportBlocked && !enabled)
+        {
+            ErrorMessage = state == StartupState.DisabledByPolicy ? Strings.Settings_StartupDisabledByPolicy : Strings.Settings_StartupDisabledByUser;
+        }
+        else if (enabled)
+        {
+            ErrorMessage = null;
+        }
+        if (_startWithWindows == enabled) return;
+        _startWithWindows = enabled;
+        OnPropertyChanged(nameof(StartWithWindows));
     }
     private AccountSettings Account => _session.Account;
 

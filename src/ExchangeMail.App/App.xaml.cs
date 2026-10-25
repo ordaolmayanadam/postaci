@@ -5,6 +5,9 @@ using ExchangeMail.ViewModels;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
+using Microsoft.Windows.AppLifecycle;
+using Microsoft.Windows.AppNotifications;
+using Windows.Storage;
 
 namespace ExchangeMail.App;
 
@@ -12,8 +15,11 @@ public partial class App : Application
 {
     public App()
     {
-        // Unpackaged apps would otherwise put the WebView2 profile next to the .exe, which fails under Program Files.
-        AppInfo.MigrateLegacyData();
+        // The package's own app data folder (removed with the app); the zip releases' settings are copied over once.
+        AppInfo.UseDataDirectory(ApplicationData.Current.LocalFolder.Path);
+        Diagnostics.LogDirectory = AppInfo.DataDirectory;
+        AppInfo.MigrateEarlierData();
+        Settings = new SettingsStore();
         Environment.SetEnvironmentVariable("WEBVIEW2_USER_DATA_FOLDER", Path.Combine(AppInfo.DataDirectory, "WebView2"));
 
         HtmlViewer.CleanupTempFiles();
@@ -34,15 +40,16 @@ public partial class App : Application
     }
 
     public static MainWindow MainWindow { get; private set; } = null!;
-    public static SettingsStore Settings { get; } = new();
+    /// <summary>Created once the data folder is known (see the constructor).</summary>
+    public static SettingsStore Settings { get; private set; } = null!;
     public static ICredentialStore Credentials { get; } = new CredentialManagerStore();
     public static NotificationService Notifications { get; } = new();
-    public static IStartupService Startup { get; } = new RegistryStartupService();
+    public static IStartupService Startup { get; } = new StartupTaskService();
 
     /// <summary>The single live preferences instance (the settings page edits it, everything else reads it).</summary>
     public static UserPreferences Preferences { get; private set; } = null!;
 
-    /// <summary>Started by Windows sign-in with --tray: stay hidden in the tray unless sign-in needs the user.</summary>
+    /// <summary>Started by Windows sign-in (the startup task): stay hidden in the tray unless sign-in needs the user.</summary>
     public static bool StartedInTray { get; private set; }
 
     public static void SavePreferences()
@@ -54,18 +61,14 @@ public partial class App : Application
     /// <summary>The interface font chosen in Settings, or null for the Windows default.</summary>
     public static FontFamily? InterfaceFontFamily { get; private set; }
 
-    /// <summary>Starts a new instance and closes this one (interface fonts and language only change at startup).</summary>
+    /// <summary>Starts a new instance and ends this one (interface fonts and language only change at startup).</summary>
     public static void Restart()
     {
-        try
-        {
-            Process.Start(new ProcessStartInfo(Environment.ProcessPath!) { UseShellExecute = false });
-        }
-        catch (Exception ex) when (ex is System.ComponentModel.Win32Exception or InvalidOperationException)
-        {
-            Debug.WriteLine("Could not restart: " + ex);
-            return;
-        }
+        // The process ends inside Restart, so the tray icon and notification registration are released first.
+        MainWindow.RemoveTrayIcon();
+        Notifications.Unregister();
+        var failure = AppInstance.Restart("");
+        Diagnostics.Log($"Restart failed: {failure}");
         MainWindow.Exit();
     }
 
@@ -122,10 +125,15 @@ public partial class App : Application
         // Before any window exists: XAML reads its texts once, when it is loaded.
         Loc.Apply(Loc.Resolve(Preferences.Language, System.Globalization.CultureInfo.CurrentUICulture));
         ApplyControlLanguage();
-        StartedInTray = Environment.GetCommandLineArgs().Contains(RegistryStartupService.TrayArgument, StringComparer.OrdinalIgnoreCase);
-
         ApplyInterfaceFonts();
+
+        // Registering first lets a click on a notification of an earlier session reach this instance.
         Notifications.Register();
+        var activation = AppInstance.GetCurrent().GetActivatedEventArgs();
+        StartedInTray = activation.Kind == ExtendedActivationKind.StartupTask;
+        if (activation.Kind == ExtendedActivationKind.AppNotification && activation.Data is AppNotificationActivatedEventArgs clicked)
+            Notifications.HandleLaunch(clicked);
+
         MainWindow = new MainWindow();
         MainWindow.Closed += (_, _) => Notifications.Unregister();
         MainWindow.Activate();

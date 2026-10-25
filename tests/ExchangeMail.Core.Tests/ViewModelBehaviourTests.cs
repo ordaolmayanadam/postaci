@@ -122,8 +122,9 @@ public class ViewModelBehaviourTests
             vm.StartWithWindows = true;
 
             Assert.False(store.LoadPreferences().MinimizeToTray);
-            Assert.True(startup.IsEnabled);
+            Assert.Equal(StartupState.Enabled, startup.State);
             Assert.True(vm.StartWithWindows);
+            Assert.Null(vm.ErrorMessage);
         }
         finally
         {
@@ -131,10 +132,41 @@ public class ViewModelBehaviourTests
         }
     }
 
+    [Fact]
+    public async Task Startup_turned_off_in_Windows_cannot_be_turned_on_here()
+    {
+        var dir = Path.Combine(Path.GetTempPath(), "postaci-test-" + Guid.NewGuid().ToString("N"));
+        try
+        {
+            var startup = new FakeStartup { State = StartupState.DisabledByUser };
+            var vm = new SettingsViewModel(Session(), new SettingsStore(dir), new MemoryCredentials()) { Startup = startup };
+            await vm.LoadStartupAsync();
+            Assert.False(vm.StartWithWindows);
+            Assert.Null(vm.ErrorMessage); // reading the state alone says nothing
+
+            vm.StartWithWindows = true;
+
+            Assert.False(vm.StartWithWindows); // the switch goes back off
+            Assert.Contains("Başlangıç", vm.ErrorMessage);
+        }
+        finally
+        {
+            if (Directory.Exists(dir)) Directory.Delete(dir, true);
+        }
+    }
+
+    /// <summary>Like Windows' startup task: a task the user turned off in Windows stays off.</summary>
     private sealed class FakeStartup : IStartupService
     {
-        public bool IsEnabled { get; private set; }
-        public void SetEnabled(bool enabled) => IsEnabled = enabled;
+        public StartupState State { get; set; }
+
+        public Task<StartupState> GetStateAsync() => Task.FromResult(State);
+
+        public Task<StartupState> SetEnabledAsync(bool enabled)
+        {
+            if (State is StartupState.Disabled or StartupState.Enabled) State = enabled ? StartupState.Enabled : StartupState.Disabled;
+            return Task.FromResult(State);
+        }
     }
 
     private sealed class MemoryCredentials : ICredentialStore

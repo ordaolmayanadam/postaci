@@ -105,6 +105,13 @@ public sealed partial class MainWindow : Window
             : AppInfo.Name);
 
     /// <summary>Really closes the app (tray menu "Çıkış").</summary>
+    /// <summary>Takes the icon out of the notification area now (before a restart ends the process).</summary>
+    public void RemoveTrayIcon()
+    {
+        _tray?.Dispose();
+        _tray = null;
+    }
+
     public void Exit()
     {
         _exitRequested = true;

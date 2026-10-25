@@ -1159,6 +1159,12 @@
   <data name="Settings_StartupChangeFailed" xml:space="preserve">
     <value>Başlangıç ayarı değiştirilemedi: {0}</value>
   </data>
+  <data name="Settings_StartupDisabledByPolicy" xml:space="preserve">
+    <value>Windows ile başlatma, kuruluşunuzun ilkesiyle kapatılmış.</value>
+  </data>
+  <data name="Settings_StartupDisabledByUser" xml:space="preserve">
+    <value>Windows ile başlatma, Windows Ayarları &gt; Uygulamalar &gt; Başlangıç bölümünden kapatılmış; yeniden açmak için orayı kullanın.</value>
+  </data>
   <data name="Settings_StartWithWindows" xml:space="preserve">
     <value>Windows açılışında başlat</value>
   </data>

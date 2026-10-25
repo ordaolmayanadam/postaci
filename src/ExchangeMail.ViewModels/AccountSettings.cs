@@ -30,11 +30,24 @@ public sealed class AccountSettings
     }
 }
 
-/// <summary>Starting the app when the user signs in to Windows; implemented by the app (registry Run key).</summary>
+/// <summary>Whether the app starts when the user signs in to Windows, and who decided it.</summary>
+public enum StartupState
+{
+    Disabled,
+    Enabled,
+    /// <summary>Turned off by the user in Windows (Settings → Apps → Startup); only they can turn it back on there.</summary>
+    DisabledByUser,
+    DisabledByPolicy,
+    EnabledByPolicy,
+}
+
+/// <summary>Starting the app when the user signs in to Windows; implemented by the app (the package's startup task).</summary>
 public interface IStartupService
 {
-    bool IsEnabled { get; }
-    void SetEnabled(bool enabled);
+    Task<StartupState> GetStateAsync();
+
+    /// <summary>Asks for the change and returns the resulting state, which may not be the one asked for.</summary>
+    Task<StartupState> SetEnabledAsync(bool enabled);
 }
 
 /// <summary>Secure password storage, implemented by the app (Windows Credential Manager).</summary>

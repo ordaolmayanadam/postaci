@@ -158,10 +158,18 @@ public sealed partial class MainViewModel : ObservableObject
 
     public event EventHandler<ComposeViewModel>? ComposeRequested;
 
+    /// <summary>An inbox message to show once the folders are loaded (the app was started from its notification).</summary>
+    public string? OpenWhenLoaded { get; set; }
+
     public async Task InitializeAsync()
     {
         await LoadFoldersAsync();
         SelectedFolder ??= Folders.FirstOrDefault(f => f.WellKnown == WellKnownFolder.Inbox) ?? Folders.FirstOrDefault();
+        if (OpenWhenLoaded is { } id)
+        {
+            OpenWhenLoaded = null;
+            await OpenInboxMessageAsync(id);
+        }
     }
 
     private async Task LoadFoldersAsync()

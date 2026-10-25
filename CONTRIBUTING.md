@@ -118,9 +118,8 @@ dotnet test --project tests/ExchangeMail.Core.Tests
 dotnet test --project tests/ExchangeMail.Core.Tests --filter-class "*FeatureTests"
 dotnet test --project tests/ExchangeMail.Core.Tests --filter-method "*Saving_an_existing_draft*"
 
-# Uygulamayı derle ve çalıştır (yalnızca Windows)
+# Uygulamayı derle (yalnızca Windows); çalıştırmak için Visual Studio'da F5, aşağıya bakın
 dotnet build src/ExchangeMail.App -c Debug -p:Platform=x64
-./src/ExchangeMail.App/bin/x64/Debug/net10.0-windows10.0.19041.0/win-x64/Postaci.exe
 ```
 
 Notlar:
@@ -130,8 +129,12 @@ Notlar:
   (`--filter-class`, `--filter-method`, `--filter-trait`) yazılır.
 - Linux/macOS'ta `dotnet build ExchangeMail.slnx` çalıştırmayın: WinUI projesinin XAML derleyicisi yalnızca
   Windows'ta çalışır. Kütüphaneleri ve test projesini ayrı ayrı derleyin.
-- Uygulama paketlenmemiş (unpackaged) ve self-contained derlenir; MSIX veya Windows App SDK runtime kurulumu
-  gerekmez.
+- Uygulama tek projeli MSIX paketi olarak derlenir ve paketli çalışır: bildirimler, Windows açılışında başlatma
+  (başlangıç görevi) ve veri klasörü (`ApplicationData`) paket kimliğine bağlıdır, `Postaci.exe` doğrudan
+  çalıştırılmaz. Visual Studio'da **ExchangeMail.App**'i başlangıç projesi yapıp F5'e basın; Visual Studio paketi
+  imzasız kaydeder (Windows **Geliştirici Modu** açık olmalı) ve gereken Windows App Runtime'ı kurar.
+- Paket kimliği ve uzantıları (bildirim etkinleştiricisi, başlangıç görevi) [`Package.appxmanifest`](src/ExchangeMail.App/Package.appxmanifest)
+  içindedir. `TaskId` değeri `StartupTaskService.TaskId` ile aynı kalmalıdır.
 
 ## Depo yapısı
 
@@ -165,7 +168,7 @@ Bağımlılıklar tek yönlüdür: **App → ViewModels → Core**.
 |---|---|---|
 | **Core** | EWS SOAP istekleri, yanıt ayrıştırma, modeller, Autodiscover | UI, dosya sistemi ayarları, Windows API'leri, `ViewModels` referansı |
 | **ViewModels** | Ekran durumu, komutlar, ayarlar (`UserPreferences`), HTML yardımcıları (`MailFormat`) | WinUI tipleri (`Microsoft.UI.*`), `DispatcherQueue`, P/Invoke |
-| **App** | XAML, görsel davranış, Windows servisleri (Credential Manager, bildirim, tepsi, kayıt defteri) | İş mantığı, doğrudan EWS çağrısı |
+| **App** | XAML, görsel davranış, Windows servisleri (Credential Manager, bildirim, tepsi, başlangıç görevi) | İş mantığı, doğrudan EWS çağrısı |
 
 Pratikte:
 
@@ -448,9 +451,9 @@ await WaitUntil(() => vm.Messages.Count == 2 && !vm.IsLoadingList);
    koyu temada ekran görüntüsü ekleyin (gerçek veri olmadan!).
 5. CI'ın iki işi de yeşil olmalıdır:
    - **test** — Ubuntu ve Windows'ta kütüphaneler + testler,
-   - **app** — Windows'ta uygulamanın x64 ve ARM64 için yayımlanması (XAML burada derlenir).
+   - **app** — Windows'ta uygulamanın x64 ve ARM64 için MSIX olarak paketlenmesi (XAML burada derlenir).
 
-   PR'ın "Checks" sekmesinden `Postaci-win-x64` artifact'ini indirip değişikliği deneyebilirsiniz.
+   CI'ın ürettiği MSIX artifact'i imzasız olduğu için kurulamaz; değişikliği dalı Visual Studio'da çalıştırarak deneyin.
 6. İnceleme yorumlarını yeni commit'lerle karşılayın (force-push yerine); birleştirirken bakımcı commit'leri
    gerekirse birleştirir (squash).
 
@@ -477,15 +480,18 @@ git tag v1.1.0          # ön sürüm için: v1.1.0-beta.1
 git push origin v1.1.0
 ```
 
-[`release.yml`](.github/workflows/release.yml) testleri çalıştırır, sürüm numarasını etiketten alarak x64 ve
-ARM64 zip'lerini üretir, `SHA256SUMS.txt` hesaplar ve sürüm notlarını PR başlıklarından oluşturarak GitHub sürümünü
-yayınlar. Etikette `-` varsa sürüm "pre-release" olarak işaretlenir. Projedeki `Version` değeri yalnızca yerel
-derlemelerde kullanılır.
+[`release.yml`](.github/workflows/release.yml) testleri çalıştırır, sürüm numarasını etiketten alıp
+`Package.appxmanifest`'e yazar (`1.1.0` → `1.1.0.0`), x64 ve ARM64 Store paketlerini (`.msixupload`) üretir ve
+sürüm notlarını PR başlıklarından oluşturarak GitHub sürümünü yayınlar. Paketler `store-win-x64` /
+`store-win-arm64` artifact'lerinden indirilip Partner Center'da yeni bir gönderime yüklenir; Store imzalayıp
+yayımlar (ayrıntılar README'de). Etikette `-` varsa GitHub sürümü "pre-release" olarak işaretlenir. Manifestteki ve
+projedeki sürüm değerleri yalnızca yerel derlemelerde kullanılır.
 
 Yayından önce:
 
 - [ ] `main` üzerindeki son CI çalışması yeşil
-- [ ] En az bir Windows makinede `Postaci-win-x64` artifact'i ile giriş, posta okuma, gönderme ve takvim denendi
+- [ ] En az bir Windows makinede (Visual Studio ile dağıtarak) giriş, posta okuma, gönderme, takvim, bildirim ve
+      Windows açılışında başlatma denendi
 - [ ] Ayar dosyası biçimi değiştiyse eski ayarlarla açılış denendi (geçiş kodu var mı?)
 
 ## İkonları yeniden üretmek
@@ -497,9 +503,10 @@ cd assets/icon
 python3 make_svg.py   # SVG'leri üretir (büyük/küçük boyut, okunmamış rozetli)
 node render.js        # Playwright Chromium ile 16–256 px PNG'ler
 python3 make_ico.py   # Postaci.ico ve Postaci-unread.ico
+node render_msix.js   # MSIX kutucukları ve simgeleri, doğrudan src/ExchangeMail.App/Assets/ altına
 ```
 
-Çıktıları `src/ExchangeMail.App/Assets/` altına kopyalayın ve `onizleme.png`'yi güncelleyin. ICO dosyaları ≤128 px
+`render.js` ve `make_ico.py` çıktılarını `src/ExchangeMail.App/Assets/` altına kopyalayın ve `onizleme.png`'yi güncelleyin. ICO dosyaları ≤128 px
 için BMP, 256 px için PNG kayıtları içerir; Windows'un tepsi ve görev çubuğunda keskin görünmesi için bu düzeni
 koruyun.
 

@@ -1159,6 +1159,12 @@
   <data name="Settings_StartupChangeFailed" xml:space="preserve">
     <value>Could not change the startup setting: {0}</value>
   </data>
+  <data name="Settings_StartupDisabledByPolicy" xml:space="preserve">
+    <value>Starting with Windows is turned off by your organization's policy.</value>
+  </data>
+  <data name="Settings_StartupDisabledByUser" xml:space="preserve">
+    <value>Starting with Windows was turned off in Windows Settings &gt; Apps &gt; Startup; turn it back on there.</value>
+  </data>
   <data name="Settings_StartWithWindows" xml:space="preserve">
     <value>Start with Windows</value>
   </data>

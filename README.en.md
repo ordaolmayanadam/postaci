@@ -70,24 +70,24 @@ and sends data nowhere except the Exchange server you configure.
 
 ## Installation
 
-### Prebuilt release
+### Microsoft Store
 
-1. Download the file matching your processor from the [Releases](https://github.com/ordaolmayanadam/postaci/releases/latest) page:
-   - `Postaci-<version>-win-x64.zip`: Intel/AMD PCs
-   - `Postaci-<version>-win-arm64.zip`: ARM PCs (e.g. Snapdragon)
-2. Optionally verify the download against `SHA256SUMS.txt`:
-   ```powershell
-   Get-FileHash .\Postaci-1.0.0-win-x64.zip -Algorithm SHA256
-   ```
-3. Extract the zip to any folder (e.g. `%LOCALAPPDATA%\Programs\Postaci`) and run `Postaci.exe`.
+Postacı is distributed through the Microsoft Store: search for **Postacı** in the Store and choose **Install**.
+Updates arrive from the Store automatically. The Store also installs the Windows App Runtime it needs, and .NET is
+inside the package. The only other component is the **Microsoft Edge WebView2 Runtime**, which ships with
+Windows 11; on Windows 10 it can be installed from [Microsoft's page](https://developer.microsoft.com/microsoft-edge/webview2/)
+if missing.
 
-The package is **self-contained**: .NET and the Windows App SDK do not need to be installed separately. The only
-required component is the **Microsoft Edge WebView2 Runtime**, which ships with Windows 11; on Windows 10 it can be
-installed from [Microsoft's page](https://developer.microsoft.com/microsoft-edge/webview2/) if missing.
+> The Store link will be added here once the listing is published. Until then the app can be run
+> [from source](#building-from-source).
 
-> **SmartScreen warning:** releases are not signed with a code-signing certificate, so Windows may show
-> "Windows protected your PC" on first launch. Choose **More info → Run anyway**. For corporate deployment we
-> recommend signing the package with your organization's certificate.
+**Moving from the zip release (0.4 and earlier):** the first time the Store version starts, it takes over the
+account and preferences from the zip release's `%LOCALAPPDATA%\Postaci` folder; the saved password keeps working.
+Then:
+
+1. If **Start with Windows** is on in the zip release, open that version once and turn it off (otherwise the old
+   version starts with Windows as well).
+2. Delete the zip folder and the `%LOCALAPPDATA%\Postaci` folder.
 
 ### System requirements
 
@@ -100,9 +100,9 @@ installed from [Microsoft's page](https://developer.microsoft.com/microsoft-edge
 ### Uninstalling
 
 1. Quit the app (tray icon → **Exit**).
-2. If **Start with Windows** is on in Settings, turn it off.
-3. Delete the app folder and the `%LOCALAPPDATA%\Postaci` folder.
-4. Optionally remove the saved password: **Control Panel → Credential Manager → Windows Credentials →**
+2. **Windows Settings → Apps → Installed apps → Postacı → Uninstall**. Settings, preferences and the WebView2 profile
+   are removed with the app.
+3. Optionally remove the saved password: **Control Panel → Credential Manager → Windows Credentials →**
    `Postaci:<user>`. The **Sign out** button in Settings does this too.
 
 ## First connection
@@ -238,7 +238,7 @@ for new mail. To quit completely, right-click the tray icon and choose **Exit**.
 | Empty message body / "Could not start WebView2" | WebView2 Runtime is missing. Install it [from Microsoft](https://developer.microsoft.com/microsoft-edge/webview2/). |
 | No notifications | Check that Postacı is allowed under Windows Settings → Notifications and that Do Not Disturb is off. Notifications must also be enabled in Postacı's Settings. |
 | Password requested on every launch | **Save the password in Windows Credential Manager** must be checked when connecting. Check that a `Postaci:<user>` entry exists in Credential Manager. |
-| The app closes or something silently doesn't work | **Settings → About → Open diagnostics log**: errors and crashes are written to `%LOCALAPPDATA%\Postaci\postaci.log` (no mail content). When reporting a bug, include the relevant lines with server names and addresses hidden. |
+| The app closes or something silently doesn't work | **Settings → About → Open diagnostics log**: errors and crashes are written to `%LOCALAPPDATA%\Packages\<Postacı package>\LocalState\postaci.log` (no mail content). When reporting a bug, include the relevant lines with server names and addresses hidden. |
 | Calendar times are shifted | Check the Windows time zone; Postacı sends the Windows time zone to Exchange with calendar requests. |
 
 When reporting a bug, please use the [bug template](.github/ISSUE_TEMPLATE/bug_report.yml) and **do not share real
@@ -255,22 +255,20 @@ mail content, addresses or server names**. Issues may be written in English or T
 ### Commands
 
 ```powershell
-# Build and run the app
+# Build the app
 dotnet build src\ExchangeMail.App -c Debug -p:Platform=x64
-.\src\ExchangeMail.App\bin\x64\Debug\net10.0-windows10.0.19041.0\win-x64\Postaci.exe
 
-# Distributable folder (no installer, self-contained)
-dotnet publish src\ExchangeMail.App -c Release -r win-x64 --self-contained -p:Platform=x64 -o publish\win-x64
-
-# For ARM64
-dotnet publish src\ExchangeMail.App -c Release -r win-arm64 --self-contained -p:Platform=ARM64 -o publish\win-arm64
+# Package for the Store (unsigned; the Store signs it)
+dotnet build src\ExchangeMail.App -c Release -r win-x64 -p:Platform=x64 -p:GenerateAppxPackageOnBuild=true -p:UapAppxPackageBuildMode=StoreUpload -p:AppxBundle=Never
 
 # Tests (any operating system)
 dotnet test --project tests\ExchangeMail.Core.Tests
 ```
 
-In Visual Studio, open `ExchangeMail.slnx`, set **ExchangeMail.App** as the startup project, select the **x64**
-platform and press F5.
+The app runs packaged (MSIX): notifications, starting with Windows and its data folder depend on the package
+identity, so `Postaci.exe` is not started directly. To run it, open `ExchangeMail.slnx` in Visual Studio, set
+**ExchangeMail.App** as the startup project, select the **x64** platform and press F5. Visual Studio registers the
+package unsigned and starts it; this needs Windows **Developer Mode** (Settings → System → For developers).
 
 > Do not build the whole solution (e.g. by running `dotnet test` at the root) on Linux/macOS: the WinUI project's
 > XAML compiler only runs on Windows. Run the test project with `--project`.
@@ -279,19 +277,34 @@ platform and press F5.
 
 | Workflow | When | What it does |
 |---|---|---|
-| [`ci.yml`](.github/workflows/ci.yml) | Every push to `main`, every pull request, manually | Runs the tests on Ubuntu and Windows, then publishes the app for x64 and ARM64 and keeps them as `Postaci-win-x64` / `Postaci-win-arm64` artifacts for 14 days |
-| [`release.yml`](.github/workflows/release.yml) | When a tag like `v1.2.3` is pushed | Runs the tests, builds zips for both architectures using the version from the tag, computes `SHA256SUMS.txt` and creates a GitHub release |
+| [`ci.yml`](.github/workflows/ci.yml) | Every push to `main`, every pull request, manually | Runs the tests on Ubuntu and Windows, then packages the app as MSIX for x64 and ARM64, checks the package contents and keeps the unsigned packages as artifacts for 14 days |
+| [`release.yml`](.github/workflows/release.yml) | When a tag like `v1.2.3` is pushed | Runs the tests, builds the x64 and ARM64 Store packages (`.msixupload`) with the version from the tag, keeps them as `store-win-x64` / `store-win-arm64` artifacts and creates a GitHub release |
 | [`dependabot.yml`](.github/dependabot.yml) | Weekly | Opens update PRs for NuGet packages and GitHub Actions |
 
-**To publish a new release:**
+**The first time (once):**
+
+1. Open a developer account in [Partner Center](https://partner.microsoft.com/dashboard) (individual accounts are
+   free) and reserve the name `Postacı` under **Apps and games → New product → MSIX or PWA app**.
+2. Copy `Package/Identity/Name`, `Package/Identity/Publisher` and `Package/Properties/PublisherDisplayName` from
+   **Product management → Product identity** into
+   [`Package.appxmanifest`](src/ExchangeMail.App/Package.appxmanifest) and commit. The release workflow fails while
+   the placeholder values are still there.
+
+**For every release:**
 
 ```bash
 git tag v1.0.0
 git push origin v1.0.0
 ```
 
-If the tag contains `-` (e.g. `v1.1.0-beta.1`) the release is marked as a pre-release. Release notes are generated
-automatically from the PRs merged since the previous tag.
+1. When the workflow has finished, download and extract the `store-win-x64` and `store-win-arm64` artifacts from
+   its run page.
+2. Start a new submission in Partner Center, upload both `.msixupload` files under **Packages** and submit. The
+   Store signs the package and publishes it after certification.
+
+If the tag contains `-` (e.g. `v1.1.0-beta.1`) the GitHub release is marked as a pre-release; the package version
+uses only the numeric part (`1.1.0.0`). Release notes are generated automatically from the PRs merged since the
+previous tag.
 
 ## Architecture
 
@@ -321,7 +334,7 @@ flowchart LR
 |---|---|---|
 | `src/ExchangeMail.Core` | `net10.0` | EWS client (raw SOAP over `HttpClient`), Autodiscover, models, Turkish/English text resources. Knows nothing about the UI. |
 | `src/ExchangeMail.ViewModels` | `net10.0` | MVVM layer ([CommunityToolkit.Mvvm](https://learn.microsoft.com/dotnet/communitytoolkit/mvvm/)), preferences, HTML helpers. No WinUI dependency. |
-| `src/ExchangeMail.App` | `net10.0-windows` | WinUI 3 UI, WebView2, Windows services. Unpackaged (`WindowsPackageType=None`) and self-contained. |
+| `src/ExchangeMail.App` | `net10.0-windows` | WinUI 3 UI, WebView2, Windows services. Single-project MSIX package (Microsoft Store); Windows App Runtime as a framework dependency, .NET included in the package. |
 | `tests/ExchangeMail.Core.Tests` | `net10.0` | Unit tests (xUnit v3) against a fake EWS server (`FakeEwsServer`). They also verify the structure and order of the SOAP requests sent. |
 
 All business logic lives in two libraries that do not depend on Windows, so CI builds and tests them on Linux.
@@ -363,12 +376,12 @@ server (at most 30 s) and retries up to twice.
 
 | What | Where |
 |---|---|
-| Account settings (email, user name, EWS URL) | `%LOCALAPPDATA%\Postaci\settings.json` |
-| Preferences | `%LOCALAPPDATA%\Postaci\preferences.json` |
+| Account settings (email, user name, EWS URL) | App data folder (`%LOCALAPPDATA%\Packages\<Postacı package>\LocalState`): `settings.json` |
+| Preferences | App data folder: `preferences.json` |
 | Password | Windows Credential Manager → Generic: `Postaci:<user>` |
-| WebView2 profile | `%LOCALAPPDATA%\Postaci\WebView2` |
+| WebView2 profile | App data folder: `WebView2` |
 | Reading pane temporary files | `%TEMP%\Postaci` (cleared on every launch) |
-| Start with Windows | `HKCU\Software\Microsoft\Windows\CurrentVersion\Run\Postaci` |
+| Start with Windows | The package's startup task (also listed in Windows Settings → Apps → Startup) |
 
 - The password is never written to disk in plain text; it is kept only in Credential Manager (protected with DPAPI).
 - Message bodies are displayed with a **Content-Security-Policy** that blocks scripts and (unless allowed) remote

@@ -10,17 +10,22 @@ namespace ExchangeMail.App.Services;
 public sealed class NotificationService
 {
     private bool _registered;
+    private bool _launchRequested;
+    private string? _launchMessageId;
 
     /// <summary>A notification was clicked; the argument is the message's item id (null for "several new messages").</summary>
     public event EventHandler<string?>? MessageRequested;
 
+    /// <summary>
+    /// Registers for clicks on this app's notifications. The name and icon shown on them come from the package
+    /// manifest; a click while the app is closed starts it through the COM activator declared there.
+    /// </summary>
     public void Register()
     {
         try
         {
             AppNotificationManager.Default.NotificationInvoked += OnInvoked;
-            // Unpackaged apps pass the name and icon shown on their notifications.
-            AppNotificationManager.Default.Register(ViewModels.AppInfo.Name, new Uri(MainWindow.IconPath));
+            AppNotificationManager.Default.Register();
             _registered = true;
         }
         catch (Exception ex)
@@ -104,6 +109,24 @@ public sealed class NotificationService
         {
             ViewModels.Diagnostics.Log("Badge notification", ex);
         }
+    }
+
+    /// <summary>The app was started by a click on one of its notifications; the shell opens it once signed in.</summary>
+    public void HandleLaunch(AppNotificationActivatedEventArgs args)
+    {
+        args.Arguments.TryGetValue("id", out var id);
+        _launchRequested = true;
+        _launchMessageId = id;
+    }
+
+    /// <summary>The notification the app was started from, once; null id for "several new messages".</summary>
+    public bool TryTakeLaunchRequest(out string? messageId)
+    {
+        messageId = _launchMessageId;
+        if (!_launchRequested) return false;
+        _launchRequested = false;
+        _launchMessageId = null;
+        return true;
     }
 
     private void OnInvoked(AppNotificationManager sender, AppNotificationActivatedEventArgs args)

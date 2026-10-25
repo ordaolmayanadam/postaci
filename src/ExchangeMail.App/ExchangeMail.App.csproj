@@ -16,9 +16,19 @@
     <Platforms>x86;x64;ARM64</Platforms>
     <RuntimeIdentifiers>win-x86;win-x64;win-arm64</RuntimeIdentifiers>
     <UseWinUI>true</UseWinUI>
-    <!-- Unpackaged: runs straight from bin/ or an xcopy folder, no MSIX/certificate needed. -->
-    <WindowsPackageType>None</WindowsPackageType>
-    <WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
+    <!--
+      Packaged (single-project MSIX, Package.appxmanifest), for the Microsoft Store. The Windows App Runtime is a
+      framework dependency the Store installs; .NET is carried in the package. Packages built here are unsigned:
+      the Store signs what it publishes, and Visual Studio deploys debug builds without a signature.
+    -->
+    <EnableMsixTooling>true</EnableMsixTooling>
+    <SelfContained>true</SelfContained>
+    <AppxPackageSigningEnabled>false</AppxPackageSigningEnabled>
+    <AppxAutoIncrementPackageRevision>false</AppxAutoIncrementPackageRevision>
+    <GenerateAppInstallerFile>false</GenerateAppInstallerFile>
+    <GenerateTestArtifacts>false</GenerateTestArtifacts>
+    <AppxSymbolPackageEnabled>true</AppxSymbolPackageEnabled>
+    <DefaultLanguage>tr-TR</DefaultLanguage>
   </PropertyGroup>
 
   <ItemGroup>

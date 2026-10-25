@@ -65,24 +65,22 @@ yapılandırılan Exchange sunucusu dışında hiçbir yere veri göndermez.
 
 ## Kurulum
 
-### Hazır sürüm
+### Microsoft Store
 
-1. [Sürümler (Releases)](https://github.com/ordaolmayanadam/postaci/releases/latest) sayfasından işlemcinize uygun dosyayı indirin:
-   - `Postaci-<sürüm>-win-x64.zip`: Intel/AMD işlemcili bilgisayarlar
-   - `Postaci-<sürüm>-win-arm64.zip`: ARM işlemcili bilgisayarlar (ör. Snapdragon)
-2. İsterseniz dosyanın bütünlüğünü `SHA256SUMS.txt` ile doğrulayın:
-   ```powershell
-   Get-FileHash .\Postaci-1.0.0-win-x64.zip -Algorithm SHA256
-   ```
-3. Zip'i istediğiniz bir klasöre açın (ör. `%LOCALAPPDATA%\Programs\Postaci`) ve `Postaci.exe`'yi çalıştırın.
-
-Paket **kendi içinde bütündür** (self-contained): .NET veya Windows App SDK ayrıca kurulmaz. Gereken tek bileşen
-Windows 11'de hazır gelen **Microsoft Edge WebView2 Runtime**'dır; Windows 10'da eksikse
+Postacı Microsoft Store üzerinden dağıtılır: Store'da **Postacı**'yı arayıp **Yükle**'ye basın. Güncellemeler
+Store'dan kendiliğinden gelir. Store gereken Windows App Runtime'ı da kurar, .NET ise paketin içindedir. Ayrıca
+gereken tek bileşen Windows 11'de hazır gelen **Microsoft Edge WebView2 Runtime**'dır; Windows 10'da eksikse
 [Microsoft'un sayfasından](https://developer.microsoft.com/microsoft-edge/webview2/) kurulabilir.
 
-> **SmartScreen uyarısı:** Sürümler kod imzalama sertifikasıyla imzalanmadığı için Windows ilk çalıştırmada
-> "Windows bilgisayarınızı korudu" uyarısı gösterebilir. **Ek bilgi → Yine de çalıştır** ile açılır.
-> Kurumsal dağıtımda paketi kurum sertifikasıyla imzalamanız önerilir.
+> Store kaydı yayımlanınca bağlantısı buraya eklenecek. O zamana kadar uygulama
+> [kaynak koddan](#kaynak-koddan-derleme) çalıştırılabilir.
+
+**Zip sürümünden (0.4 ve öncesi) geçiş:** Store sürümünü ilk açtığınızda hesap ve tercihler zip sürümünün
+`%LOCALAPPDATA%\Postaci` klasöründen kendiliğinden taşınır; kayıtlı parola da kullanılmaya devam eder. Ardından:
+
+1. Zip sürümünde **Windows açılışında başlat** açıksa, o sürümü bir kez açıp bu ayarı kapatın (yoksa Windows
+   açılışında eski sürüm de başlar).
+2. Zip klasörünü ve `%LOCALAPPDATA%\Postaci` klasörünü silin.
 
 ### Sistem gereksinimleri
 
@@ -95,9 +93,9 @@ Windows 11'de hazır gelen **Microsoft Edge WebView2 Runtime**'dır; Windows 10'
 ### Kaldırma
 
 1. Uygulamayı kapatın (tepsi simgesi → **Çıkış**).
-2. Ayarlar'da **Windows açılışında başlat** açıksa kapatın.
-3. Uygulama klasörünü ve `%LOCALAPPDATA%\Postaci` klasörünü silin.
-4. İsterseniz kayıtlı parolayı silin: **Denetim Masası → Kimlik Bilgisi Yöneticisi → Windows Kimlik Bilgileri →**
+2. **Windows Ayarlar → Uygulamalar → Yüklü uygulamalar → Postacı → Kaldır**. Ayarlar, tercihler ve WebView2 profili
+   uygulamayla birlikte silinir.
+3. İsterseniz kayıtlı parolayı silin: **Denetim Masası → Kimlik Bilgisi Yöneticisi → Windows Kimlik Bilgileri →**
    `Postaci:<kullanıcı>`. Ayarlar'daki **Oturumu kapat** düğmesi de bunu yapar.
 
 ## İlk bağlantı
@@ -228,7 +226,7 @@ denetlemeye devam eder. Tamamen kapatmak için tepsi simgesine sağ tıklayıp *
 | İleti gövdesi boş / "WebView2 başlatılamadı" | WebView2 Runtime eksik. [Microsoft'tan](https://developer.microsoft.com/microsoft-edge/webview2/) kurun. |
 | Bildirim çıkmıyor | Windows Ayarlar → Bildirimler'de Postacı'nın açık olduğunu ve "Rahatsız etmeyin"in kapalı olduğunu kontrol edin. Postacı Ayarlar'ında bildirimler açık olmalı. |
 | Her açılışta parola soruluyor | Bağlanırken "Parolayı sakla" işaretli olmalı. Kimlik Bilgisi Yöneticisi'nde `Postaci:<kullanıcı>` kaydının oluştuğunu kontrol edin. |
-| Uygulama kapanıyor veya bir şey sessizce çalışmıyor | **Ayarlar → Hakkında → Tanılama günlüğünü aç**: hatalar ve çökmeler `%LOCALAPPDATA%\Postaci\postaci.log` dosyasına yazılır (ileti içeriği yazılmaz). Hata bildirirken ilgili satırları, sunucu ve adres bilgilerini gizleyerek ekleyin. |
+| Uygulama kapanıyor veya bir şey sessizce çalışmıyor | **Ayarlar → Hakkında → Tanılama günlüğünü aç**: hatalar ve çökmeler `%LOCALAPPDATA%\Packages\<Postacı paketi>\LocalState\postaci.log` dosyasına yazılır (ileti içeriği yazılmaz). Hata bildirirken ilgili satırları, sunucu ve adres bilgilerini gizleyerek ekleyin. |
 | Takvim saatleri kayık | Windows saat dilimi ayarını kontrol edin; Postacı takvim isteklerinde Windows saat dilimini Exchange'e bildirir. |
 
 Hata bildirirken lütfen [hata şablonunu](.github/ISSUE_TEMPLATE/bug_report.yml) kullanın ve **gerçek posta içeriği,
@@ -245,22 +243,21 @@ adres veya sunucu adı paylaşmayın**.
 ### Komutlar
 
 ```powershell
-# Uygulamayı derleyip çalıştırma
+# Uygulamayı derleme
 dotnet build src\ExchangeMail.App -c Debug -p:Platform=x64
-.\src\ExchangeMail.App\bin\x64\Debug\net10.0-windows10.0.19041.0\win-x64\Postaci.exe
 
-# Dağıtılabilir klasör (kurulumsuz, self-contained)
-dotnet publish src\ExchangeMail.App -c Release -r win-x64 --self-contained -p:Platform=x64 -o publish\win-x64
-
-# ARM64 için
-dotnet publish src\ExchangeMail.App -c Release -r win-arm64 --self-contained -p:Platform=ARM64 -o publish\win-arm64
+# Store'a yüklenecek paket (imzasız; Store imzalar)
+dotnet build src\ExchangeMail.App -c Release -r win-x64 -p:Platform=x64 -p:GenerateAppxPackageOnBuild=true -p:UapAppxPackageBuildMode=StoreUpload -p:AppxBundle=Never
 
 # Testler (her işletim sisteminde)
 dotnet test --project tests\ExchangeMail.Core.Tests
 ```
 
-Visual Studio'da `ExchangeMail.slnx` dosyasını açın, **ExchangeMail.App**'i başlangıç projesi yapın, platformu
-**x64** seçip F5'e basın.
+Uygulama paketli (MSIX) çalışır: bildirimler, Windows açılışında başlatma ve veri klasörü paket kimliğine bağlıdır,
+bu yüzden `Postaci.exe` doğrudan çalıştırılmaz. Çalıştırmak için Visual Studio'da `ExchangeMail.slnx` dosyasını açın,
+**ExchangeMail.App**'i başlangıç projesi yapın, platformu **x64** seçip F5'e basın. Visual Studio paketi imzasız
+olarak kaydedip başlatır; bunun için Windows'ta **Geliştirici Modu** açık olmalıdır
+(Ayarlar → Sistem → Geliştiriciler için).
 
 > Çözümün tamamını (`dotnet test` köke çalıştırarak) Linux/macOS'ta derlemeye çalışmayın: WinUI projesinin XAML
 > derleyicisi yalnızca Windows'ta çalışır. Test projesini `--project` ile çalıştırın.
@@ -269,19 +266,33 @@ Visual Studio'da `ExchangeMail.slnx` dosyasını açın, **ExchangeMail.App**'i 
 
 | İş akışı | Ne zaman | Ne yapar |
 |---|---|---|
-| [`ci.yml`](.github/workflows/ci.yml) | `main`'e her push, her pull request, elle | Testleri Ubuntu ve Windows'ta çalıştırır; ardından uygulamayı x64 ve ARM64 için yayımlar ve `Postaci-win-x64` / `Postaci-win-arm64` artifact'leri olarak 14 gün saklar |
-| [`release.yml`](.github/workflows/release.yml) | `v1.2.3` biçiminde etiket push edildiğinde | Testleri çalıştırır, etiketteki sürüm numarasıyla iki mimari için zip üretir, `SHA256SUMS.txt` hesaplar ve GitHub sürümü oluşturur |
+| [`ci.yml`](.github/workflows/ci.yml) | `main`'e her push, her pull request, elle | Testleri Ubuntu ve Windows'ta çalıştırır; ardından uygulamayı x64 ve ARM64 için MSIX olarak paketler, paketin içeriğini denetler ve imzasız paketleri 14 gün artifact olarak saklar |
+| [`release.yml`](.github/workflows/release.yml) | `v1.2.3` biçiminde etiket push edildiğinde | Testleri çalıştırır, etiketteki sürüm numarasıyla x64 ve ARM64 Store paketlerini (`.msixupload`) üretip `store-win-x64` / `store-win-arm64` artifact'leri olarak saklar ve GitHub sürümünü oluşturur |
 | [`dependabot.yml`](.github/dependabot.yml) | Haftalık | NuGet paketleri ve GitHub Actions için güncelleme PR'ları açar |
 
-**Yeni sürüm yayınlamak için:**
+**İlk kez (bir kerelik):**
+
+1. [Partner Center](https://partner.microsoft.com/dashboard)'da geliştirici hesabı açın (bireysel hesap ücretsizdir)
+   ve **Uygulamalar ve oyunlar → Yeni ürün → MSIX veya PWA uygulaması** ile `Postacı` adını ayırın.
+2. **Ürün yönetimi → Ürün kimliği** sayfasındaki `Package/Identity/Name`, `Package/Identity/Publisher` ve
+   `Package/Properties/PublisherDisplayName` değerlerini
+   [`Package.appxmanifest`](src/ExchangeMail.App/Package.appxmanifest)'e yazıp commit edin. Yer tutucu değerler
+   duruyorsa sürüm iş akışı hata verir.
+
+**Her sürümde:**
 
 ```bash
 git tag v1.0.0
 git push origin v1.0.0
 ```
 
-Etiket `-` içeriyorsa (ör. `v1.1.0-beta.1`) sürüm "ön sürüm" olarak işaretlenir. Sürüm notları, önceki etiketten
-bu yana birleştirilen PR'lardan otomatik oluşturulur.
+1. İş akışı bitince çalışmanın sayfasından `store-win-x64` ve `store-win-arm64` artifact'lerini indirip açın.
+2. Partner Center'da yeni bir gönderim başlatın, **Paketler** bölümüne iki `.msixupload` dosyasını yükleyin ve
+   gönderin. Store paketi imzalar, onaydan sonra yayımlar.
+
+Etiket `-` içeriyorsa (ör. `v1.1.0-beta.1`) GitHub sürümü "ön sürüm" olarak işaretlenir; paketin sürüm numarası
+yalnızca sayısal kısımdan (`1.1.0.0`) oluşur. Sürüm notları, önceki etiketten bu yana birleştirilen PR'lardan
+otomatik oluşturulur.
 
 ## Mimari
 
@@ -311,7 +322,7 @@ flowchart LR
 |---|---|---|
 | `src/ExchangeMail.Core` | `net10.0` | EWS istemcisi (ham SOAP, `HttpClient`), Autodiscover, modeller, Türkçe/İngilizce metin kaynakları. Arayüzden habersiz. |
 | `src/ExchangeMail.ViewModels` | `net10.0` | MVVM katmanı ([CommunityToolkit.Mvvm](https://learn.microsoft.com/dotnet/communitytoolkit/mvvm/)), tercihler, HTML yardımcıları. WinUI'ye bağımlı değil. |
-| `src/ExchangeMail.App` | `net10.0-windows` | WinUI 3 arayüzü, WebView2, Windows servisleri. Paketsiz (`WindowsPackageType=None`) ve self-contained. |
+| `src/ExchangeMail.App` | `net10.0-windows` | WinUI 3 arayüzü, WebView2, Windows servisleri. Tek projeli MSIX paketi (Microsoft Store); Windows App Runtime çerçeve bağımlılığı, .NET pakete dahil. |
 | `tests/ExchangeMail.Core.Tests` | `net10.0` | Sahte EWS sunucusuna (`FakeEwsServer`) karşı birim testleri (xUnit v3). Gönderilen SOAP isteklerinin yapısını ve sırasını da doğrular. |
 
 İş mantığının tamamı Windows'a bağımlı olmayan iki kütüphanede durduğu için CI'da Linux'ta derlenip test edilir.
@@ -352,12 +363,12 @@ bekleyip iki kez yeniden dener.
 
 | Ne | Nerede |
 |---|---|
-| Hesap ayarları (e-posta, kullanıcı adı, EWS adresi) | `%LOCALAPPDATA%\Postaci\settings.json` |
-| Tercihler | `%LOCALAPPDATA%\Postaci\preferences.json` |
+| Hesap ayarları (e-posta, kullanıcı adı, EWS adresi) | Uygulama veri klasörü (`%LOCALAPPDATA%\Packages\<Postacı paketi>\LocalState`): `settings.json` |
+| Tercihler | Uygulama veri klasörü: `preferences.json` |
 | Parola | Windows Kimlik Bilgisi Yöneticisi → Genel: `Postaci:<kullanıcı>` |
-| WebView2 profili | `%LOCALAPPDATA%\Postaci\WebView2` |
+| WebView2 profili | Uygulama veri klasörü: `WebView2` |
 | Okuma bölmesi geçici dosyaları | `%TEMP%\Postaci` (her açılışta temizlenir) |
-| Windows açılışında başlatma | `HKCU\Software\Microsoft\Windows\CurrentVersion\Run\Postaci` |
+| Windows açılışında başlatma | Paketin başlangıç görevi (Windows Ayarlar → Uygulamalar → Başlangıç'ta da görünür) |
 
 - Parola düz metin olarak diske yazılmaz; yalnızca Kimlik Bilgisi Yöneticisi'nde (DPAPI ile korunur) tutulur.
 - İleti gövdesi, betikleri ve (izin verilmedikçe) uzak kaynakları engelleyen bir **Content-Security-Policy** ile

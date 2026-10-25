@@ -120,9 +120,8 @@ dotnet test --project tests/ExchangeMail.Core.Tests
 dotnet test --project tests/ExchangeMail.Core.Tests --filter-class "*FeatureTests"
 dotnet test --project tests/ExchangeMail.Core.Tests --filter-method "*Saving_an_existing_draft*"
 
-# Build and run the app (Windows only)
+# Build the app (Windows only); to run it, press F5 in Visual Studio, see below
 dotnet build src/ExchangeMail.App -c Debug -p:Platform=x64
-./src/ExchangeMail.App/bin/x64/Debug/net10.0-windows10.0.19041.0/win-x64/Postaci.exe
 ```
 
 Notes:
@@ -132,7 +131,13 @@ Notes:
   (`--filter-class`, `--filter-method`, `--filter-trait`).
 - Don't run `dotnet build ExchangeMail.slnx` on Linux/macOS: the WinUI project's XAML compiler only runs on Windows.
   Build the libraries and the test project individually.
-- The app is built unpackaged and self-contained; no MSIX or Windows App SDK runtime installation is needed.
+- The app is built as a single-project MSIX package and runs packaged: notifications, starting with Windows (a
+  startup task) and its data folder (`ApplicationData`) depend on the package identity, so `Postaci.exe` is not
+  started directly. In Visual Studio set **ExchangeMail.App** as the startup project and press F5; Visual Studio
+  registers the package unsigned (Windows **Developer Mode** must be on) and installs the Windows App Runtime it needs.
+- The package identity and extensions (notification activator, startup task) are in
+  [`Package.appxmanifest`](src/ExchangeMail.App/Package.appxmanifest). Its `TaskId` must stay equal to
+  `StartupTaskService.TaskId`.
 
 ## Repository layout
 
@@ -166,7 +171,7 @@ Dependencies go one way: **App → ViewModels → Core**.
 |---|---|---|
 | **Core** | EWS SOAP requests, response parsing, models, Autodiscover | UI, settings files, Windows APIs, references to `ViewModels` |
 | **ViewModels** | Screen state, commands, settings (`UserPreferences`), HTML helpers (`MailFormat`) | WinUI types (`Microsoft.UI.*`), `DispatcherQueue`, P/Invoke |
-| **App** | XAML, visual behaviour, Windows services (Credential Manager, notifications, tray, registry) | Business logic, direct EWS calls |
+| **App** | XAML, visual behaviour, Windows services (Credential Manager, notifications, tray, startup task) | Business logic, direct EWS calls |
 
 In practice:
 
@@ -452,9 +457,9 @@ await WaitUntil(() => vm.Messages.Count == 2 && !vm.IsLoadingList);
    screenshots in light and dark themes (without real data!).
 5. Both CI jobs must be green:
    - **test** — libraries + tests on Ubuntu and Windows,
-   - **app** — publishing the app for x64 and ARM64 on Windows (this is where the XAML is compiled).
+   - **app** — packaging the app as MSIX for x64 and ARM64 on Windows (this is where the XAML is compiled).
 
-   You can download the `Postaci-win-x64` artifact from the PR's "Checks" tab to try the change.
+   The MSIX artifact CI produces is unsigned and can't be installed; try the change by running the branch from Visual Studio.
 6. Address review comments with new commits (instead of force-pushing); the maintainer may squash the commits when
    merging.
 
@@ -482,16 +487,18 @@ git tag v1.1.0          # for a pre-release: v1.1.0-beta.1
 git push origin v1.1.0
 ```
 
-[`release.yml`](.github/workflows/release.yml) runs the tests, takes the version number from the tag, builds the
-x64 and ARM64 zips, computes `SHA256SUMS.txt`, and publishes the GitHub release with notes generated from the PR
-titles. If the tag contains `-`, the release is marked as a pre-release. The `Version` value in the project is only
-used for local builds.
+[`release.yml`](.github/workflows/release.yml) runs the tests, takes the version number from the tag and writes it to
+`Package.appxmanifest` (`1.1.0` → `1.1.0.0`), builds the x64 and ARM64 Store packages (`.msixupload`), and publishes
+the GitHub release with notes generated from the PR titles. The packages are downloaded from the `store-win-x64` /
+`store-win-arm64` artifacts and uploaded to a new submission in Partner Center; the Store signs and publishes them
+(details in the README). If the tag contains `-`, the GitHub release is marked as a pre-release. The version values
+in the manifest and the project are only used for local builds.
 
 Before publishing:
 
 - [ ] The latest CI run on `main` is green
-- [ ] Sign-in, reading mail, sending and the calendar were tried on at least one Windows machine with the
-      `Postaci-win-x64` artifact
+- [ ] Sign-in, reading mail, sending, the calendar, notifications and starting with Windows were tried on at least
+      one Windows machine (deployed from Visual Studio)
 - [ ] If the settings file format changed, starting with old settings was tested (is there migration code?)
 
 ## Regenerating the icons
@@ -503,9 +510,10 @@ cd assets/icon
 python3 make_svg.py   # generates the SVGs (large/small size, with unread badge)
 node render.js        # 16–256 px PNGs with Playwright Chromium
 python3 make_ico.py   # Postaci.ico and Postaci-unread.ico
+node render_msix.js   # MSIX tiles and icons, straight into src/ExchangeMail.App/Assets/
 ```
 
-Copy the outputs to `src/ExchangeMail.App/Assets/` and update `onizleme.png` (preview). The ICO files contain BMP
+Copy the outputs of `render.js` and `make_ico.py` to `src/ExchangeMail.App/Assets/` and update `onizleme.png` (preview). The ICO files contain BMP
 entries for ≤128 px and a PNG entry for 256 px; keep this layout so the icons look sharp in the Windows tray and
 taskbar.
 

@@ -53,6 +53,8 @@ public sealed partial class ShellPage : Page
         Mail.NewMailArrived += OnNewMailArrived;
         Mail.PropertyChanged += OnMailPropertyChanged;
         App.Notifications.MessageRequested += OnNotificationClicked;
+        // Started by a click on a notification: show that message once the inbox is there.
+        if (App.Notifications.TryTakeLaunchRequest(out var launchMessage)) Mail.OpenWhenLoaded = launchMessage;
         Contacts.ComposeRequested += OnComposeRequested;
         Settings.SignedOut += OnSignedOut;
         session.Preferences.PropertyChanged += OnPreferenceChanged;

@@ -92,6 +92,26 @@ public class MainViewModelTests
     }
 
     [Fact]
+    public async Task Started_from_a_notification_the_message_opens_once_the_inbox_is_loaded()
+    {
+        var server = new FakeEwsServer()
+            .On("GetFolder", WellKnown)
+            .On("FindFolder", Folders)
+            .On("FindItem", Items(("B", true), ("A", true)))
+            .On("GetItem", Detail("A"));
+        var vm = new MainViewModel(new MailSession(server.CreateClient(), new AccountSettings { Email = "ben@sirket.com" }))
+        {
+            OpenWhenLoaded = "A",
+        };
+
+        await vm.InitializeAsync();
+
+        Assert.Equal("A", vm.SelectedMessage?.Id.Id);
+        Assert.Null(vm.OpenWhenLoaded); // only once
+        await WaitUntil(() => vm.Current is not null);
+    }
+
+    [Fact]
     public async Task A_poll_that_finds_the_list_loading_runs_again_once_it_has_loaded()
     {
         var loaded = new TaskCompletionSource<HttpResponseMessage>(TaskCreationOptions.RunContinuationsAsynchronously);
