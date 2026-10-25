@@ -1,12 +1,23 @@
 <Solution>
+  <Configurations>
+    <Platform Name="Any CPU" />
+    <Platform Name="x64" />
+  </Configurations>
   <Folder Name="/src/">
     <Project Path="src/ExchangeMail.App/ExchangeMail.App.csproj">
       <Platform Project="x64" />
+      <Deploy Solution="*|x64" />
     </Project>
-    <Project Path="src/ExchangeMail.Core/ExchangeMail.Core.csproj" />
-    <Project Path="src/ExchangeMail.ViewModels/ExchangeMail.ViewModels.csproj" />
+    <Project Path="src/ExchangeMail.Core/ExchangeMail.Core.csproj">
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+    <Project Path="src/ExchangeMail.ViewModels/ExchangeMail.ViewModels.csproj">
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
   </Folder>
   <Folder Name="/tests/">
-    <Project Path="tests/ExchangeMail.Core.Tests/ExchangeMail.Core.Tests.csproj" />
+    <Project Path="tests/ExchangeMail.Core.Tests/ExchangeMail.Core.Tests.csproj">
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
   </Folder>
 </Solution>

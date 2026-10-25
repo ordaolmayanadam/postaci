@@ -4,6 +4,7 @@
     <RootNamespace>ExchangeMail.Core</RootNamespace>
     <!-- Strings.resx holds Turkish; other languages are satellite assemblies (Strings.<lang>.resx). -->
     <NeutralLanguage>tr</NeutralLanguage>
+    <Platforms>AnyCPU;x64</Platforms>
   </PropertyGroup>
   <ItemGroup>
     <InternalsVisibleTo Include="ExchangeMail.Core.Tests" />

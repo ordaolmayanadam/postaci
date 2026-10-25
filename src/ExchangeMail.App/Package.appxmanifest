@@ -15,11 +15,11 @@
   xmlns:rescap="http://schemas.microsoft.com/appx/manifest/foundation/windows10/restrictedcapabilities"
   IgnorableNamespaces="uap uap5 com desktop rescap">
 
-  <Identity Name="Postaci" Publisher="CN=Postaci" Version="1.0.0.0" />
+  <Identity Name="ordaolmayanadam.Postaci" Publisher="CN=11DAC254-BB98-4C42-A0B8-FA97F2A1F4F4" Version="1.0.0.0" />
 
   <Properties>
     <DisplayName>Postacı</DisplayName>
-    <PublisherDisplayName>Postacı contributors</PublisherDisplayName>
+    <PublisherDisplayName>ordaolmayanadam</PublisherDisplayName>
     <Logo>Assets\StoreLogo.png</Logo>
   </Properties>
 
