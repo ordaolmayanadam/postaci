@@ -294,7 +294,7 @@ public sealed partial class WeekGridView : UserControl
             Padding = new Thickness(6, 3, 6, 3),
             CornerRadius = new CornerRadius(4),
             BorderThickness = new Thickness(selected ? 2 : 0),
-            BorderBrush = selected ? (Brush)Application.Current.Resources["TextFillColorPrimaryBrush"] : null,
+            BorderBrush = selected ? Ui.ThemeBrush("TextFillColorPrimaryBrush", Ui.ThemeOf(this)) : null,
             Opacity = entry.Event.IsCancelled ? 0.55 : 1,
         };
         ToolTipService.SetToolTip(chip, $"{entry.Subject}\n{entry.TimeText}{(entry.HasLocation ? "\n" + entry.Location : "")}");

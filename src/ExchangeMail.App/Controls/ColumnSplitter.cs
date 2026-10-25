@@ -1,3 +1,4 @@
+using ExchangeMail.App.Helpers;
 using Microsoft.UI.Input;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Automation;
@@ -59,13 +60,8 @@ public sealed partial class ColumnSplitter : UserControl
         ProtectedCursor = InputSystemCursor.Create(InputSystemCursorShape.SizeWestEast);
         AutomationProperties.SetName(this, Strings.Common_ResizeColumn);
         Canvas.SetZIndex(this, 10);
-        Loaded += (_, _) =>
-        {
-            _line.Background = Resource("ControlStrokeColorDefaultBrush");
-            _gripBrush = Resource("ControlStrongFillColorDefaultBrush");
-            _accentBrush = Resource("AccentFillColorDefaultBrush");
-            _grip.Background = _gripBrush;
-        };
+        Loaded += (_, _) => ApplyThemeBrushes();
+        ActualThemeChanged += (_, _) => ApplyThemeBrushes();
     }
 
     /// <summary>Index of the column to resize: the one left of this handle's edge, or its own column.</summary>
@@ -85,8 +81,15 @@ public sealed partial class ColumnSplitter : UserControl
     /// <summary>Dragging right widens a column left of the handle and narrows one to its right.</summary>
     private int Direction => TargetColumn < Grid.GetColumn(this) ? 1 : -1;
 
-    private static Brush? Resource(string key) =>
-        Application.Current.Resources.TryGetValue(key, out var value) ? value as Brush : null;
+    /// <summary>Brushes for the theme the handle is shown in (Postacı's theme can differ from Windows').</summary>
+    private void ApplyThemeBrushes()
+    {
+        var theme = Ui.ThemeOf(this);
+        _line.Background = Ui.ThemeBrush("ControlStrokeColorDefaultBrush", theme);
+        _gripBrush = Ui.ThemeBrush("ControlStrongFillColorDefaultBrush", theme);
+        _accentBrush = Ui.ThemeBrush("AccentFillColorDefaultBrush", theme);
+        _grip.Background = _dragging ? _accentBrush : _gripBrush;
+    }
 
     private void ShowHandle(bool visible)
     {

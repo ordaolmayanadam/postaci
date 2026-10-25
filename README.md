@@ -193,7 +193,7 @@ denetlemeye devam eder. Tamamen kapatmak için tepsi simgesine sağ tıklayıp *
 | Posta | Okundu işaretleme zamanı, yeni posta denetim aralığı, uzak resimleri her zaman gösterme, imza, bildirimler |
 | Otomatik yanıtlar | Açık/kapalı, zaman aralığı, iç ve dış yanıt metinleri, dış alıcı kapsamı |
 | Uygulama | Kapatınca tepsiye küçült, Windows açılışında başlat |
-| Görünüm | Tema (Windows / açık / koyu), dil (Windows / Türkçe / English; yeniden başlatınca uygulanır) |
+| Görünüm | Tema (Windows / açık / koyu; koyu tema yumuşak lacivert-gri tonlu), dil (Windows / Türkçe / English; yeniden başlatınca uygulanır), klasör listesi (kompakt / rahat) |
 | Yazı tipleri | Arayüz yazı tipi ve boyutu (yeniden başlatınca uygulanır), okuma yazı tipi ve yakınlaştırma, yazma yazı tipi ve boyutu |
 | Hesap | E-posta, sunucu, oturum açma yöntemi; kayıtlı parolayı silme, oturumu kapatma |
 

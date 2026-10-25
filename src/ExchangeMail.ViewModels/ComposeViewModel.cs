@@ -42,8 +42,8 @@ public sealed partial class ComposeViewModel : ObservableObject
 
         _session = session;
         Mode = mode;
-        Attachments.CollectionChanged += (_, _) => OnPropertyChanged(nameof(AttachmentsSizeText));
-        ExistingAttachments.CollectionChanged += (_, _) => OnPropertyChanged(nameof(AttachmentsSizeText));
+        Attachments.CollectionChanged += (_, _) => OnAttachmentsChanged();
+        ExistingAttachments.CollectionChanged += (_, _) => OnAttachmentsChanged();
         _referenceId = original?.ItemId;
 
         var self = session.Account.Email;
@@ -172,6 +172,21 @@ public sealed partial class ComposeViewModel : ObservableObject
 
     public string AttachmentsSizeText => MailFormat.FileSize(Attachments.Sum(a => (long)a.Content.Length) + ExistingAttachments.Sum(a => a.Size));
 
+    public bool HasAnyAttachments => Attachments.Count + ExistingAttachments.Count > 0;
+
+    /// <summary>"Attachments", or "Attachments · total 1.2 MB" once there are some.</summary>
+    public string AttachmentsHeader => HasAnyAttachments ? $"{Strings.Compose_AttachmentsTotal} {AttachmentsSizeText}" : Strings.Compose_Attachments;
+
+    private void OnAttachmentsChanged()
+    {
+        OnPropertyChanged(nameof(AttachmentsSizeText));
+        OnPropertyChanged(nameof(HasAnyAttachments));
+        OnPropertyChanged(nameof(AttachmentsHeader));
+    }
+
+    /// <summary>The quoted original of a reply/forward is being loaded into the editor.</summary>
+    [ObservableProperty] private bool _isLoadingOriginal;
+
     /// <summary>Recipient suggestions from the global address list for the token being typed.</summary>
     public async Task<IReadOnlyList<MailboxAddress>> SuggestRecipientsAsync(string fieldText, CancellationToken ct)
     {
@@ -211,7 +226,7 @@ public sealed partial class ComposeViewModel : ObservableObject
 
         var message = await BuildMessageAsync(requireRecipients: false);
         if (message is null) return;
-        InfoMessage = Strings.Compose_LoadingOriginal;
+        IsLoadingOriginal = true;
         await RunAsync(async () =>
         {
             _draftId = await _session.Client.SaveDraftAsync(message);
@@ -235,7 +250,7 @@ public sealed partial class ComposeViewModel : ObservableObject
                 throw;
             }
         });
-        if (InfoMessage == Strings.Compose_LoadingOriginal) InfoMessage = null;
+        IsLoadingOriginal = false;
     }
 
     /// <summary>The window is closed without sending: a draft created only to show the original is removed.</summary>
@@ -307,7 +322,7 @@ public sealed partial class ComposeViewModel : ObservableObject
         _removedAttachmentIds.Clear();
         ExistingAttachments.Clear();
         foreach (var a in saved.Attachments.Where(a => !a.IsInline)) ExistingAttachments.Add(a);
-        OnPropertyChanged(nameof(AttachmentsSizeText));
+        OnAttachmentsChanged();
         if (!replaceBody) return;
         OnPropertyChanged(nameof(IsResponse));
         BodyReplaced?.Invoke(this, await ToEditorHtmlAsync(saved));

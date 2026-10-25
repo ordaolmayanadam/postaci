@@ -20,6 +20,7 @@ public sealed partial class MainWindow : Window
     public MainWindow()
     {
         InitializeComponent();
+        SystemBackdrop = new AppBackdrop();
         Title = AppInfo.Name;
         ExtendsContentIntoTitleBar = true;
         SetTitleBar(AppTitleBar);

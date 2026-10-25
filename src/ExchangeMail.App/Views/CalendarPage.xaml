@@ -31,13 +31,13 @@
                 </Button.KeyboardAccelerators>
             </Button>
             <!--
-                CalendarView has fixed-size day cells; at its natural 300 px with the standard font size it fits.
-                The Viewbox scales the whole month to the column width instead of letting it clip or wrap.
+                CalendarView lays out at a generous 360 px so weekday headers ("Mo", "We") never wrap, whatever the text
+                styles; the Viewbox then scales the whole month to the column width.
             -->
             <Viewbox Stretch="Uniform" StretchDirection="Both">
                 <CalendarView
                     x:Name="MonthView"
-                    Width="300"
+                    Width="360"
                     FontSize="14"
                     IsTodayHighlighted="True"
                     SelectedDatesChanged="OnSelectedDatesChanged"

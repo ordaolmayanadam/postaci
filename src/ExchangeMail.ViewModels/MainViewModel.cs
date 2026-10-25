@@ -403,6 +403,29 @@ public sealed partial class MainViewModel : ObservableObject
     [RelayCommand]
     private void NewMail() => RequestCompose(new ComposeViewModel(_session, ComposeMode.New, null));
 
+    /// <summary>Directory photos by address (null when there is none), fetched once per session.</summary>
+    private readonly Dictionary<string, Task<byte[]?>> _photos = new(StringComparer.OrdinalIgnoreCase);
+
+    /// <summary>The company directory photo of <paramref name="address"/>, or null (external sender, no photo, error).</summary>
+    public Task<byte[]?> GetPhotoAsync(string address)
+    {
+        if (string.IsNullOrWhiteSpace(address) || !address.Contains('@')) return Task.FromResult<byte[]?>(null);
+        if (!_photos.TryGetValue(address, out var photo)) _photos[address] = photo = FetchPhotoAsync(address);
+        return photo;
+
+        async Task<byte[]?> FetchPhotoAsync(string a)
+        {
+            try
+            {
+                return (await Client.GetDirectoryPersonAsync(a))?.Photo;
+            }
+            catch (EwsException)
+            {
+                return null;
+            }
+        }
+    }
+
     /// <summary>A new message to <paramref name="address"/> (from a person card).</summary>
     public void NewMailTo(MailboxAddress address) =>
         RequestCompose(new ComposeViewModel(_session, ComposeMode.New, null) { To = ComposeViewModel.FormatRecipient(address) + "; " });

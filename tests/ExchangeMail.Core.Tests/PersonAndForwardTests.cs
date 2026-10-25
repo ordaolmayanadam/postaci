@@ -148,7 +148,43 @@ public class PersonAndForwardTests
         Assert.Contains("src=\"data:image/png;base64,AQID\"", html);
         Assert.DoesNotContain("<style>", html); // the head is kept aside
         Assert.Equal(["teklif.pdf"], vm.ExistingAttachments.Select(a => a.Name));
+        Assert.True(vm.HasAnyAttachments);
+        Assert.StartsWith("Ekler · toplam", vm.AttachmentsHeader);
+        Assert.False(vm.IsLoadingOriginal);
         Assert.Null(vm.ErrorMessage);
+        Assert.Null(vm.InfoMessage); // no leftover banner
+    }
+
+    [Fact]
+    public async Task Sender_photos_are_fetched_once_per_address()
+    {
+        var server = new FakeEwsServer().On("ResolveNames", Person("Ayşe Kaya", "ayse@sirket.com", null, null, null, photo: "AQID"));
+        var vm = new MainViewModel(new MailSession(server.CreateClient(), new AccountSettings { Email = "ben@sirket.com" }));
+
+        Assert.Equal([1, 2, 3], await vm.GetPhotoAsync("ayse@sirket.com"));
+        Assert.Equal([1, 2, 3], await vm.GetPhotoAsync("AYSE@sirket.com"));
+        Assert.Null(await vm.GetPhotoAsync("Ayşe Kaya")); // not an address: no lookup
+        Assert.Single(server.Requests);
+    }
+
+    [Fact]
+    public void Folder_list_density_is_a_preference()
+    {
+        var session = new MailSession(new FakeEwsServer().CreateClient(), new AccountSettings { Email = "ben@sirket.com" });
+        var store = new SettingsStore(Path.Combine(Path.GetTempPath(), "postaci-tests-" + Guid.NewGuid().ToString("N")));
+        var settings = new SettingsViewModel(session, store, new NoCredentials());
+
+        Assert.Equal(0, settings.FolderDensityIndex); // compact by default
+        settings.FolderDensityIndex = 1;
+        Assert.False(session.Preferences.CompactFolderList);
+        Assert.False(store.LoadPreferences().CompactFolderList);
+    }
+
+    private sealed class NoCredentials : ICredentialStore
+    {
+        public string? GetPassword(string userName) => null;
+        public void SavePassword(string userName, string password) { }
+        public void RemovePassword(string userName) { }
     }
 
     [Fact]

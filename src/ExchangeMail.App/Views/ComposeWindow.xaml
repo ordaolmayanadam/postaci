@@ -7,13 +7,10 @@
     xmlns:controls="using:ExchangeMail.App.Controls"
     xmlns:models="using:ExchangeMail.Core.Models">
 
-    <Window.SystemBackdrop>
-        <MicaBackdrop />
-    </Window.SystemBackdrop>
-
     <Grid
         x:Name="Root"
         AllowDrop="True"
+        DragLeave="OnDragLeave"
         DragOver="OnDragOver"
         Drop="OnDrop">
         <Grid.RowDefinitions>
@@ -61,6 +58,11 @@
                 IsOpen="{x:Bind h:Ui.HasText(ViewModel.ErrorMessage), Mode=OneWay}"
                 Message="{x:Bind ViewModel.ErrorMessage, Mode=OneWay}"
                 CloseButtonClick="OnErrorClosed" />
+            <!--  Replies/forwards: the quoted original is on its way into the editor.  -->
+            <ProgressBar
+                IsIndeterminate="True"
+                ToolTipService.ToolTip="{h:L Key=Compose_LoadingOriginal}"
+                Visibility="{x:Bind ViewModel.IsLoadingOriginal, Mode=OneWay}" />
             <InfoBar
                 Severity="Success"
                 IsOpen="{x:Bind h:Ui.HasText(ViewModel.InfoMessage), Mode=OneWay}"
@@ -143,12 +145,36 @@
             </TextBlock>
         </Grid>
 
-        <StackPanel Grid.Row="5" Padding="16,0,16,12" Spacing="4">
-            <TextBlock Style="{StaticResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}">
-                <Run Text="{h:L Key=Compose_AttachmentsTotal}" />
-                <Run Text="{x:Bind ViewModel.AttachmentsSizeText, Mode=OneWay}" />
-                <Run Text="{h:L Key=Compose_DropHint}" />
-            </TextBlock>
+        <!--  Attachments have their own area; it lights up while files are dragged over the window.  -->
+        <Border
+            x:Name="AttachmentArea"
+            Grid.Row="5"
+            Margin="16,4,16,12"
+            Padding="12,8"
+            Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+            BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+            BorderThickness="1"
+            CornerRadius="8">
+        <StackPanel Spacing="6">
+            <Grid ColumnSpacing="12">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                    <FontIcon Glyph="&#xE723;" FontSize="14" />
+                    <TextBlock
+                        VerticalAlignment="Center"
+                        Text="{x:Bind ViewModel.AttachmentsHeader, Mode=OneWay}"
+                        Style="{StaticResource CaptionTextBlockStyle}" />
+                </StackPanel>
+                <TextBlock
+                    Grid.Column="1"
+                    VerticalAlignment="Center"
+                    Text="{h:L Key=Compose_DropHere}"
+                    Style="{StaticResource CaptionTextBlockStyle}"
+                    Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+            </Grid>
             <ListView
                 MaxHeight="80"
                 ItemsSource="{x:Bind ViewModel.ExistingAttachments}"
@@ -230,5 +256,6 @@
                 </ListView.ItemTemplate>
             </ListView>
         </StackPanel>
+        </Border>
     </Grid>
 </Window>

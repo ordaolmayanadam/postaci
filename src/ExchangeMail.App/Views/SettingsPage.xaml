@@ -289,6 +289,25 @@
                 </ComboBox>
             </Grid>
 
+            <Grid Style="{StaticResource CardStyle}">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <StackPanel VerticalAlignment="Center">
+                    <TextBlock Text="{h:L Key=Settings_FolderDensity}" />
+                    <TextBlock
+                        Text="{h:L Key=Settings_FolderDensityHint}"
+                        Style="{StaticResource CaptionTextBlockStyle}"
+                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                        TextWrapping="Wrap" />
+                </StackPanel>
+                <ComboBox Grid.Column="1" MinWidth="200" VerticalAlignment="Center" SelectedIndex="{x:Bind ViewModel.FolderDensityIndex, Mode=TwoWay}">
+                    <ComboBoxItem Content="{h:L Key=Settings_DensityCompact}" />
+                    <ComboBoxItem Content="{h:L Key=Settings_DensityComfortable}" />
+                </ComboBox>
+            </Grid>
+
             <Grid Style="{StaticResource CardStyle}" RowSpacing="10">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*" />

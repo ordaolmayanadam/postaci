@@ -56,6 +56,7 @@
 
             <!--  Right padding keeps the counts clear of the scroll bar.  -->
             <ListView
+                x:Name="FolderList"
                 Grid.Row="2"
                 Padding="0,0,12,0"
                 ItemsSource="{x:Bind ViewModel.Folders}"
@@ -64,8 +65,8 @@
                 <ListView.ItemTemplate>
                     <DataTemplate x:DataType="vm:FolderViewModel">
                         <!--  A drop target for messages dragged from the list; the background makes the whole row hit-testable.  -->
+                        <!--  Row height comes from the item container (compact or comfortable, see ApplyFolderDensity).  -->
                         <Grid
-                            Height="36"
                             Padding="{x:Bind h:Ui.Indent(Depth)}"
                             AllowDrop="True"
                             Background="Transparent"
@@ -375,6 +376,7 @@
                             <ColumnDefinition Width="*" />
                         </Grid.ColumnDefinitions>
                         <PersonPicture
+                            x:Name="SenderPicture"
                             Width="40"
                             Height="40"
                             VerticalAlignment="Top"
@@ -383,7 +385,13 @@
                         <StackPanel Grid.Column="1" Spacing="2">
                             <StackPanel Orientation="Horizontal" Spacing="8">
                                 <!--  Names are links (built in code-behind) that open a card with the person's place in the directory.  -->
-                                <TextBlock x:Name="FromLine" FontWeight="SemiBold" />
+                                <HyperlinkButton
+                                    x:Name="FromButton"
+                                    Padding="0"
+                                    Click="OnFromClicked"
+                                    Foreground="{ThemeResource TextFillColorPrimaryBrush}">
+                                    <TextBlock Text="{x:Bind ViewModel.Current.FromName, Mode=OneWay}" FontWeight="SemiBold" />
+                                </HyperlinkButton>
                                 <TextBlock Text="{x:Bind ViewModel.Current.FromAddress, Mode=OneWay}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" IsTextSelectionEnabled="True" />
                             </StackPanel>
                             <Grid ColumnSpacing="6">

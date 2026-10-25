@@ -133,6 +133,13 @@ public sealed partial class SettingsViewModel : ObservableObject
         set => Preferences.Theme = (AppTheme)Math.Clamp(value, 0, 2);
     }
 
+    /// <summary>0 = compact, 1 = comfortable folder list.</summary>
+    public int FolderDensityIndex
+    {
+        get => Preferences.CompactFolderList ? 0 : 1;
+        set => Preferences.CompactFolderList = value == 0;
+    }
+
     /// <summary>Index into <see cref="Languages"/>; unknown stored values count as "follow Windows".</summary>
     public int LanguageIndex
     {
@@ -257,6 +264,7 @@ public sealed partial class SettingsViewModel : ObservableObject
             case nameof(UserPreferences.ComposeFontFamily): OnPropertyChanged(nameof(ComposeFontChoice)); break;
             case nameof(UserPreferences.ComposeFontSize): OnPropertyChanged(nameof(ComposeFontSizeIndex)); break;
             case nameof(UserPreferences.Theme): OnPropertyChanged(nameof(ThemeIndex)); break;
+            case nameof(UserPreferences.CompactFolderList): OnPropertyChanged(nameof(FolderDensityIndex)); break;
             case nameof(UserPreferences.Language):
                 OnPropertyChanged(nameof(LanguageIndex));
                 OnPropertyChanged(nameof(IsLanguageRestartNeeded));

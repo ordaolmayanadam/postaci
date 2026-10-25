@@ -301,6 +301,9 @@
   <data name="Compose_AttachFailed" xml:space="preserve">
     <value>{0} eklenemedi: {1}</value>
   </data>
+  <data name="Compose_Attachments" xml:space="preserve">
+    <value>Ekler</value>
+  </data>
   <data name="Compose_AttachmentsTotal" xml:space="preserve">
     <value>Ekler · toplam</value>
   </data>
@@ -322,8 +325,8 @@
   <data name="Compose_DropCaption" xml:space="preserve">
     <value>Ek olarak ekle</value>
   </data>
-  <data name="Compose_DropHint" xml:space="preserve">
-    <value>· dosyaları pencereye sürükleyip bırakabilirsiniz</value>
+  <data name="Compose_DropHere" xml:space="preserve">
+    <value>Dosyaları buraya sürükleyip bırakabilirsiniz</value>
   </data>
   <data name="Compose_EditorFailed" xml:space="preserve">
     <value>Düzenleyici başlatılamadı (WebView2 Runtime kurulu mu?): {0}</value>
@@ -943,6 +946,12 @@
   <data name="Settings_DefaultFontHeader" xml:space="preserve">
     <value>Varsayılan yazı tipi</value>
   </data>
+  <data name="Settings_DensityComfortable" xml:space="preserve">
+    <value>Rahat</value>
+  </data>
+  <data name="Settings_DensityCompact" xml:space="preserve">
+    <value>Kompakt</value>
+  </data>
   <data name="Settings_Every15Minutes" xml:space="preserve">
     <value>15 dakikada bir</value>
   </data>
@@ -966,6 +975,12 @@
   </data>
   <data name="Settings_ExternalReply" xml:space="preserve">
     <value>Kuruluş dışına gönderilecek yanıt</value>
+  </data>
+  <data name="Settings_FolderDensity" xml:space="preserve">
+    <value>Klasör listesi</value>
+  </data>
+  <data name="Settings_FolderDensityHint" xml:space="preserve">
+    <value>Klasör satırları arasındaki boşluk.</value>
   </data>
   <data name="Settings_Font" xml:space="preserve">
     <value>Yazı tipi</value>

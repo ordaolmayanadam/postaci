@@ -203,7 +203,7 @@ for new mail. To quit completely, right-click the tray icon and choose **Exit**.
 | **Mail** | When to mark as read, new-mail check interval, always show remote images, signature, notifications |
 | **Automatic replies** | On/off, time range, internal and external reply text, external audience |
 | **Application** | Minimize to tray on close, start with Windows |
-| **Appearance** | Theme (Windows / light / dark), language (Windows / Türkçe / English, applied after restart) |
+| **Appearance** | Theme (Windows / light / dark; the dark theme uses soft slate-blue tones), language (Windows / Türkçe / English, applied after restart), folder list (compact / comfortable) |
 | **Fonts** | Interface font and size (applied after restart), reading font and zoom, compose font and size |
 | **Account** | Email, server, sign-in method; delete saved password, sign out |
 

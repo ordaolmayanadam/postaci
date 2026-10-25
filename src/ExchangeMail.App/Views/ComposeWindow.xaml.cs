@@ -22,6 +22,7 @@ public sealed partial class ComposeWindow : Window
     {
         ViewModel = viewModel;
         InitializeComponent();
+        SystemBackdrop = new AppBackdrop();
 
         Title = ViewModel.WindowTitle;
         ExtendsContentIntoTitleBar = true;
@@ -139,11 +140,22 @@ public sealed partial class ComposeWindow : Window
         {
             e.AcceptedOperation = DataPackageOperation.Copy;
             e.DragUIOverride.Caption = Strings.Compose_DropCaption;
+            HighlightAttachmentArea(true);
         }
+    }
+
+    private void OnDragLeave(object sender, DragEventArgs e) => HighlightAttachmentArea(false);
+
+    private void HighlightAttachmentArea(bool on)
+    {
+        var theme = Ui.ThemeOf(AttachmentArea);
+        AttachmentArea.BorderBrush = Ui.ThemeBrush(on ? "AccentFillColorDefaultBrush" : "CardStrokeColorDefaultBrush", theme);
+        AttachmentArea.BorderThickness = new Thickness(on ? 2 : 1);
     }
 
     private async void OnDrop(object sender, DragEventArgs e)
     {
+        HighlightAttachmentArea(false);
         if (!e.DataView.Contains(StandardDataFormats.StorageItems)) return;
         var items = await e.DataView.GetStorageItemsAsync();
         await AddFilesAsync(items.OfType<StorageFile>());

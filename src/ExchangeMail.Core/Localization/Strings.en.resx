@@ -301,6 +301,9 @@
   <data name="Compose_AttachFailed" xml:space="preserve">
     <value>Could not attach {0}: {1}</value>
   </data>
+  <data name="Compose_Attachments" xml:space="preserve">
+    <value>Attachments</value>
+  </data>
   <data name="Compose_AttachmentsTotal" xml:space="preserve">
     <value>Attachments · total</value>
   </data>
@@ -322,8 +325,8 @@
   <data name="Compose_DropCaption" xml:space="preserve">
     <value>Attach</value>
   </data>
-  <data name="Compose_DropHint" xml:space="preserve">
-    <value>· you can drag and drop files onto the window</value>
+  <data name="Compose_DropHere" xml:space="preserve">
+    <value>You can drag files here</value>
   </data>
   <data name="Compose_EditorFailed" xml:space="preserve">
     <value>Could not start the editor (is the WebView2 Runtime installed?): {0}</value>
@@ -943,6 +946,12 @@
   <data name="Settings_DefaultFontHeader" xml:space="preserve">
     <value>Default font</value>
   </data>
+  <data name="Settings_DensityComfortable" xml:space="preserve">
+    <value>Comfortable</value>
+  </data>
+  <data name="Settings_DensityCompact" xml:space="preserve">
+    <value>Compact</value>
+  </data>
   <data name="Settings_Every15Minutes" xml:space="preserve">
     <value>Every 15 minutes</value>
   </data>
@@ -966,6 +975,12 @@
   </data>
   <data name="Settings_ExternalReply" xml:space="preserve">
     <value>Reply to people outside my organization</value>
+  </data>
+  <data name="Settings_FolderDensity" xml:space="preserve">
+    <value>Folder list</value>
+  </data>
+  <data name="Settings_FolderDensityHint" xml:space="preserve">
+    <value>Spacing between folder rows.</value>
   </data>
   <data name="Settings_Font" xml:space="preserve">
     <value>Font</value>

@@ -23,6 +23,40 @@ public static class Ui
 
     public static Thickness Indent(int depth) => new(depth * 16, 0, 0, 0);
 
+    /// <summary>
+    /// A theme brush for <paramref name="theme"/>. Application.Resources alone answers for the Windows theme, which is
+    /// wrong when Postacı is set to the other one; code-built UI must resolve brushes for its own element's theme.
+    /// </summary>
+    public static Brush? ThemeBrush(string key, ElementTheme theme)
+    {
+        var dark = theme == ElementTheme.Dark
+                   || (theme == ElementTheme.Default && Application.Current.RequestedTheme == ApplicationTheme.Dark);
+        string[] names = dark ? ["Dark", "Default"] : ["Light"];
+        if (Find(Application.Current.Resources) is { } found) return found;
+        return Application.Current.Resources.TryGetValue(key, out var value) ? value as Brush : null;
+
+        Brush? Find(ResourceDictionary dictionary)
+        {
+            foreach (var name in names)
+            {
+                if (dictionary.ThemeDictionaries.TryGetValue(name, out var themed) && themed is ResourceDictionary d
+                    && d.TryGetValue(key, out var value) && value is Brush brush)
+                    return brush;
+            }
+            foreach (var merged in dictionary.MergedDictionaries)
+            {
+                if (Find(merged) is { } brush) return brush;
+            }
+            return null;
+        }
+    }
+
+    /// <summary>The theme an element is shown in (its own, else the window's).</summary>
+    public static ElementTheme ThemeOf(FrameworkElement element) =>
+        element.ActualTheme != ElementTheme.Default ? element.ActualTheme
+        : App.MainWindow?.CurrentTheme is { } t && t != ElementTheme.Default ? t
+        : Application.Current.RequestedTheme == ApplicationTheme.Dark ? ElementTheme.Dark : ElementTheme.Light;
+
     /// <summary>Applies a pane width saved from a <see cref="Controls.ColumnSplitter"/> (0 = keep the default).</summary>
     public static void RestoreWidth(ColumnDefinition column, int saved, double? fallback = null)
     {

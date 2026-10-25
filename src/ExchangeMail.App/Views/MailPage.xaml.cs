@@ -40,6 +40,38 @@ public sealed partial class MailPage : Page
         Ui.RestoreWidth(ListColumn, preferences.MailListPaneWidth);
         FolderSplitter.Resized += (_, width) => Ui.SaveWidth(w => preferences.MailFolderPaneWidth = w, width);
         ListSplitter.Resized += (_, width) => Ui.SaveWidth(w => preferences.MailListPaneWidth = w, width);
+
+        ApplyFolderDensity(preferences.CompactFolderList);
+        preferences.PropertyChanged += (_, e) =>
+        {
+            if (e.PropertyName == nameof(UserPreferences.CompactFolderList)) ApplyFolderDensity(preferences.CompactFolderList);
+        };
+    }
+
+    /// <summary>
+    /// Folder row height: compact (28 px) or the standard list spacing (40 px). The style covers rows created later;
+    /// rows already on screen are adjusted directly, so a change in Settings applies right away without reloading.
+    /// </summary>
+    private void ApplyFolderDensity(bool compact)
+    {
+        var minHeight = compact ? 28d : 40d;
+        var padding = compact ? new Thickness(12, 0, 8, 0) : new Thickness(14, 0, 12, 0);
+
+        var style = new Style(typeof(ListViewItem));
+        if (Application.Current.Resources.TryGetValue("DefaultListViewItemStyle", out var standard) && standard is Style basedOn)
+            style.BasedOn = basedOn;
+        style.Setters.Add(new Setter(MinHeightProperty, minHeight));
+        style.Setters.Add(new Setter(PaddingProperty, padding));
+        FolderList.ItemContainerStyle = style;
+
+        foreach (var item in FolderList.Items)
+        {
+            if (FolderList.ContainerFromItem(item) is ListViewItem row)
+            {
+                row.MinHeight = minHeight;
+                row.Padding = padding;
+            }
+        }
     }
 
     public MainViewModel ViewModel { get; private set; } = null!;
@@ -83,13 +115,38 @@ public sealed partial class MailPage : Page
 
     private void ShowAddresses(MailDetail? detail)
     {
-        FillAddresses(FromLine, detail?.From is { } from ? [from] : [], primary: true);
-        FillAddresses(ToLine, detail?.To ?? [], primary: false);
-        FillAddresses(CcLine, detail?.Cc ?? [], primary: false);
+        FillAddresses(ToLine, detail?.To ?? []);
+        FillAddresses(CcLine, detail?.Cc ?? []);
+        _ = ShowSenderPhotoAsync(detail);
     }
 
-    /// <summary>One link per address, separated like Outlook's "; ".</summary>
-    private void FillAddresses(TextBlock line, IReadOnlyList<MailboxAddress> people, bool primary)
+    /// <summary>The sender's directory photo instead of initials, when the directory has one.</summary>
+    private async Task ShowSenderPhotoAsync(MailDetail? detail)
+    {
+        SenderPicture.ProfilePicture = null;
+        if (detail?.From?.Address is not { } address) return;
+        var photo = await ViewModel.GetPhotoAsync(address);
+        if (photo is null || ViewModel.Current?.Detail != detail) return; // another message was opened meanwhile
+        try
+        {
+            using var stream = new MemoryStream(photo);
+            var image = new Microsoft.UI.Xaml.Media.Imaging.BitmapImage();
+            await image.SetSourceAsync(stream.AsRandomAccessStream());
+            if (ViewModel.Current?.Detail == detail) SenderPicture.ProfilePicture = image;
+        }
+        catch (Exception)
+        {
+            // An unreadable photo keeps the initials.
+        }
+    }
+
+    private void OnFromClicked(object sender, RoutedEventArgs e)
+    {
+        if (ViewModel.Current?.Detail.From is { } from) ShowPersonCard(from, FromButton);
+    }
+
+    /// <summary>One link per address, separated like Outlook's "; ". Link colors come from the theme.</summary>
+    private void FillAddresses(TextBlock line, IReadOnlyList<MailboxAddress> people)
     {
         line.Inlines.Clear();
         for (var i = 0; i < people.Count; i++)
@@ -97,7 +154,6 @@ public sealed partial class MailPage : Page
             if (i > 0) line.Inlines.Add(new Run { Text = "; " });
             var person = people[i];
             var link = new Hyperlink { UnderlineStyle = UnderlineStyle.None };
-            if (primary && Application.Current.Resources.TryGetValue("TextFillColorPrimaryBrush", out var brush)) link.Foreground = (Brush)brush;
             link.Inlines.Add(new Run { Text = person.Display });
             link.Click += (_, _) => ShowPersonCard(person, line);
             line.Inlines.Add(link);
@@ -112,14 +168,19 @@ public sealed partial class MailPage : Page
     private void ShowPersonCard(MailboxAddress person, FrameworkElement anchor)
     {
         var card = new PersonCardViewModel(ViewModel.Client);
+        // Popups don't inherit the window's theme; give the flyout the page's own.
+        var theme = Ui.ThemeOf(this);
+        var presenterStyle = new Style(typeof(FlyoutPresenter));
+        presenterStyle.Setters.Add(new Setter(RequestedThemeProperty, theme));
         Flyout? flyout = null;
         flyout = new Flyout
         {
-            Content = new PersonCard(card, address =>
+            Content = new PersonCard(card, theme, address =>
             {
                 flyout?.Hide();
                 ViewModel.NewMailTo(address);
             }),
+            FlyoutPresenterStyle = presenterStyle,
             Placement = FlyoutPlacementMode.BottomEdgeAlignedLeft,
         };
         flyout.ShowAt(anchor);
@@ -193,7 +254,7 @@ public sealed partial class MailPage : Page
         {
             e.AcceptedOperation = DataPackageOperation.Move;
             e.DragUIOverride.Caption = Loc.Format(Strings.Mail_MoveToFolder, folder.DisplayName);
-            row.Background = (Brush)Application.Current.Resources["SubtleFillColorSecondaryBrush"];
+            row.Background = Ui.ThemeBrush("SubtleFillColorSecondaryBrush", Ui.ThemeOf(row));
         }
         else
         {

@@ -51,6 +51,9 @@ public sealed partial class UserPreferences : ObservableObject
     [ObservableProperty] private int _calendarSidebarWidth;
     [ObservableProperty] private int _calendarDetailPaneWidth;
 
+    /// <summary>Folder rows with less spacing.</summary>
+    [ObservableProperty] private bool _compactFolderList = true;
+
     /// <summary>The message list groups mail by conversation.</summary>
     [ObservableProperty] private bool _conversationView;
 
