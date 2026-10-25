@@ -28,7 +28,12 @@
     <GenerateAppInstallerFile>false</GenerateAppInstallerFile>
     <GenerateTestArtifacts>false</GenerateTestArtifacts>
     <AppxSymbolPackageEnabled>true</AppxSymbolPackageEnabled>
-    <DefaultLanguage>tr-TR</DefaultLanguage>
+    <!--
+      Default language of the package resources (MRT), not of the interface (that is the resx localization, chosen in
+      Settings). en-US because the toolkit controls carry their resources only in en-US: a default language without
+      resources (PRI257) leaves lookups with nothing to fall back to.
+    -->
+    <DefaultLanguage>en-US</DefaultLanguage>
   </PropertyGroup>
 
   <ItemGroup>
