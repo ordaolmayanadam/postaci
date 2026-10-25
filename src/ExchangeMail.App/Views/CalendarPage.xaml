@@ -17,7 +17,8 @@
         </Grid.ColumnDefinitions>
 
         <!--  Month picker  -->
-        <StackPanel Padding="8,4,8,8" Spacing="12">
+        <!--  The top padding puts New event level with the agenda's title next to it.  -->
+        <StackPanel Padding="8,12,8,8" Spacing="12">
             <!--  Like New mail: sized to its content, at the top left of the sidebar.  -->
             <Button
                 Margin="4,0"

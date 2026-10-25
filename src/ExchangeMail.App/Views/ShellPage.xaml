@@ -36,9 +36,10 @@
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="*" />
             </Grid.RowDefinitions>
+            <!--  Pages start 8 px below the title bar instead of touching it; the banner, when shown, sits in that gap.  -->
             <InfoBar
                 x:Name="AutoReplyBanner"
-                Margin="8,0,8,8"
+                Margin="8,8,8,0"
                 IsClosable="False"
                 IsOpen="{x:Bind AutoReply.IsActive, Mode=OneWay}"
                 Message="{x:Bind AutoReply.BannerText, Mode=OneWay}"
@@ -48,7 +49,7 @@
                     <Button Content="{h:L Key=AutoReply_TurnOff}" Command="{x:Bind AutoReply.TurnOffCommand}" />
                 </InfoBar.ActionButton>
             </InfoBar>
-            <Frame x:Name="ContentFrame" Grid.Row="1" />
+            <Frame x:Name="ContentFrame" Grid.Row="1" Margin="0,8,0,0" />
         </Grid>
     </NavigationView>
 </Page>

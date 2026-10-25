@@ -15,8 +15,8 @@
             <ColumnDefinition Width="*" />
         </Grid.ColumnDefinitions>
 
-        <!--  Folders  -->
-        <Grid Padding="8,0,8,8" RowSpacing="4">
+        <!--  Folders. The top padding puts New mail level with the search box of the list next to it.  -->
+        <Grid Padding="8,8,8,8" RowSpacing="4">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
@@ -444,8 +444,10 @@
                         </StackPanel>
                     </Grid>
 
+                    <!--  No bottom padding (the default style reserves 10 px below the items).  -->
                     <GridView
                         MaxHeight="140"
+                        Padding="0"
                         IsItemClickEnabled="True"
                         ItemClick="OnAttachmentClick"
                         ItemsSource="{x:Bind ViewModel.Current.Attachments, Mode=OneWay}"
@@ -456,11 +458,11 @@
                             <DataTemplate x:DataType="vm:AttachmentViewModel">
                                 <Grid
                                     Width="220"
-                                    Padding="12,8"
+                                    Padding="8,4"
                                     Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
                                     BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
                                     BorderThickness="1"
-                                    ColumnSpacing="12"
+                                    ColumnSpacing="8"
                                     CornerRadius="{StaticResource ControlCornerRadius}">
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="Auto" />

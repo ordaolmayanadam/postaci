@@ -1,342 +1,282 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+    Laid out like the Windows settings pages: SettingsCard / SettingsExpander from the Windows Community Toolkit,
+    cards 4 px apart, groups introduced by a section header.
+-->
 <Page
     x:Class="ExchangeMail.App.Views.SettingsPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:controls="using:ExchangeMail.App.Controls"
     xmlns:h="using:ExchangeMail.App.Helpers"
+    xmlns:toolkit="using:CommunityToolkit.WinUI.Controls"
     NavigationCacheMode="Required">
 
     <Page.Resources>
-        <Style x:Key="CardStyle" TargetType="Grid">
-            <Setter Property="Padding" Value="16" />
-            <Setter Property="ColumnSpacing" Value="24" />
-            <Setter Property="Background" Value="{ThemeResource CardBackgroundFillColorDefaultBrush}" />
-            <Setter Property="BorderBrush" Value="{ThemeResource CardStrokeColorDefaultBrush}" />
-            <Setter Property="BorderThickness" Value="1" />
-            <Setter Property="CornerRadius" Value="{StaticResource ControlCornerRadius}" />
-        </Style>
-        <!--  Spacing as in the Windows settings pages: cards 4 px apart, groups set off by their header.  -->
-        <Style x:Key="SectionStyle" TargetType="TextBlock" BasedOn="{StaticResource BodyStrongTextBlockStyle}">
-            <Setter Property="Margin" Value="1,28,0,4" />
+        <x:Double x:Key="SettingsCardSpacing">4</x:Double>
+        <Style x:Key="SettingsSectionHeaderTextBlockStyle" TargetType="TextBlock" BasedOn="{StaticResource BodyStrongTextBlockStyle}">
+            <Setter Property="Margin" Value="1,30,0,6" />
         </Style>
     </Page.Resources>
 
-    <ScrollViewer VerticalScrollBarVisibility="Auto">
-        <StackPanel MaxWidth="820" Padding="32,8,32,32" HorizontalAlignment="Stretch" Spacing="4">
-            <TextBlock Text="{h:L Key=Nav_Settings}" Style="{StaticResource TitleTextBlockStyle}" />
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
 
-            <InfoBar
-                x:Name="ErrorInfo"
-                Severity="Error"
-                IsOpen="{x:Bind h:Ui.HasText(ViewModel.ErrorMessage), Mode=OneWay}"
-                Message="{x:Bind ViewModel.ErrorMessage, Mode=OneWay}"
-                IsClosable="False"
-                Visibility="{x:Bind ErrorInfo.IsOpen, Mode=OneWay}" />
-            <InfoBar
-                x:Name="SavedInfo"
-                Severity="Success"
-                IsOpen="{x:Bind h:Ui.HasText(ViewModel.InfoMessage), Mode=OneWay}"
-                Message="{x:Bind ViewModel.InfoMessage, Mode=OneWay}"
-                IsClosable="False"
-                Visibility="{x:Bind SavedInfo.IsOpen, Mode=OneWay}" />
+        <!--  Same width and side padding as the cards below, so the title lines up with them.  -->
+        <TextBlock
+            MaxWidth="1000"
+            Padding="36,16,36,0"
+            HorizontalAlignment="Stretch"
+            Text="{h:L Key=Nav_Settings}"
+            Style="{StaticResource TitleTextBlockStyle}" />
 
-            <!--  Mail  -->
-            <TextBlock Text="{h:L Key=Nav_Mail}" Style="{StaticResource SectionStyle}" />
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+            <StackPanel
+                MaxWidth="1000"
+                Padding="36,0,36,36"
+                HorizontalAlignment="Stretch"
+                Spacing="{StaticResource SettingsCardSpacing}">
 
-            <Grid Style="{StaticResource CardStyle}">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="Auto" />
-                </Grid.ColumnDefinitions>
-                <StackPanel VerticalAlignment="Center">
-                    <TextBlock Text="{h:L Key=Settings_MarkRead}" />
-                    <TextBlock
-                        Text="{h:L Key=Settings_MarkReadHint}"
-                        Style="{StaticResource CaptionTextBlockStyle}"
-                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                        TextWrapping="Wrap" />
-                </StackPanel>
-                <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="12">
-                    <ComboBox MinWidth="200" VerticalAlignment="Center" SelectedIndex="{x:Bind ViewModel.MarkAsReadIndex, Mode=TwoWay}">
-                        <ComboBoxItem Content="{h:L Key=Settings_MarkReadWhenSelected}" />
-                        <ComboBoxItem Content="{h:L Key=Settings_MarkReadAfterDelay}" />
-                        <ComboBoxItem Content="{h:L Key=Settings_MarkReadNever}" />
+                <InfoBar
+                    x:Name="ErrorInfo"
+                    Margin="0,12,0,0"
+                    Severity="Error"
+                    IsClosable="False"
+                    IsOpen="{x:Bind h:Ui.HasText(ViewModel.ErrorMessage), Mode=OneWay}"
+                    Message="{x:Bind ViewModel.ErrorMessage, Mode=OneWay}"
+                    Visibility="{x:Bind ErrorInfo.IsOpen, Mode=OneWay}" />
+                <InfoBar
+                    x:Name="SavedInfo"
+                    Margin="0,12,0,0"
+                    Severity="Success"
+                    IsClosable="False"
+                    IsOpen="{x:Bind h:Ui.HasText(ViewModel.InfoMessage), Mode=OneWay}"
+                    Message="{x:Bind ViewModel.InfoMessage, Mode=OneWay}"
+                    Visibility="{x:Bind SavedInfo.IsOpen, Mode=OneWay}" />
+
+                <!--  Mail  -->
+                <TextBlock Text="{h:L Key=Nav_Mail}" Style="{StaticResource SettingsSectionHeaderTextBlockStyle}" />
+
+                <toolkit:SettingsCard Header="{h:L Key=Settings_MarkRead}" Description="{h:L Key=Settings_MarkReadHint}">
+                    <toolkit:SettingsCard.HeaderIcon>
+                        <FontIcon Glyph="&#xE8C3;" />
+                    </toolkit:SettingsCard.HeaderIcon>
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <ComboBox MinWidth="200" SelectedIndex="{x:Bind ViewModel.MarkAsReadIndex, Mode=TwoWay}">
+                            <ComboBoxItem Content="{h:L Key=Settings_MarkReadWhenSelected}" />
+                            <ComboBoxItem Content="{h:L Key=Settings_MarkReadAfterDelay}" />
+                            <ComboBoxItem Content="{h:L Key=Settings_MarkReadNever}" />
+                        </ComboBox>
+                        <!--  Compact spin buttons keep the box as tall as the ComboBox next to it.  -->
+                        <NumberBox
+                            Width="100"
+                            IsEnabled="{x:Bind ViewModel.IsDelayEnabled, Mode=OneWay}"
+                            Maximum="120"
+                            Minimum="1"
+                            PlaceholderText="{h:L Key=Settings_SecondsShort}"
+                            SpinButtonPlacementMode="Compact"
+                            ToolTipService.ToolTip="{h:L Key=Settings_Seconds}"
+                            Value="{x:Bind ViewModel.MarkAsReadDelaySeconds, Mode=TwoWay}" />
+                    </StackPanel>
+                </toolkit:SettingsCard>
+
+                <toolkit:SettingsCard Header="{h:L Key=Settings_RefreshInterval}" Description="{h:L Key=Settings_RefreshIntervalHint}">
+                    <toolkit:SettingsCard.HeaderIcon>
+                        <FontIcon Glyph="&#xE72C;" />
+                    </toolkit:SettingsCard.HeaderIcon>
+                    <ComboBox MinWidth="200" SelectedIndex="{x:Bind ViewModel.RefreshIndex, Mode=TwoWay}">
+                        <ComboBoxItem Content="{h:L Key=Settings_Every30Seconds}" />
+                        <ComboBoxItem Content="{h:L Key=Settings_EveryMinute}" />
+                        <ComboBoxItem Content="{h:L Key=Settings_Every2Minutes}" />
+                        <ComboBoxItem Content="{h:L Key=Settings_Every5Minutes}" />
+                        <ComboBoxItem Content="{h:L Key=Settings_Every15Minutes}" />
                     </ComboBox>
-                    <!--  Compact spin buttons keep the box as tall as the ComboBox next to it.  -->
-                    <NumberBox
-                        Width="100"
-                        VerticalAlignment="Center"
-                        IsEnabled="{x:Bind ViewModel.IsDelayEnabled, Mode=OneWay}"
-                        Maximum="120"
-                        Minimum="1"
-                        PlaceholderText="{h:L Key=Settings_SecondsShort}"
-                        SpinButtonPlacementMode="Compact"
-                        ToolTipService.ToolTip="{h:L Key=Settings_Seconds}"
-                        Value="{x:Bind ViewModel.MarkAsReadDelaySeconds, Mode=TwoWay}" />
-                </StackPanel>
-            </Grid>
+                </toolkit:SettingsCard>
 
-            <Grid Style="{StaticResource CardStyle}">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="Auto" />
-                </Grid.ColumnDefinitions>
-                <StackPanel VerticalAlignment="Center">
-                    <TextBlock Text="{h:L Key=Settings_RefreshInterval}" />
-                    <TextBlock
-                        Text="{h:L Key=Settings_RefreshIntervalHint}"
-                        Style="{StaticResource CaptionTextBlockStyle}"
-                        Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
-                </StackPanel>
-                <ComboBox Grid.Column="1" MinWidth="200" SelectedIndex="{x:Bind ViewModel.RefreshIndex, Mode=TwoWay}">
-                    <ComboBoxItem Content="{h:L Key=Settings_Every30Seconds}" />
-                    <ComboBoxItem Content="{h:L Key=Settings_EveryMinute}" />
-                    <ComboBoxItem Content="{h:L Key=Settings_Every2Minutes}" />
-                    <ComboBoxItem Content="{h:L Key=Settings_Every5Minutes}" />
-                    <ComboBoxItem Content="{h:L Key=Settings_Every15Minutes}" />
-                </ComboBox>
-            </Grid>
-
-            <Grid Style="{StaticResource CardStyle}">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="Auto" />
-                </Grid.ColumnDefinitions>
-                <StackPanel VerticalAlignment="Center">
-                    <TextBlock Text="{h:L Key=Settings_RemoteImages}" />
-                    <TextBlock
-                        Text="{h:L Key=Settings_RemoteImagesHint}"
-                        Style="{StaticResource CaptionTextBlockStyle}"
-                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                        TextWrapping="Wrap" />
-                </StackPanel>
-                <ToggleSwitch
-                    Grid.Column="1"
-                    MinWidth="0"
-                    IsOn="{x:Bind ViewModel.AlwaysShowRemoteImages, Mode=TwoWay}"
-                    OffContent="{h:L Key=Common_Off}"
-                    OnContent="{h:L Key=Common_On}" />
-            </Grid>
-
-            <Grid Style="{StaticResource CardStyle}" RowSpacing="8">
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="Auto" />
-                </Grid.RowDefinitions>
-                <StackPanel>
-                    <TextBlock Text="{h:L Key=Settings_Signature}" />
-                    <TextBlock
-                        Text="{h:L Key=Settings_SignatureHint}"
-                        Style="{StaticResource CaptionTextBlockStyle}"
-                        Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
-                </StackPanel>
-                <controls:HtmlEditor x:Name="SignatureEditor" Grid.Row="1" Height="200" />
-                <Button
-                    Grid.Row="2"
-                    Content="{h:L Key=Settings_SaveSignature}"
-                    Click="OnSaveSignature" />
-            </Grid>
-
-            <Grid Style="{StaticResource CardStyle}">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="Auto" />
-                </Grid.ColumnDefinitions>
-                <StackPanel VerticalAlignment="Center">
-                    <TextBlock Text="{h:L Key=Settings_Notifications}" />
-                    <TextBlock
-                        Text="{h:L Key=Settings_NotificationsHint}"
-                        Style="{StaticResource CaptionTextBlockStyle}"
-                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                        TextWrapping="Wrap" />
-                </StackPanel>
-                <ToggleSwitch
-                    Grid.Column="1"
-                    MinWidth="0"
-                    IsOn="{x:Bind ViewModel.ShowNotifications, Mode=TwoWay}"
-                    OffContent="{h:L Key=Common_Off}"
-                    OnContent="{h:L Key=Common_On}" />
-            </Grid>
-
-            <!--  Automatic replies  -->
-            <TextBlock Text="{h:L Key=Settings_AutoReplies}" Style="{StaticResource SectionStyle}" />
-            <!--  A stack, not grid rows: hidden parts (schedule, external reply, closed messages) leave no gap.  -->
-            <Grid Style="{StaticResource CardStyle}">
-                <StackPanel Spacing="12">
+                <toolkit:SettingsCard Header="{h:L Key=Settings_RemoteImages}" Description="{h:L Key=Settings_RemoteImagesHint}">
+                    <toolkit:SettingsCard.HeaderIcon>
+                        <FontIcon Glyph="&#xE91B;" />
+                    </toolkit:SettingsCard.HeaderIcon>
                     <ToggleSwitch
-                        Header="{h:L Key=Settings_SendAutoReplies}"
+                        IsOn="{x:Bind ViewModel.AlwaysShowRemoteImages, Mode=TwoWay}"
+                        OffContent="{h:L Key=Common_Off}"
+                        OnContent="{h:L Key=Common_On}" />
+                </toolkit:SettingsCard>
+
+                <toolkit:SettingsCard Header="{h:L Key=Settings_Notifications}" Description="{h:L Key=Settings_NotificationsHint}">
+                    <toolkit:SettingsCard.HeaderIcon>
+                        <FontIcon Glyph="&#xEA8F;" />
+                    </toolkit:SettingsCard.HeaderIcon>
+                    <ToggleSwitch
+                        IsOn="{x:Bind ViewModel.ShowNotifications, Mode=TwoWay}"
+                        OffContent="{h:L Key=Common_Off}"
+                        OnContent="{h:L Key=Common_On}" />
+                </toolkit:SettingsCard>
+
+                <!--  A card, not an expander: the editor is a WebView, which only loads once it is on screen.  -->
+                <toolkit:SettingsCard
+                    HorizontalContentAlignment="Stretch"
+                    ContentAlignment="Vertical"
+                    Header="{h:L Key=Settings_Signature}"
+                    Description="{h:L Key=Settings_SignatureHint}">
+                    <toolkit:SettingsCard.HeaderIcon>
+                        <FontIcon Glyph="&#xE70F;" />
+                    </toolkit:SettingsCard.HeaderIcon>
+                    <StackPanel Spacing="8">
+                        <controls:HtmlEditor x:Name="SignatureEditor" Height="200" />
+                        <Button Content="{h:L Key=Settings_SaveSignature}" Click="OnSaveSignature" />
+                    </StackPanel>
+                </toolkit:SettingsCard>
+
+                <!--  Automatic replies: turning them on opens the details.  -->
+                <TextBlock Text="{h:L Key=Settings_AutoReplies}" Style="{StaticResource SettingsSectionHeaderTextBlockStyle}" />
+
+                <toolkit:SettingsExpander Header="{h:L Key=Settings_SendAutoReplies}" IsExpanded="{x:Bind ViewModel.AutoReply.IsEnabled, Mode=OneWay}">
+                    <toolkit:SettingsExpander.HeaderIcon>
+                        <FontIcon Glyph="&#xE8CA;" />
+                    </toolkit:SettingsExpander.HeaderIcon>
+                    <ToggleSwitch
                         IsOn="{x:Bind ViewModel.AutoReply.IsEnabled, Mode=TwoWay}"
                         OffContent="{h:L Key=Common_Off}"
                         OnContent="{h:L Key=Common_On}" />
-                    <StackPanel Spacing="8" Visibility="{x:Bind ViewModel.AutoReply.IsEnabled, Mode=OneWay}">
-                        <CheckBox Content="{h:L Key=Settings_OnlyDuringRange}" IsChecked="{x:Bind ViewModel.AutoReply.IsScheduled, Mode=TwoWay}" />
-                        <StackPanel
-                            Orientation="Horizontal"
-                            Spacing="8"
-                            Visibility="{x:Bind ViewModel.AutoReply.CanEditSchedule, Mode=OneWay}">
-                            <CalendarDatePicker Header="{h:L Key=Common_Start}" Date="{x:Bind ViewModel.AutoReply.StartDate, Mode=TwoWay}" />
-                            <TimePicker
-                                Header="{h:L Key=Common_Time}"
-                                ClockIdentifier="24HourClock"
-                                MinuteIncrement="30"
-                                Time="{x:Bind ViewModel.AutoReply.StartTime, Mode=TwoWay}" />
-                            <CalendarDatePicker Margin="16,0,0,0" Header="{h:L Key=Common_End}" Date="{x:Bind ViewModel.AutoReply.EndDate, Mode=TwoWay}" />
-                            <TimePicker
-                                Header="{h:L Key=Common_Time}"
-                                ClockIdentifier="24HourClock"
-                                MinuteIncrement="30"
-                                Time="{x:Bind ViewModel.AutoReply.EndTime, Mode=TwoWay}" />
-                        </StackPanel>
-                    </StackPanel>
-                    <TextBox
-                        MinHeight="90"
-                        AcceptsReturn="True"
-                        Header="{h:L Key=Settings_InternalReply}"
-                        PlaceholderText="{h:L Key=Settings_InternalReplyPlaceholder}"
-                        Text="{x:Bind ViewModel.AutoReply.InternalMessage, Mode=TwoWay}"
-                        TextWrapping="Wrap" />
-                    <CheckBox Content="{h:L Key=Settings_ReplyExternal}" IsChecked="{x:Bind ViewModel.AutoReply.ReplyToExternal, Mode=TwoWay}" />
-                    <StackPanel Spacing="8" Visibility="{x:Bind ViewModel.AutoReply.CanEditExternal, Mode=OneWay}">
-                        <RadioButtons MaxColumns="2" SelectedIndex="{x:Bind ViewModel.AutoReply.ExternalAudienceIndex, Mode=TwoWay}">
-                            <RadioButton Content="{h:L Key=Settings_ExternalContactsOnly}" />
-                            <RadioButton Content="{h:L Key=Settings_ExternalEveryone}" />
-                        </RadioButtons>
-                        <TextBox
-                            MinHeight="90"
-                            AcceptsReturn="True"
-                            Header="{h:L Key=Settings_ExternalReply}"
-                            Text="{x:Bind ViewModel.AutoReply.ExternalMessage, Mode=TwoWay}"
-                            TextWrapping="Wrap" />
-                    </StackPanel>
-                    <StackPanel Orientation="Horizontal" Spacing="12">
-                        <Button Content="{h:L Key=Settings_SaveAutoReplies}" Command="{x:Bind ViewModel.AutoReply.SaveCommand}" Style="{StaticResource AccentButtonStyle}" />
-                        <ProgressRing Width="20" Height="20" IsActive="{x:Bind ViewModel.AutoReply.IsBusy, Mode=OneWay}" />
-                    </StackPanel>
-                    <InfoBar
-                        x:Name="AutoReplyErrorInfo"
-                        Severity="Error"
-                        IsClosable="False"
-                        IsOpen="{x:Bind h:Ui.HasText(ViewModel.AutoReply.ErrorMessage), Mode=OneWay}"
-                        Message="{x:Bind ViewModel.AutoReply.ErrorMessage, Mode=OneWay}"
-                        Visibility="{x:Bind AutoReplyErrorInfo.IsOpen, Mode=OneWay}" />
-                    <InfoBar
-                        x:Name="AutoReplySavedInfo"
-                        Severity="Success"
-                        IsClosable="False"
-                        IsOpen="{x:Bind h:Ui.HasText(ViewModel.AutoReply.InfoMessage), Mode=OneWay}"
-                        Message="{x:Bind ViewModel.AutoReply.InfoMessage, Mode=OneWay}"
-                        Visibility="{x:Bind AutoReplySavedInfo.IsOpen, Mode=OneWay}" />
-                </StackPanel>
-            </Grid>
+                    <toolkit:SettingsExpander.Items>
+                        <toolkit:SettingsCard HorizontalContentAlignment="Stretch" ContentAlignment="Vertical">
+                            <StackPanel Spacing="8">
+                                <CheckBox Content="{h:L Key=Settings_OnlyDuringRange}" IsChecked="{x:Bind ViewModel.AutoReply.IsScheduled, Mode=TwoWay}" />
+                                <StackPanel
+                                    Orientation="Horizontal"
+                                    Spacing="8"
+                                    Visibility="{x:Bind ViewModel.AutoReply.CanEditSchedule, Mode=OneWay}">
+                                    <CalendarDatePicker Header="{h:L Key=Common_Start}" Date="{x:Bind ViewModel.AutoReply.StartDate, Mode=TwoWay}" />
+                                    <TimePicker
+                                        Header="{h:L Key=Common_Time}"
+                                        ClockIdentifier="24HourClock"
+                                        MinuteIncrement="30"
+                                        Time="{x:Bind ViewModel.AutoReply.StartTime, Mode=TwoWay}" />
+                                    <CalendarDatePicker Margin="16,0,0,0" Header="{h:L Key=Common_End}" Date="{x:Bind ViewModel.AutoReply.EndDate, Mode=TwoWay}" />
+                                    <TimePicker
+                                        Header="{h:L Key=Common_Time}"
+                                        ClockIdentifier="24HourClock"
+                                        MinuteIncrement="30"
+                                        Time="{x:Bind ViewModel.AutoReply.EndTime, Mode=TwoWay}" />
+                                </StackPanel>
+                            </StackPanel>
+                        </toolkit:SettingsCard>
+                        <toolkit:SettingsCard HorizontalContentAlignment="Stretch" ContentAlignment="Vertical">
+                            <TextBox
+                                MinHeight="90"
+                                AcceptsReturn="True"
+                                Header="{h:L Key=Settings_InternalReply}"
+                                PlaceholderText="{h:L Key=Settings_InternalReplyPlaceholder}"
+                                Text="{x:Bind ViewModel.AutoReply.InternalMessage, Mode=TwoWay}"
+                                TextWrapping="Wrap" />
+                        </toolkit:SettingsCard>
+                        <toolkit:SettingsCard HorizontalContentAlignment="Stretch" ContentAlignment="Vertical">
+                            <StackPanel Spacing="8">
+                                <CheckBox Content="{h:L Key=Settings_ReplyExternal}" IsChecked="{x:Bind ViewModel.AutoReply.ReplyToExternal, Mode=TwoWay}" />
+                                <StackPanel Spacing="8" Visibility="{x:Bind ViewModel.AutoReply.CanEditExternal, Mode=OneWay}">
+                                    <RadioButtons MaxColumns="2" SelectedIndex="{x:Bind ViewModel.AutoReply.ExternalAudienceIndex, Mode=TwoWay}">
+                                        <RadioButton Content="{h:L Key=Settings_ExternalContactsOnly}" />
+                                        <RadioButton Content="{h:L Key=Settings_ExternalEveryone}" />
+                                    </RadioButtons>
+                                    <TextBox
+                                        MinHeight="90"
+                                        AcceptsReturn="True"
+                                        Header="{h:L Key=Settings_ExternalReply}"
+                                        Text="{x:Bind ViewModel.AutoReply.ExternalMessage, Mode=TwoWay}"
+                                        TextWrapping="Wrap" />
+                                </StackPanel>
+                            </StackPanel>
+                        </toolkit:SettingsCard>
+                        <toolkit:SettingsCard ContentAlignment="Left">
+                            <StackPanel Orientation="Horizontal" Spacing="12">
+                                <Button Content="{h:L Key=Settings_SaveAutoReplies}" Command="{x:Bind ViewModel.AutoReply.SaveCommand}" Style="{StaticResource AccentButtonStyle}" />
+                                <ProgressRing Width="20" Height="20" IsActive="{x:Bind ViewModel.AutoReply.IsBusy, Mode=OneWay}" />
+                            </StackPanel>
+                        </toolkit:SettingsCard>
+                    </toolkit:SettingsExpander.Items>
+                </toolkit:SettingsExpander>
+                <InfoBar
+                    x:Name="AutoReplyErrorInfo"
+                    Severity="Error"
+                    IsClosable="False"
+                    IsOpen="{x:Bind h:Ui.HasText(ViewModel.AutoReply.ErrorMessage), Mode=OneWay}"
+                    Message="{x:Bind ViewModel.AutoReply.ErrorMessage, Mode=OneWay}"
+                    Visibility="{x:Bind AutoReplyErrorInfo.IsOpen, Mode=OneWay}" />
+                <InfoBar
+                    x:Name="AutoReplySavedInfo"
+                    Severity="Success"
+                    IsClosable="False"
+                    IsOpen="{x:Bind h:Ui.HasText(ViewModel.AutoReply.InfoMessage), Mode=OneWay}"
+                    Message="{x:Bind ViewModel.AutoReply.InfoMessage, Mode=OneWay}"
+                    Visibility="{x:Bind AutoReplySavedInfo.IsOpen, Mode=OneWay}" />
 
-            <!--  Application  -->
-            <TextBlock Text="{h:L Key=Settings_Application}" Style="{StaticResource SectionStyle}" />
-            <Grid Style="{StaticResource CardStyle}">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="Auto" />
-                </Grid.ColumnDefinitions>
-                <StackPanel VerticalAlignment="Center">
-                    <TextBlock Text="{h:L Key=Settings_MinimizeToTray}" />
-                    <TextBlock
-                        Text="{h:L Key=Settings_MinimizeToTrayHint}"
-                        Style="{StaticResource CaptionTextBlockStyle}"
-                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                        TextWrapping="Wrap" />
-                </StackPanel>
-                <ToggleSwitch
-                    Grid.Column="1"
-                    MinWidth="0"
-                    IsOn="{x:Bind ViewModel.MinimizeToTray, Mode=TwoWay}"
-                    OffContent="{h:L Key=Common_Off}"
-                    OnContent="{h:L Key=Common_On}" />
-            </Grid>
-            <Grid Style="{StaticResource CardStyle}" Visibility="{x:Bind ViewModel.CanStartWithWindows}">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="Auto" />
-                </Grid.ColumnDefinitions>
-                <StackPanel VerticalAlignment="Center">
-                    <TextBlock Text="{h:L Key=Settings_StartWithWindows}" />
-                    <TextBlock
-                        Text="{h:L Key=Settings_StartWithWindowsHint}"
-                        Style="{StaticResource CaptionTextBlockStyle}"
-                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                        TextWrapping="Wrap" />
-                </StackPanel>
-                <ToggleSwitch
-                    Grid.Column="1"
-                    MinWidth="0"
-                    IsOn="{x:Bind ViewModel.StartWithWindows, Mode=TwoWay}"
-                    OffContent="{h:L Key=Common_Off}"
-                    OnContent="{h:L Key=Common_On}" />
-            </Grid>
+                <!--  Application  -->
+                <TextBlock Text="{h:L Key=Settings_Application}" Style="{StaticResource SettingsSectionHeaderTextBlockStyle}" />
 
-            <!--  Appearance  -->
-            <TextBlock Text="{h:L Key=Settings_Appearance}" Style="{StaticResource SectionStyle}" />
-            <Grid Style="{StaticResource CardStyle}">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="Auto" />
-                </Grid.ColumnDefinitions>
-                <TextBlock VerticalAlignment="Center" Text="{h:L Key=Settings_Theme}" />
-                <ComboBox Grid.Column="1" MinWidth="200" SelectedIndex="{x:Bind ViewModel.ThemeIndex, Mode=TwoWay}">
-                    <ComboBoxItem Content="{h:L Key=Settings_UseWindowsSetting}" />
-                    <ComboBoxItem Content="{h:L Key=Settings_ThemeLight}" />
-                    <ComboBoxItem Content="{h:L Key=Settings_ThemeDark}" />
-                </ComboBox>
-            </Grid>
+                <toolkit:SettingsCard Header="{h:L Key=Settings_MinimizeToTray}" Description="{h:L Key=Settings_MinimizeToTrayHint}">
+                    <toolkit:SettingsCard.HeaderIcon>
+                        <FontIcon Glyph="&#xE921;" />
+                    </toolkit:SettingsCard.HeaderIcon>
+                    <ToggleSwitch
+                        IsOn="{x:Bind ViewModel.MinimizeToTray, Mode=TwoWay}"
+                        OffContent="{h:L Key=Common_Off}"
+                        OnContent="{h:L Key=Common_On}" />
+                </toolkit:SettingsCard>
 
-            <Grid Style="{StaticResource CardStyle}">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="Auto" />
-                </Grid.ColumnDefinitions>
-                <StackPanel VerticalAlignment="Center">
-                    <TextBlock Text="{h:L Key=Settings_FolderDensity}" />
-                    <TextBlock
-                        Text="{h:L Key=Settings_FolderDensityHint}"
-                        Style="{StaticResource CaptionTextBlockStyle}"
-                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                        TextWrapping="Wrap" />
-                </StackPanel>
-                <ComboBox Grid.Column="1" MinWidth="200" VerticalAlignment="Center" SelectedIndex="{x:Bind ViewModel.FolderDensityIndex, Mode=TwoWay}">
-                    <ComboBoxItem Content="{h:L Key=Settings_DensityCompact}" />
-                    <ComboBoxItem Content="{h:L Key=Settings_DensityComfortable}" />
-                </ComboBox>
-            </Grid>
+                <toolkit:SettingsCard
+                    Header="{h:L Key=Settings_StartWithWindows}"
+                    Description="{h:L Key=Settings_StartWithWindowsHint}"
+                    Visibility="{x:Bind ViewModel.CanStartWithWindows}">
+                    <toolkit:SettingsCard.HeaderIcon>
+                        <FontIcon Glyph="&#xE7E8;" />
+                    </toolkit:SettingsCard.HeaderIcon>
+                    <ToggleSwitch
+                        IsOn="{x:Bind ViewModel.StartWithWindows, Mode=TwoWay}"
+                        OffContent="{h:L Key=Common_Off}"
+                        OnContent="{h:L Key=Common_On}" />
+                </toolkit:SettingsCard>
 
-            <!--  Margins instead of RowSpacing in the cards with a restart notice: a hidden notice leaves no gap.  -->
-            <Grid Style="{StaticResource CardStyle}">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="Auto" />
-                </Grid.ColumnDefinitions>
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="Auto" />
-                </Grid.RowDefinitions>
-                <StackPanel VerticalAlignment="Center">
-                    <TextBlock Text="{h:L Key=Settings_Language}" />
-                    <TextBlock
-                        Text="{h:L Key=Settings_LanguageHint}"
-                        Style="{StaticResource CaptionTextBlockStyle}"
-                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                        TextWrapping="Wrap" />
-                </StackPanel>
-                <!--  Language names are shown in their own language so they can be found from either one.  -->
-                <ComboBox Grid.Column="1" MinWidth="200" SelectedIndex="{x:Bind ViewModel.LanguageIndex, Mode=TwoWay}">
-                    <ComboBoxItem Content="{h:L Key=Settings_UseWindowsSetting}" />
-                    <ComboBoxItem Content="Türkçe" />
-                    <ComboBoxItem Content="English" />
-                </ComboBox>
+                <!--  Appearance  -->
+                <TextBlock Text="{h:L Key=Settings_Appearance}" Style="{StaticResource SettingsSectionHeaderTextBlockStyle}" />
+
+                <toolkit:SettingsCard Header="{h:L Key=Settings_Theme}">
+                    <toolkit:SettingsCard.HeaderIcon>
+                        <FontIcon Glyph="&#xE790;" />
+                    </toolkit:SettingsCard.HeaderIcon>
+                    <ComboBox MinWidth="200" SelectedIndex="{x:Bind ViewModel.ThemeIndex, Mode=TwoWay}">
+                        <ComboBoxItem Content="{h:L Key=Settings_UseWindowsSetting}" />
+                        <ComboBoxItem Content="{h:L Key=Settings_ThemeLight}" />
+                        <ComboBoxItem Content="{h:L Key=Settings_ThemeDark}" />
+                    </ComboBox>
+                </toolkit:SettingsCard>
+
+                <toolkit:SettingsCard Header="{h:L Key=Settings_FolderDensity}" Description="{h:L Key=Settings_FolderDensityHint}">
+                    <toolkit:SettingsCard.HeaderIcon>
+                        <FontIcon Glyph="&#xE8FD;" />
+                    </toolkit:SettingsCard.HeaderIcon>
+                    <ComboBox MinWidth="200" SelectedIndex="{x:Bind ViewModel.FolderDensityIndex, Mode=TwoWay}">
+                        <ComboBoxItem Content="{h:L Key=Settings_DensityCompact}" />
+                        <ComboBoxItem Content="{h:L Key=Settings_DensityComfortable}" />
+                    </ComboBox>
+                </toolkit:SettingsCard>
+
+                <toolkit:SettingsCard Header="{h:L Key=Settings_Language}" Description="{h:L Key=Settings_LanguageHint}">
+                    <toolkit:SettingsCard.HeaderIcon>
+                        <FontIcon Glyph="&#xE774;" />
+                    </toolkit:SettingsCard.HeaderIcon>
+                    <!--  Language names are shown in their own language so they can be found from either one.  -->
+                    <ComboBox MinWidth="200" SelectedIndex="{x:Bind ViewModel.LanguageIndex, Mode=TwoWay}">
+                        <ComboBoxItem Content="{h:L Key=Settings_UseWindowsSetting}" />
+                        <ComboBoxItem Content="Türkçe" />
+                        <ComboBoxItem Content="English" />
+                    </ComboBox>
+                </toolkit:SettingsCard>
                 <InfoBar
                     x:Name="LanguageRestartInfo"
-                    Grid.Row="1"
-                    Margin="0,8,0,0"
-                    Grid.ColumnSpan="2"
                     IsClosable="False"
                     IsOpen="{x:Bind ViewModel.IsLanguageRestartNeeded, Mode=OneWay}"
                     Message="{h:L Key=Settings_LanguageRestartNeeded}"
@@ -346,54 +286,37 @@
                         <Button Content="{h:L Key=Settings_RestartNow}" Command="{x:Bind ViewModel.RestartCommand}" />
                     </InfoBar.ActionButton>
                 </InfoBar>
-            </Grid>
 
-            <!--  Fonts  -->
-            <TextBlock Text="{h:L Key=Settings_Fonts}" Style="{StaticResource SectionStyle}" />
+                <!--  Fonts: each area is an expander with its choices and a sample.  -->
+                <TextBlock Text="{h:L Key=Settings_Fonts}" Style="{StaticResource SettingsSectionHeaderTextBlockStyle}" />
 
-            <Grid Style="{StaticResource CardStyle}">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="Auto" />
-                </Grid.ColumnDefinitions>
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="Auto" />
-                </Grid.RowDefinitions>
-                <StackPanel VerticalAlignment="Center">
-                    <TextBlock Text="{h:L Key=Settings_Interface}" />
-                    <TextBlock
-                        Text="{h:L Key=Settings_InterfaceHint}"
-                        Style="{StaticResource CaptionTextBlockStyle}"
-                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                        TextWrapping="Wrap" />
-                </StackPanel>
-                <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8">
-                    <ComboBox
-                        Width="220"
-                        Header="{h:L Key=Settings_Font}"
-                        ItemsSource="{x:Bind ViewModel.FontChoices}"
-                        SelectedItem="{x:Bind ViewModel.UiFontChoice, Mode=TwoWay}" />
-                    <ComboBox Width="150" Header="{h:L Key=Settings_Size}" SelectedIndex="{x:Bind ViewModel.UiTextScaleIndex, Mode=TwoWay}">
-                        <ComboBoxItem Content="{h:L Key=Settings_SizeSmall}" />
-                        <ComboBoxItem Content="{h:L Key=Settings_SizeNormal}" />
-                        <ComboBoxItem Content="{h:L Key=Settings_SizeLarge}" />
-                        <ComboBoxItem Content="{h:L Key=Settings_SizeExtraLarge}" />
-                    </ComboBox>
-                </StackPanel>
-                <TextBlock
-                    Grid.Row="1"
-                    Grid.ColumnSpan="2"
-                    Margin="0,8,0,0"
-                    Text="{h:L Key=Settings_InterfaceSample}"
-                    FontFamily="{x:Bind h:Ui.Font(ViewModel.UiFontChoice), Mode=OneWay}"
-                    FontSize="{x:Bind h:Ui.UiPreviewSize(ViewModel.UiTextScaleIndex), Mode=OneWay}" />
+                <toolkit:SettingsExpander Header="{h:L Key=Settings_Interface}" Description="{h:L Key=Settings_InterfaceHint}">
+                    <toolkit:SettingsExpander.HeaderIcon>
+                        <FontIcon Glyph="&#xE8D2;" />
+                    </toolkit:SettingsExpander.HeaderIcon>
+                    <toolkit:SettingsExpander.Items>
+                        <toolkit:SettingsCard Header="{h:L Key=Settings_Font}">
+                            <ComboBox Width="220" ItemsSource="{x:Bind ViewModel.FontChoices}" SelectedItem="{x:Bind ViewModel.UiFontChoice, Mode=TwoWay}" />
+                        </toolkit:SettingsCard>
+                        <toolkit:SettingsCard Header="{h:L Key=Settings_Size}">
+                            <ComboBox Width="220" SelectedIndex="{x:Bind ViewModel.UiTextScaleIndex, Mode=TwoWay}">
+                                <ComboBoxItem Content="{h:L Key=Settings_SizeSmall}" />
+                                <ComboBoxItem Content="{h:L Key=Settings_SizeNormal}" />
+                                <ComboBoxItem Content="{h:L Key=Settings_SizeLarge}" />
+                                <ComboBoxItem Content="{h:L Key=Settings_SizeExtraLarge}" />
+                            </ComboBox>
+                        </toolkit:SettingsCard>
+                        <toolkit:SettingsCard ContentAlignment="Left">
+                            <TextBlock
+                                Text="{h:L Key=Settings_InterfaceSample}"
+                                FontFamily="{x:Bind h:Ui.Font(ViewModel.UiFontChoice), Mode=OneWay}"
+                                FontSize="{x:Bind h:Ui.UiPreviewSize(ViewModel.UiTextScaleIndex), Mode=OneWay}"
+                                TextWrapping="Wrap" />
+                        </toolkit:SettingsCard>
+                    </toolkit:SettingsExpander.Items>
+                </toolkit:SettingsExpander>
                 <InfoBar
                     x:Name="FontRestartInfo"
-                    Grid.Row="2"
-                    Margin="0,8,0,0"
-                    Grid.ColumnSpan="2"
                     IsClosable="False"
                     IsOpen="{x:Bind ViewModel.IsRestartNeeded, Mode=OneWay}"
                     Message="{h:L Key=Settings_FontRestartNeeded}"
@@ -403,154 +326,133 @@
                         <Button Content="{h:L Key=Settings_RestartNow}" Command="{x:Bind ViewModel.RestartCommand}" />
                     </InfoBar.ActionButton>
                 </InfoBar>
-            </Grid>
 
-            <Grid Style="{StaticResource CardStyle}" RowSpacing="8">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="Auto" />
-                </Grid.ColumnDefinitions>
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="Auto" />
-                </Grid.RowDefinitions>
-                <StackPanel VerticalAlignment="Center">
-                    <TextBlock Text="{h:L Key=Settings_Reading}" />
+                <toolkit:SettingsExpander Header="{h:L Key=Settings_Reading}" Description="{h:L Key=Settings_ReadingHint}">
+                    <toolkit:SettingsExpander.HeaderIcon>
+                        <FontIcon Glyph="&#xE736;" />
+                    </toolkit:SettingsExpander.HeaderIcon>
+                    <toolkit:SettingsExpander.Items>
+                        <toolkit:SettingsCard Header="{h:L Key=Settings_DefaultFontHeader}">
+                            <ComboBox Width="220" ItemsSource="{x:Bind ViewModel.FontChoices}" SelectedItem="{x:Bind ViewModel.ReadingFontChoice, Mode=TwoWay}" />
+                        </toolkit:SettingsCard>
+                        <toolkit:SettingsCard Header="{h:L Key=Settings_Zoom}">
+                            <ComboBox Width="220" SelectedIndex="{x:Bind ViewModel.ReadingZoomIndex, Mode=TwoWay}">
+                                <ComboBoxItem Content="%80" />
+                                <ComboBoxItem Content="%90" />
+                                <ComboBoxItem Content="%100" />
+                                <ComboBoxItem Content="%110" />
+                                <ComboBoxItem Content="%125" />
+                                <ComboBoxItem Content="%150" />
+                                <ComboBoxItem Content="%175" />
+                                <ComboBoxItem Content="%200" />
+                            </ComboBox>
+                        </toolkit:SettingsCard>
+                        <toolkit:SettingsCard Header="{h:L Key=Settings_OverrideFonts}">
+                            <ToggleSwitch
+                                IsOn="{x:Bind ViewModel.ReadingFontOverride, Mode=TwoWay}"
+                                OffContent="{h:L Key=Common_Off}"
+                                OnContent="{h:L Key=Common_On}" />
+                        </toolkit:SettingsCard>
+                        <toolkit:SettingsCard ContentAlignment="Left">
+                            <TextBlock
+                                Text="{h:L Key=Settings_ReadingSample}"
+                                FontFamily="{x:Bind h:Ui.Font(ViewModel.ReadingFontChoice), Mode=OneWay}"
+                                FontSize="{x:Bind h:Ui.ReadingPreviewSize(ViewModel.ReadingZoomIndex), Mode=OneWay}"
+                                TextWrapping="Wrap" />
+                        </toolkit:SettingsCard>
+                    </toolkit:SettingsExpander.Items>
+                </toolkit:SettingsExpander>
+
+                <toolkit:SettingsExpander Header="{h:L Key=Settings_Compose}" Description="{h:L Key=Settings_ComposeHint}">
+                    <toolkit:SettingsExpander.HeaderIcon>
+                        <FontIcon Glyph="&#xE8BD;" />
+                    </toolkit:SettingsExpander.HeaderIcon>
+                    <toolkit:SettingsExpander.Items>
+                        <toolkit:SettingsCard Header="{h:L Key=Settings_Font}">
+                            <ComboBox Width="220" ItemsSource="{x:Bind ViewModel.FontChoices}" SelectedItem="{x:Bind ViewModel.ComposeFontChoice, Mode=TwoWay}" />
+                        </toolkit:SettingsCard>
+                        <toolkit:SettingsCard Header="{h:L Key=Settings_Size}">
+                            <ComboBox Width="220" SelectedIndex="{x:Bind ViewModel.ComposeFontSizeIndex, Mode=TwoWay}">
+                                <ComboBoxItem Content="9 pt" />
+                                <ComboBoxItem Content="10 pt" />
+                                <ComboBoxItem Content="11 pt" />
+                                <ComboBoxItem Content="12 pt" />
+                                <ComboBoxItem Content="14 pt" />
+                                <ComboBoxItem Content="16 pt" />
+                                <ComboBoxItem Content="18 pt" />
+                            </ComboBox>
+                        </toolkit:SettingsCard>
+                        <toolkit:SettingsCard ContentAlignment="Left">
+                            <TextBlock
+                                Text="{h:L Key=Settings_ComposeSample}"
+                                FontFamily="{x:Bind h:Ui.Font(ViewModel.ComposeFontChoice), Mode=OneWay}"
+                                FontSize="{x:Bind h:Ui.ComposePreviewSize(ViewModel.ComposeFontSizeIndex), Mode=OneWay}"
+                                TextWrapping="Wrap" />
+                        </toolkit:SettingsCard>
+                    </toolkit:SettingsExpander.Items>
+                </toolkit:SettingsExpander>
+
+                <!--  Account  -->
+                <TextBlock Text="{h:L Key=Settings_Account}" Style="{StaticResource SettingsSectionHeaderTextBlockStyle}" />
+
+                <toolkit:SettingsCard Header="{x:Bind ViewModel.AccountEmail}" Description="{x:Bind ViewModel.SignInText}">
+                    <toolkit:SettingsCard.HeaderIcon>
+                        <FontIcon Glyph="&#xE77B;" />
+                    </toolkit:SettingsCard.HeaderIcon>
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <Button Content="{h:L Key=Settings_ForgetPassword}" Command="{x:Bind ViewModel.ForgetPasswordCommand}" />
+                        <Button Command="{x:Bind ViewModel.SignOutCommand}">
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <FontIcon Glyph="&#xF3B1;" FontSize="14" />
+                                <TextBlock Text="{h:L Key=Settings_SignOut}" />
+                            </StackPanel>
+                        </Button>
+                    </StackPanel>
+                </toolkit:SettingsCard>
+                <toolkit:SettingsCard Header="{h:L Key=Settings_Server}">
+                    <toolkit:SettingsCard.HeaderIcon>
+                        <FontIcon Glyph="&#xE968;" />
+                    </toolkit:SettingsCard.HeaderIcon>
                     <TextBlock
-                        Text="{h:L Key=Settings_ReadingHint}"
-                        Style="{StaticResource CaptionTextBlockStyle}"
+                        Text="{x:Bind ViewModel.ServerUrl}"
                         Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                        IsTextSelectionEnabled="True"
                         TextWrapping="Wrap" />
-                </StackPanel>
-                <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8">
-                    <ComboBox
-                        Width="220"
-                        Header="{h:L Key=Settings_DefaultFontHeader}"
-                        ItemsSource="{x:Bind ViewModel.FontChoices}"
-                        SelectedItem="{x:Bind ViewModel.ReadingFontChoice, Mode=TwoWay}" />
-                    <ComboBox Width="150" Header="{h:L Key=Settings_Zoom}" SelectedIndex="{x:Bind ViewModel.ReadingZoomIndex, Mode=TwoWay}">
-                        <ComboBoxItem Content="%80" />
-                        <ComboBoxItem Content="%90" />
-                        <ComboBoxItem Content="%100" />
-                        <ComboBoxItem Content="%110" />
-                        <ComboBoxItem Content="%125" />
-                        <ComboBoxItem Content="%150" />
-                        <ComboBoxItem Content="%175" />
-                        <ComboBoxItem Content="%200" />
-                    </ComboBox>
-                </StackPanel>
-                <CheckBox
-                    Grid.Row="1"
-                    Grid.ColumnSpan="2"
-                    Content="{h:L Key=Settings_OverrideFonts}"
-                    IsChecked="{x:Bind ViewModel.ReadingFontOverride, Mode=TwoWay}" />
+                </toolkit:SettingsCard>
                 <TextBlock
-                    Grid.Row="2"
-                    Grid.ColumnSpan="2"
-                    Text="{h:L Key=Settings_ReadingSample}"
-                    FontFamily="{x:Bind h:Ui.Font(ViewModel.ReadingFontChoice), Mode=OneWay}"
-                    FontSize="{x:Bind h:Ui.ReadingPreviewSize(ViewModel.ReadingZoomIndex), Mode=OneWay}"
+                    Margin="1,4,0,0"
+                    Text="{h:L Key=Settings_SignOutHint}"
+                    Style="{StaticResource CaptionTextBlockStyle}"
+                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                     TextWrapping="Wrap" />
-            </Grid>
 
-            <Grid Style="{StaticResource CardStyle}" RowSpacing="8">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="Auto" />
-                </Grid.ColumnDefinitions>
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="Auto" />
-                </Grid.RowDefinitions>
-                <StackPanel VerticalAlignment="Center">
-                    <TextBlock Text="{h:L Key=Settings_Compose}" />
-                    <TextBlock
-                        Text="{h:L Key=Settings_ComposeHint}"
-                        Style="{StaticResource CaptionTextBlockStyle}"
-                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                        TextWrapping="Wrap" />
-                </StackPanel>
-                <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8">
-                    <ComboBox
-                        Width="220"
-                        Header="{h:L Key=Settings_Font}"
-                        ItemsSource="{x:Bind ViewModel.FontChoices}"
-                        SelectedItem="{x:Bind ViewModel.ComposeFontChoice, Mode=TwoWay}" />
-                    <ComboBox Width="150" Header="{h:L Key=Settings_Size}" SelectedIndex="{x:Bind ViewModel.ComposeFontSizeIndex, Mode=TwoWay}">
-                        <ComboBoxItem Content="9 pt" />
-                        <ComboBoxItem Content="10 pt" />
-                        <ComboBoxItem Content="11 pt" />
-                        <ComboBoxItem Content="12 pt" />
-                        <ComboBoxItem Content="14 pt" />
-                        <ComboBoxItem Content="16 pt" />
-                        <ComboBoxItem Content="18 pt" />
-                    </ComboBox>
-                </StackPanel>
-                <TextBlock
-                    Grid.Row="1"
-                    Grid.ColumnSpan="2"
-                    Text="{h:L Key=Settings_ComposeSample}"
-                    FontFamily="{x:Bind h:Ui.Font(ViewModel.ComposeFontChoice), Mode=OneWay}"
-                    FontSize="{x:Bind h:Ui.ComposePreviewSize(ViewModel.ComposeFontSizeIndex), Mode=OneWay}"
-                    TextWrapping="Wrap" />
-            </Grid>
+                <!--  About  -->
+                <TextBlock Text="{h:L Key=Settings_About}" Style="{StaticResource SettingsSectionHeaderTextBlockStyle}" />
 
-            <!--  Account  -->
-            <TextBlock Text="{h:L Key=Settings_Account}" Style="{StaticResource SectionStyle}" />
-            <Grid Style="{StaticResource CardStyle}" RowSpacing="8">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto" />
-                    <ColumnDefinition Width="*" />
-                </Grid.ColumnDefinitions>
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="Auto" />
-                </Grid.RowDefinitions>
-                <TextBlock Text="{h:L Key=Common_Email}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
-                <TextBlock Grid.Column="1" Text="{x:Bind ViewModel.AccountEmail}" IsTextSelectionEnabled="True" />
-                <TextBlock Grid.Row="1" Text="{h:L Key=Settings_Server}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
-                <TextBlock Grid.Row="1" Grid.Column="1" Text="{x:Bind ViewModel.ServerUrl}" IsTextSelectionEnabled="True" TextWrapping="Wrap" />
-                <TextBlock Grid.Row="2" Text="{h:L Key=Settings_SignIn}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
-                <TextBlock Grid.Row="2" Grid.Column="1" Text="{x:Bind ViewModel.SignInText}" />
-                <StackPanel Grid.Row="3" Grid.ColumnSpan="2" Margin="0,8,0,0" Orientation="Horizontal" Spacing="8">
-                    <Button Content="{h:L Key=Settings_ForgetPassword}" Command="{x:Bind ViewModel.ForgetPasswordCommand}" />
-                    <Button Command="{x:Bind ViewModel.SignOutCommand}">
-                        <StackPanel Orientation="Horizontal" Spacing="8">
-                            <FontIcon Glyph="&#xF3B1;" FontSize="14" />
-                            <TextBlock Text="{h:L Key=Settings_SignOut}" />
-                        </StackPanel>
-                    </Button>
-                </StackPanel>
-            </Grid>
-            <TextBlock
-                Margin="4,0"
-                Text="{h:L Key=Settings_SignOutHint}"
-                Style="{StaticResource CaptionTextBlockStyle}"
-                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                TextWrapping="Wrap" />
-
-            <!--  About  -->
-            <TextBlock Text="{h:L Key=Settings_About}" Style="{StaticResource SectionStyle}" />
-            <Grid Style="{StaticResource CardStyle}">
-                <StackPanel Spacing="4">
-                    <TextBlock Text="Postacı" Style="{StaticResource BodyStrongTextBlockStyle}" />
-                    <TextBlock Text="{x:Bind ViewModel.AppVersion}" Style="{StaticResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
-                    <TextBlock
-                        Text="{h:L Key=Settings_PrivacyNote}"
-                        Style="{StaticResource CaptionTextBlockStyle}"
-                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                        TextWrapping="Wrap" />
-                    <HyperlinkButton
-                        Margin="0,4,0,0"
-                        Padding="0"
-                        Click="OnOpenDiagnostics"
-                        Content="{h:L Key=Settings_OpenDiagnostics}"
-                        ToolTipService.ToolTip="{h:L Key=Settings_OpenDiagnosticsHint}" />
-                </StackPanel>
-            </Grid>
-        </StackPanel>
-    </ScrollViewer>
+                <toolkit:SettingsExpander Header="Postacı" Description="{x:Bind ViewModel.AppVersion}">
+                    <toolkit:SettingsExpander.HeaderIcon>
+                        <BitmapIcon ShowAsMonochrome="False" UriSource="ms-appx:///Assets/Postaci-64.png" />
+                    </toolkit:SettingsExpander.HeaderIcon>
+                    <toolkit:SettingsExpander.Items>
+                        <toolkit:SettingsCard ContentAlignment="Left">
+                            <TextBlock
+                                Text="{h:L Key=Settings_PrivacyNote}"
+                                Style="{StaticResource CaptionTextBlockStyle}"
+                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                TextWrapping="Wrap" />
+                        </toolkit:SettingsCard>
+                        <toolkit:SettingsCard
+                            Click="OnOpenDiagnostics"
+                            Header="{h:L Key=Settings_OpenDiagnostics}"
+                            Description="{h:L Key=Settings_OpenDiagnosticsHint}"
+                            IsClickEnabled="True">
+                            <toolkit:SettingsCard.ActionIcon>
+                                <FontIcon Glyph="&#xE8A7;" />
+                            </toolkit:SettingsCard.ActionIcon>
+                        </toolkit:SettingsCard>
+                    </toolkit:SettingsExpander.Items>
+                </toolkit:SettingsExpander>
+            </StackPanel>
+        </ScrollViewer>
+    </Grid>
 </Page>
