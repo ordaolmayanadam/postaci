@@ -28,35 +28,72 @@ public sealed partial class EwsClient
     /// <summary>
     /// Returns the messages of a conversation from every folder except Deleted Items and Drafts, newest first.
     /// Each message carries only the text it added (UniqueBody), so the thread reads without repeated quotes.
+    /// A message with copies in several folders (one sent to oneself sits in Sent Items and the Inbox) is returned
+    /// once: the copy in <paramref name="preferredFolderId"/> when there is one there.
     /// </summary>
-    public async Task<IReadOnlyList<ThreadMessage>> GetConversationItemsAsync(string conversationId, CancellationToken ct = default)
+    public async Task<IReadOnlyList<ThreadMessage>> GetConversationItemsAsync(string conversationId, string? preferredFolderId = null, CancellationToken ct = default)
     {
-        // Schema order: ItemShape, FoldersToIgnore, MaxItemsToReturn, SortOrder, MailboxScope, Conversations.
-        var request = M("GetConversationItems",
-            M("ItemShape",
-                T("BaseShape", "IdOnly"),
-                T("BodyType", "HTML"),
-                T("FilterHtmlContent", "true"),
-                T("AdditionalProperties",
-                    Field("item:Subject"),
-                    Field("message:From"),
-                    Field("message:ToRecipients"),
-                    Field("item:DateTimeReceived"),
-                    Field("item:UniqueBody"),
-                    Field("item:Preview"),
-                    Field("item:ItemClass"),
-                    Field("message:IsRead"))),
-            M("FoldersToIgnore", DistinguishedFolder("deleteditems"), DistinguishedFolder("drafts")),
-            M("MaxItemsToReturn", 100),
-            M("SortOrder", "DateOrderDescending"),
-            M("Conversations", T("Conversation", T("ConversationId", new XAttribute("Id", conversationId)))));
+        var shape = M("ItemShape",
+            T("BaseShape", "IdOnly"),
+            T("BodyType", "HTML"),
+            T("FilterHtmlContent", "true"),
+            T("AdditionalProperties",
+                Field("item:Subject"),
+                Field("message:From"),
+                Field("message:ToRecipients"),
+                Field("item:DateTimeReceived"),
+                Field("item:UniqueBody"),
+                Field("item:Preview"),
+                Field("item:ItemClass"),
+                Field("message:IsRead"),
+                Field("item:ParentFolderId")));
 
-        var message = Single(await ExecuteAsync(request, ct));
+        var message = Single(await ExecuteAsync(ConversationItemsRequest(shape, [conversationId]), ct));
         return message.Descendants(TNs + "ConversationNode")
-            .SelectMany(node => node.Element(TNs + "Items")?.Elements() ?? [])
+            .Select(node => PreferredCopy(node, preferredFolderId))
+            .OfType<XElement>()
             .Select(ParseThreadMessage)
             .OrderByDescending(m => m.Received)
             .ToList();
+    }
+
+    /// <summary>
+    /// How many messages each conversation has, counted as <see cref="GetConversationItemsAsync"/> lists them: copies
+    /// of one message count once, Deleted Items and Drafts not at all. Conversations the server could not read are
+    /// left out.
+    /// </summary>
+    public async Task<IReadOnlyDictionary<string, int>> CountConversationMessagesAsync(IReadOnlyCollection<string> conversationIds, CancellationToken ct = default)
+    {
+        var result = new Dictionary<string, int>();
+        foreach (var chunk in conversationIds.Chunk(50))
+        {
+            var request = ConversationItemsRequest(M("ItemShape", T("BaseShape", "IdOnly")), chunk);
+            foreach (var message in ResponseMessages(await ExecuteAsync(request, ct)))
+            {
+                if ((string?)message.Attribute("ResponseClass") == "Error") continue;
+                var conversation = message.Element(MNs + "Conversation");
+                if ((string?)conversation?.Element(TNs + "ConversationId")?.Attribute("Id") is not { } id) continue;
+                result[id] = conversation.Descendants(TNs + "ConversationNode").Count(n => n.Element(TNs + "Items")?.HasElements == true);
+            }
+        }
+        return result;
+    }
+
+    private static XElement ConversationItemsRequest(XElement itemShape, IEnumerable<string> conversationIds) =>
+        // Schema order: ItemShape, FoldersToIgnore, MaxItemsToReturn, SortOrder, MailboxScope, Conversations.
+        M("GetConversationItems",
+            itemShape,
+            M("FoldersToIgnore", DistinguishedFolder("deleteditems"), DistinguishedFolder("drafts")),
+            M("MaxItemsToReturn", 100),
+            M("SortOrder", "DateOrderDescending"),
+            M("Conversations", conversationIds.Select(id => T("Conversation", T("ConversationId", new XAttribute("Id", id))))));
+
+    /// <summary>A conversation node is one message; its items are that message's copies in different folders.</summary>
+    private static XElement? PreferredCopy(XElement node, string? folderId)
+    {
+        var copies = node.Element(TNs + "Items")?.Elements().ToList() ?? [];
+        return copies.FirstOrDefault(c => folderId is not null && (string?)c.Element(TNs + "ParentFolderId")?.Attribute("Id") == folderId)
+            ?? copies.FirstOrDefault();
     }
 
     private static ConversationSummary ParseConversation(XElement c) => new(

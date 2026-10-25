@@ -91,15 +91,21 @@ public sealed partial class MessageItemViewModel(MailSummary summary, bool showR
         IsRead = isRead;
     }
 
-    /// <summary>Messages in the whole conversation (including sent replies); shown when more than one.</summary>
-    public string CountText => Conversation is { GlobalMessageCount: > 1 } c ? c.GlobalMessageCount.ToString() : "";
+    /// <summary>
+    /// Messages in the whole conversation (including sent replies, each message once however many folders hold a
+    /// copy); for a plain message 1.
+    /// </summary>
+    public int MessageCount { get; private init; } = 1;
+
+    /// <summary>The conversation's message count, shown when more than one.</summary>
+    public string CountText => MessageCount > 1 ? MessageCount.ToString() : "";
     public bool HasCount => CountText.Length > 0;
 
     /// <summary>Conversation rows keep a column for the chevron so their text lines up, opened or not.</summary>
     public bool HasExpanderColumn => Conversation is not null;
 
     /// <summary>A conversation with several messages can be opened up in the list.</summary>
-    public bool CanExpand => Conversation is { GlobalMessageCount: > 1 };
+    public bool CanExpand => Conversation is not null && MessageCount > 1;
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(ExpandGlyph))]
@@ -122,8 +128,10 @@ public sealed partial class MessageItemViewModel(MailSummary summary, bool showR
     /// <summary>
     /// A conversation row. <paramref name="newest"/> (the conversation's newest message in this folder, when known)
     /// supplies the preview, the id replies and actions start from, and the sender of a one-person conversation.
+    /// <paramref name="messageCount"/> is the deduplicated count; without it the server's count (which counts each
+    /// copy) is used.
     /// </summary>
-    public static MessageItemViewModel ForConversation(ConversationSummary c, bool showRecipients, MailSummary? newest = null)
+    public static MessageItemViewModel ForConversation(ConversationSummary c, bool showRecipients, MailSummary? newest = null, int? messageCount = null)
     {
         var people = showRecipients ? c.Recipients : c.Senders;
         var from = people.Count > 1 || newest?.From is null
@@ -140,7 +148,12 @@ public sealed partial class MessageItemViewModel(MailSummary summary, bool showR
             c.Importance,
             newest?.Preview ?? "",
             newest?.ItemClass ?? "IPM.Conversation");
-        return new MessageItemViewModel(summary, showRecipients) { Conversation = c, _conversationUnread = c.UnreadCount };
+        return new MessageItemViewModel(summary, showRecipients)
+        {
+            Conversation = c,
+            MessageCount = messageCount ?? c.GlobalMessageCount,
+            _conversationUnread = c.UnreadCount,
+        };
     }
 
     /// <summary>One message of an opened conversation, shown under <paramref name="parent"/>.</summary>

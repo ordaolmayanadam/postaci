@@ -127,7 +127,7 @@ public class StreamingConversationTests
         var server = new FakeEwsServer().On("GetConversationItems", Thread);
         using var client = server.CreateClient();
 
-        var thread = await client.GetConversationItemsAsync("C1", TestContext.Current.CancellationToken);
+        var thread = await client.GetConversationItemsAsync("C1", ct: TestContext.Current.CancellationToken);
 
         var request = server.Request("GetConversationItems");
         Assert.Equal(["ItemShape", "FoldersToIgnore", "MaxItemsToReturn", "SortOrder", "Conversations"], request.Elements().Select(e => e.Name.LocalName));
@@ -147,6 +147,7 @@ public class StreamingConversationTests
             .On("FindFolder", InboxOnly)
             .On("FindConversation", Conversations)
             .On("GetItem", Summaries)
+            .On("GetConversationItems", Thread) // message counts of the page
             .On("UpdateItem", Ok("UpdateItem", """<m:Items><t:Message><t:ItemId Id="I1" ChangeKey="k9" /></t:Message></m:Items>""") )
             .On("GetConversationItems", Thread)
             .On("GetItem", Ok("GetItem", """
@@ -169,6 +170,8 @@ public class StreamingConversationTests
         Assert.True(vm.Messages[0].CanExpand);
         Assert.False(vm.Messages[1].CanExpand);
         Assert.Equal(3, server.Request("GetItem").Descendants(T + "ItemId").Count()); // one batch for the page
+        // Counted only for the conversation the server reports several items for.
+        Assert.Equal(["C1"], server.Request("GetConversationItems").Descendants(T + "ConversationId").Select(c => (string?)c.Attribute("Id")));
         Assert.Equal(1, vm.Messages[0].UnreadItems);
 
         vm.SetSelection([vm.Messages[0]]);
@@ -199,6 +202,7 @@ public class StreamingConversationTests
             .On("FindFolder", InboxOnly)
             .On("FindConversation", Conversations)
             .On("GetItem", Summaries)
+            .On("GetConversationItems", Thread)
             .On("GetConversationItems", Thread)
             .On("DeleteItem", Ok("DeleteItem", ""));
         var session = new MailSession(server.CreateClient(), new AccountSettings { Email = "ben@sirket.com" });
@@ -249,8 +253,10 @@ public class StreamingConversationTests
             .On("FindConversation", Conversations)
             .On("GetItem", Summaries)
             .On("GetConversationItems", Thread)
+            .On("GetConversationItems", Thread)
             .On("GetFolder", counts)
             .On("FindConversation", withNew)
+            .On("GetConversationItems", SelfSentCount)
             .On("GetItem", $"<m:GetItemResponse><m:ResponseMessages>{Summary("I9", "Ben", "2026-10-21T09:00:00Z", "Kendime not", false)}</m:ResponseMessages></m:GetItemResponse>")
             .On("FindItem", NoItems);
         var session = new MailSession(server.CreateClient(), new AccountSettings { Email = "ben@sirket.com" });
@@ -265,8 +271,69 @@ public class StreamingConversationTests
         Assert.Equal(1, added);
         Assert.Equal(["I9", "I2", "S1", "I2", "I1", "I3"], vm.Messages.Select(m => m.Id.Id));
         Assert.Equal("Kendime not", vm.Messages[0].Preview);
+        Assert.False(vm.Messages[0].HasCount); // a note to oneself is one message, not a conversation
         Assert.True(vm.Messages[1].IsExpanded); // the open conversation and its messages stay together
         Assert.Equal(2, vm.SelectedFolder!.UnreadCount);
+    }
+
+    /// <summary>A message to oneself: one conversation node holding its Sent Items and Inbox copies.</summary>
+    private const string SelfSent = """
+        <m:GetConversationItemsResponse><m:ResponseMessages>
+          <m:GetConversationItemsResponseMessage ResponseClass="Success"><m:ResponseCode>NoError</m:ResponseCode>
+            <m:Conversation><t:ConversationId Id="C3" /><t:ConversationNodes>
+              <t:ConversationNode><t:InternetMessageId>&lt;n1@sirket.com&gt;</t:InternetMessageId><t:Items>
+                <t:Message><t:ItemId Id="SENT1" ChangeKey="a" /><t:ParentFolderId Id="SENT" /><t:Subject>Not</t:Subject>
+                  <t:DateTimeReceived>2026-10-21T09:00:00Z</t:DateTimeReceived><t:UniqueBody BodyType="HTML">&lt;p&gt;Kendime not&lt;/p&gt;</t:UniqueBody></t:Message>
+                <t:Message><t:ItemId Id="IN1" ChangeKey="b" /><t:ParentFolderId Id="INBOX" /><t:Subject>Not</t:Subject>
+                  <t:DateTimeReceived>2026-10-21T09:00:00Z</t:DateTimeReceived><t:UniqueBody BodyType="HTML">&lt;p&gt;Kendime not&lt;/p&gt;</t:UniqueBody></t:Message>
+              </t:Items></t:ConversationNode>
+            </t:ConversationNodes></m:Conversation>
+          </m:GetConversationItemsResponseMessage>
+        </m:ResponseMessages></m:GetConversationItemsResponse>
+        """;
+
+    private const string SelfSentCount = """
+        <m:GetConversationItemsResponse><m:ResponseMessages>
+          <m:GetConversationItemsResponseMessage ResponseClass="Success"><m:ResponseCode>NoError</m:ResponseCode>
+            <m:Conversation><t:ConversationId Id="C3" /><t:ConversationNodes>
+              <t:ConversationNode><t:Items><t:Message><t:ItemId Id="SENT1" /></t:Message><t:Message><t:ItemId Id="IN1" /></t:Message></t:Items></t:ConversationNode>
+            </t:ConversationNodes></m:Conversation>
+          </m:GetConversationItemsResponseMessage>
+        </m:ResponseMessages></m:GetConversationItemsResponse>
+        """;
+
+    [Fact]
+    public async Task Copies_of_one_message_are_listed_once_preferring_the_current_folder()
+    {
+        var server = new FakeEwsServer().On("GetConversationItems", SelfSent).On("GetConversationItems", SelfSent);
+        using var client = server.CreateClient();
+
+        var inInbox = await client.GetConversationItemsAsync("C3", "INBOX", TestContext.Current.CancellationToken);
+        var elsewhere = await client.GetConversationItemsAsync("C3", "ARCHIVE", TestContext.Current.CancellationToken);
+
+        Assert.Equal(["IN1"], inInbox.Select(m => m.ItemId.Id));
+        Assert.Equal(["SENT1"], elsewhere.Select(m => m.ItemId.Id)); // no copy here: the first one
+        Assert.Contains(server.Requests[0].Descendants(T + "FieldURI"), f => (string?)f.Attribute("FieldURI") == "item:ParentFolderId");
+    }
+
+    [Fact]
+    public async Task Conversation_messages_are_counted_per_message_not_per_copy()
+    {
+        var both = SelfSentCount.Replace("</m:ResponseMessages>", $"""
+            {Thread[Thread.IndexOf("<m:GetConversationItemsResponseMessage", StringComparison.Ordinal)..Thread.IndexOf("</m:ResponseMessages>", StringComparison.Ordinal)]}
+            <m:GetConversationItemsResponseMessage ResponseClass="Error"><m:MessageText>yok</m:MessageText><m:ResponseCode>ErrorItemNotFound</m:ResponseCode></m:GetConversationItemsResponseMessage>
+            </m:ResponseMessages>
+            """);
+        var server = new FakeEwsServer().On("GetConversationItems", both);
+        using var client = server.CreateClient();
+
+        var counts = await client.CountConversationMessagesAsync(["C3", "C1", "GONE"], TestContext.Current.CancellationToken);
+
+        Assert.Equal(new Dictionary<string, int> { ["C3"] = 1, ["C1"] = 3 }, counts);
+        var request = server.Request("GetConversationItems");
+        Assert.Equal(["ItemShape", "FoldersToIgnore", "MaxItemsToReturn", "SortOrder", "Conversations"], request.Elements().Select(e => e.Name.LocalName));
+        Assert.Equal(["C3", "C1", "GONE"], request.Descendants(T + "ConversationId").Select(c => (string?)c.Attribute("Id")));
+        Assert.Null(request.Descendants(T + "AdditionalProperties").FirstOrDefault()); // ids only, no bodies
     }
 
     // ---- Streaming ----

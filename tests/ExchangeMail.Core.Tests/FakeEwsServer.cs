@@ -11,7 +11,7 @@ internal sealed class FakeEwsServer : HttpMessageHandler
     public const string T = "http://schemas.microsoft.com/exchange/services/2006/types";
     public const string M = "http://schemas.microsoft.com/exchange/services/2006/messages";
 
-    private readonly Dictionary<string, Queue<Func<HttpResponseMessage>>> _responses = [];
+    private readonly Dictionary<string, Queue<Func<Task<HttpResponseMessage>>>> _responses = [];
 
     public List<XElement> Requests { get; } = [];
     public List<XElement?> Headers { get; } = [];
@@ -29,7 +29,11 @@ internal sealed class FakeEwsServer : HttpMessageHandler
     public FakeEwsServer On(string operation, string bodyXml) =>
         OnRaw(operation, () => Xml(HttpStatusCode.OK, Envelope(bodyXml)));
 
-    public FakeEwsServer OnRaw(string operation, Func<HttpResponseMessage> response)
+    public FakeEwsServer OnRaw(string operation, Func<HttpResponseMessage> response) =>
+        OnAsync(operation, () => Task.FromResult(response()));
+
+    /// <summary>Queues a response that arrives when the task completes, e.g. to hold a request in flight.</summary>
+    public FakeEwsServer OnAsync(string operation, Func<Task<HttpResponseMessage>> response)
     {
         if (!_responses.TryGetValue(operation, out var queue)) _responses[operation] = queue = new();
         queue.Enqueue(response);
@@ -58,6 +62,6 @@ internal sealed class FakeEwsServer : HttpMessageHandler
         var name = operation.Name.LocalName;
         if (!_responses.TryGetValue(name, out var queue) || queue.Count == 0)
             throw new InvalidOperationException($"No canned response for {name}");
-        return queue.Dequeue()();
+        return await queue.Dequeue()();
     }
 }

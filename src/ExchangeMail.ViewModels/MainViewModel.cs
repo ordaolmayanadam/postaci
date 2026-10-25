@@ -17,6 +17,9 @@ public sealed partial class MainViewModel : ObservableObject
     private bool _backgroundRefreshRunning;
     private bool _pollAgain;
 
+    /// <summary>A poll found the list loading and skipped it; it runs again once the list has loaded.</summary>
+    private bool _pollAfterLoad;
+
     /// <summary>Rows selected in the list (Ctrl/Shift-click); <see cref="SelectedMessage"/> is set only when it is one.</summary>
     private IReadOnlyList<MessageItemViewModel> _selection = [];
     private bool _settingSelection;
@@ -251,24 +254,65 @@ public sealed partial class MainViewModel : ObservableObject
         }
         finally
         {
-            if (_listCts == cts) IsLoadingList = false;
+            if (_listCts == cts)
+            {
+                IsLoadingList = false;
+                if (_pollAfterLoad)
+                {
+                    _pollAfterLoad = false;
+                    _ = BackgroundRefreshAsync();
+                }
+            }
         }
     }
 
     private async Task LoadConversationsAsync(FolderViewModel folder, bool reset, CancellationToken ct)
     {
         var page = await Client.FindConversationsAsync(folder.Id, reset ? 0 : _nextOffset, PageSize, ct);
-        var newest = await NewestMessagesAsync(page.Items, ct);
+        var (newest, counts) = await RowDetailsAsync(page.Items, ct);
         if (ct.IsCancellationRequested) return;
         if (reset)
         {
             SelectedMessage = null;
             Messages.Clear();
         }
-        foreach (var c in page.Items) Messages.Add(MessageItemViewModel.ForConversation(c, folder.ShowsRecipients, newest.GetValueOrDefault(c.ConversationId)));
+        foreach (var c in page.Items) Messages.Add(ConversationRow(c, folder, newest, counts));
         _nextOffset = page.NextOffset;
         HasMore = !page.IsLastPage;
         StatusText = Loc.Count(page.TotalCount, Strings.Mail_ConversationCount_One, Strings.Mail_ConversationCount);
+    }
+
+    private static MessageItemViewModel ConversationRow(
+        ConversationSummary c, FolderViewModel folder, Dictionary<string, MailSummary> newest, IReadOnlyDictionary<string, int> counts) =>
+        MessageItemViewModel.ForConversation(c, folder.ShowsRecipients, newest.GetValueOrDefault(c.ConversationId),
+            counts.TryGetValue(c.ConversationId, out var count) ? count : null);
+
+    /// <summary>What conversation rows show beyond FindConversation: newest messages and real message counts.</summary>
+    private async Task<(Dictionary<string, MailSummary> Newest, IReadOnlyDictionary<string, int> Counts)> RowDetailsAsync(
+        IReadOnlyList<ConversationSummary> conversations, CancellationToken ct)
+    {
+        var newest = NewestMessagesAsync(conversations, ct);
+        var counts = MessageCountsAsync(conversations, ct);
+        return (await newest, await counts);
+    }
+
+    /// <summary>
+    /// Message counts of the conversations the server reports more than one item for. Its count includes every copy,
+    /// so a message sent to oneself (in Sent Items and the Inbox) would look like a two-message conversation. On
+    /// failure the server's counts are used.
+    /// </summary>
+    private async Task<IReadOnlyDictionary<string, int>> MessageCountsAsync(IReadOnlyList<ConversationSummary> conversations, CancellationToken ct)
+    {
+        var ids = conversations.Where(c => c.GlobalMessageCount > 1).Select(c => c.ConversationId).ToList();
+        if (ids.Count == 0) return new Dictionary<string, int>();
+        try
+        {
+            return await Client.CountConversationMessagesAsync(ids, ct);
+        }
+        catch (EwsException)
+        {
+            return new Dictionary<string, int>();
+        }
     }
 
     /// <summary>
@@ -307,7 +351,7 @@ public sealed partial class MainViewModel : ObservableObject
         }
         try
         {
-            var thread = await Client.GetConversationItemsAsync(conversation.ConversationId);
+            var thread = await Client.GetConversationItemsAsync(conversation.ConversationId, SelectedFolder?.Id);
             var index = Messages.IndexOf(row);
             if (index < 0 || row.IsExpanded) return; // gone or opened twice meanwhile
             foreach (var message in thread) Messages.Insert(++index, MessageItemViewModel.ForThreadMessage(message, row));
@@ -331,9 +375,9 @@ public sealed partial class MainViewModel : ObservableObject
     /// </summary>
     private async Task<(EwsItemId Id, IReadOnlyList<ThreadMessage>? Thread)> ResolveConversationAsync(MessageItemViewModel item, CancellationToken ct)
     {
-        if (item.Conversation is not { GlobalMessageCount: > 1 } conversation) return (item.Id, null);
-        var thread = await Client.GetConversationItemsAsync(conversation.ConversationId, ct);
-        if (thread.Count == 0) return (item.Id, null);
+        if (item is not { Conversation: { } conversation, MessageCount: > 1 }) return (item.Id, null);
+        var thread = await Client.GetConversationItemsAsync(conversation.ConversationId, SelectedFolder?.Id, ct);
+        if (thread.Count <= 1) return (item.Id, null);
         var self = _session.Account.Email;
         var target = thread.FirstOrDefault(m => !string.Equals(m.From?.Address, self, StringComparison.OrdinalIgnoreCase)) ?? thread[0];
         return (target.ItemId, thread);
@@ -487,45 +531,11 @@ public sealed partial class MainViewModel : ObservableObject
 
     private void RequestCompose(ComposeViewModel compose)
     {
-        // Sending or saving changes the Drafts folder; keep it current if it is on screen.
-        compose.Sent += (_, _) =>
-        {
-            RefreshDraftsIfShown();
-            _ = RefreshAfterSendAsync();
-        };
+        // Sending or saving changes the Drafts folder; keep it current if it is on screen. The sent copy (and, for
+        // mail to oneself, the delivery) is reported by the mailbox's change notifications like any other mail.
+        compose.Sent += (_, _) => RefreshDraftsIfShown();
         compose.DraftSaved += (_, _) => RefreshDraftsIfShown();
         ComposeRequested?.Invoke(this, compose);
-    }
-
-    /// <summary>
-    /// Shows the result of a send without waiting for the next poll: the copy in Sent Items and, for mail to oneself,
-    /// the delivery to the inbox (which takes Exchange a moment).
-    /// </summary>
-    private async Task RefreshAfterSendAsync()
-    {
-        foreach (var delay in new[] { 1500, 5000 })
-        {
-            await Task.Delay(delay);
-            await BackgroundRefreshAsync();
-        }
-    }
-
-    private bool _retryScheduled;
-
-    /// <summary>A poll found the list busy loading; look again shortly instead of waiting for the next tick.</summary>
-    private async Task RetrySoonAsync()
-    {
-        if (_retryScheduled) return;
-        _retryScheduled = true;
-        try
-        {
-            await Task.Delay(2000);
-        }
-        finally
-        {
-            _retryScheduled = false;
-        }
-        await BackgroundRefreshAsync();
     }
 
     private void RefreshDraftsIfShown()
@@ -728,21 +738,21 @@ public sealed partial class MainViewModel : ObservableObject
             var inbox = Inbox;
             MailPage? inboxPage = null;
             var added = 0;
-            if (SelectedFolder is not null && IsLoadingList) _ = RetrySoonAsync();
+            if (SelectedFolder is not null && IsLoadingList) _pollAfterLoad = true;
             if (SelectedFolder is { } folder && !IsSearchActive && !IsLoadingList)
             {
                 if (UsesConversations)
                 {
                     var conversations = await Client.FindConversationsAsync(folder.Id, 0, 25);
                     var changed = conversations.Items.Where(c => !Messages.Any(m => m.Conversation is { } k && Unchanged(k, c))).ToList();
-                    var newest = await NewestMessagesAsync(changed, CancellationToken.None);
+                    var (newest, messageCounts) = await RowDetailsAsync(changed, CancellationToken.None);
                     if (folder == SelectedFolder && !IsLoadingList && UsesConversations)
                     {
                         // An opened conversation keeps its messages right under it, so while one is open only new
                         // conversations are added (at the top, where they can't split a group); the rest waits.
                         added = Messages.Any(m => m.IsExpanded)
-                            ? InsertNewConversations(folder, conversations, newest)
-                            : MergeConversations(folder, conversations, newest);
+                            ? InsertNewConversations(folder, conversations, newest, messageCounts)
+                            : MergeConversations(folder, conversations, newest, messageCounts);
                     }
                 }
                 else
@@ -775,7 +785,8 @@ public sealed partial class MainViewModel : ObservableObject
     /// Brings the first conversations up to date: new ones are inserted, ones with new activity move to the top and
     /// get fresh counts. The selected row is kept as it is so the reading pane doesn't jump.
     /// </summary>
-    private int MergeConversations(FolderViewModel folder, ConversationPage page, Dictionary<string, MailSummary> newest)
+    private int MergeConversations(
+        FolderViewModel folder, ConversationPage page, Dictionary<string, MailSummary> newest, IReadOnlyDictionary<string, int> counts)
     {
         var added = 0;
         for (var i = 0; i < page.Items.Count && i <= Messages.Count; i++)
@@ -786,7 +797,7 @@ public sealed partial class MainViewModel : ObservableObject
 
             var row = existing is not null && (existing == SelectedMessage || Unchanged(existing.Conversation!, fresh))
                 ? existing
-                : MessageItemViewModel.ForConversation(fresh, folder.ShowsRecipients, newest.GetValueOrDefault(fresh.ConversationId));
+                : ConversationRow(fresh, folder, newest, counts);
             if (existing is not null && row != existing) Messages[Messages.IndexOf(existing)] = row;
 
             var index = Messages.IndexOf(row);
@@ -797,12 +808,13 @@ public sealed partial class MainViewModel : ObservableObject
         return added;
     }
 
-    private int InsertNewConversations(FolderViewModel folder, ConversationPage page, Dictionary<string, MailSummary> newest)
+    private int InsertNewConversations(
+        FolderViewModel folder, ConversationPage page, Dictionary<string, MailSummary> newest, IReadOnlyDictionary<string, int> counts)
     {
         var known = Messages.Select(m => m.Conversation?.ConversationId).OfType<string>().ToHashSet();
         var added = 0;
         foreach (var fresh in page.Items.Where(c => !known.Contains(c.ConversationId)))
-            Messages.Insert(added++, MessageItemViewModel.ForConversation(fresh, folder.ShowsRecipients, newest.GetValueOrDefault(fresh.ConversationId)));
+            Messages.Insert(added++, ConversationRow(fresh, folder, newest, counts));
         _nextOffset += added;
         return added;
     }

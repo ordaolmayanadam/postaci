@@ -92,6 +92,29 @@ public class MainViewModelTests
     }
 
     [Fact]
+    public async Task A_poll_that_finds_the_list_loading_runs_again_once_it_has_loaded()
+    {
+        var loaded = new TaskCompletionSource<HttpResponseMessage>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var server = new FakeEwsServer()
+            .On("GetFolder", WellKnown)
+            .On("FindFolder", Folders)
+            .OnAsync("FindItem", () => loaded.Task) // the list is still loading while the poll runs
+            .On("GetFolder", Counts)
+            .On("FindItem", Items(("A", true))) // the poll's inbox check
+            .On("GetFolder", Counts)
+            .On("FindItem", Items(("C", false), ("A", true)));
+        var vm = new MainViewModel(new MailSession(server.CreateClient(), new AccountSettings { Email = "ben@sirket.com" }));
+        await vm.InitializeAsync();
+        Assert.True(vm.IsLoadingList);
+
+        Assert.Equal(0, await vm.BackgroundRefreshAsync());
+        loaded.SetResult(FakeEwsServer.Xml(System.Net.HttpStatusCode.OK, FakeEwsServer.Envelope(Items(("A", true)))));
+
+        await WaitUntil(() => vm.Messages.Count == 2);
+        Assert.Equal("C", vm.Messages[0].Id.Id);
+    }
+
+    [Fact]
     public async Task Selecting_unread_mail_marks_it_read_when_mode_is_WhenSelected()
     {
         var (vm, server) = await OpenInboxAsync(MarkAsReadMode.WhenSelected);
