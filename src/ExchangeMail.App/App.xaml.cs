@@ -67,6 +67,7 @@ public partial class App : Application
         // The process ends inside Restart, so the tray icon and notification registration are released first.
         MainWindow.RemoveTrayIcon();
         Notifications.Unregister();
+        Program.ReleaseInstanceKey();
         var failure = AppInstance.Restart("");
         Diagnostics.Log($"Restart failed: {failure}");
         MainWindow.Exit();
