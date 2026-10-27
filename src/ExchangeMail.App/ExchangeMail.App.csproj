@@ -41,6 +41,11 @@
     <PackageReference Include="CommunityToolkit.WinUI.Controls.Sizers" Version="8.2.251219" />
     <PackageReference Include="Microsoft.WindowsAppSDK" Version="2.5.1" />
     <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.28000.2705" />
+    <!--
+      Newer than the one Windows App SDK 2.5.1 brings: 1.7.251221100 passes an undefined property to the upload symbol
+      package task, so no .appxsym is made and the Store upload (.msixupload) fails.
+    -->
+    <PackageReference Include="Microsoft.Windows.SDK.BuildTools.MSIX" Version="1.7.261008100" />
     <PackageReference Include="System.Drawing.Common" Version="10.0.13" />
   </ItemGroup>
 
