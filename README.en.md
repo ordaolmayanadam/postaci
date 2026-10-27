@@ -389,7 +389,7 @@ server (at most 30 s) and retries up to twice.
 - TLS certificate validation is never disabled.
 - **No telemetry.** The app's only network traffic goes to the configured Exchange server.
 
-See the [security policy](SECURITY.en.md) for reporting vulnerabilities.
+See the [privacy policy](PRIVACY.en.md) for details, and the [security policy](SECURITY.en.md) for reporting vulnerabilities.
 
 ## Known limitations and roadmap
 

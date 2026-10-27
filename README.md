@@ -376,7 +376,7 @@ bekleyip iki kez yeniden dener.
 - TLS sertifika doğrulaması devre dışı bırakılmaz.
 - **Telemetri yoktur.** Uygulamanın tek ağ trafiği yapılandırılan Exchange sunucusunadır.
 
-Güvenlik açığı bildirimi için [SECURITY.md](SECURITY.md) dosyasına bakın.
+Ayrıntılar için [gizlilik ilkesine](PRIVACY.md), güvenlik açığı bildirimi için [SECURITY.md](SECURITY.md) dosyasına bakın.
 
 ## Bilinen sınırlamalar ve yol haritası
 
