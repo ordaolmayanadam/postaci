@@ -18,6 +18,12 @@
 
     <ScrollViewer MaxHeight="600" VerticalScrollBarVisibility="Auto">
         <StackPanel Width="560" Padding="0,0,12,0" Spacing="12">
+            <InfoBar
+                x:Name="SeriesBar"
+                IsClosable="False"
+                Message="{h:L Key=Appointment_SeriesHint}"
+                Severity="Informational"
+                Visibility="{x:Bind SeriesBar.IsOpen, Mode=OneWay}" />
             <TextBox x:Name="SubjectBox" Header="{h:L Key=Common_Subject}" />
             <TextBox x:Name="LocationBox" Header="{h:L Key=Appointment_Location}" PlaceholderText="{h:L Key=Appointment_LocationPlaceholder}" />
             <CheckBox x:Name="AllDayCheck" Checked="OnAllDayChanged" Content="{h:L Key=Calendar_AllDay}" Unchecked="OnAllDayChanged" />
@@ -35,6 +41,22 @@
                 <TimePicker x:Name="StartTime" Grid.Column="1" HorizontalAlignment="Stretch" ClockIdentifier="24HourClock" Header="{h:L Key=Common_Time}" MinuteIncrement="15" />
                 <CalendarDatePicker x:Name="EndDate" Grid.Row="1" HorizontalAlignment="Stretch" Header="{h:L Key=Appointment_EndDate}" />
                 <TimePicker x:Name="EndTime" Grid.Row="1" Grid.Column="1" HorizontalAlignment="Stretch" ClockIdentifier="24HourClock" Header="{h:L Key=Common_Time}" MinuteIncrement="15" />
+            </Grid>
+
+            <!--  New events only: a series keeps the pattern it was created with.  -->
+            <Grid x:Name="RepeatRow" ColumnSpacing="12">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <ComboBox x:Name="RepeatBox" HorizontalAlignment="Stretch" Header="{h:L Key=Appointment_Repeat}" SelectionChanged="OnRepeatChanged" />
+                <CalendarDatePicker
+                    x:Name="RepeatUntilDate"
+                    Grid.Column="1"
+                    HorizontalAlignment="Stretch"
+                    Header="{h:L Key=Appointment_RepeatUntil}"
+                    IsEnabled="False"
+                    PlaceholderText="{h:L Key=Appointment_RepeatUntilPlaceholder}" />
             </Grid>
 
             <TextBox

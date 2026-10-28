@@ -467,9 +467,12 @@ public sealed partial class EwsClient : IDisposable
     {
         var request = M("CreateAttachment",
             M("ParentItemId", new XAttribute("Id", parent.Id), parent.ChangeKey is null ? null : new XAttribute("ChangeKey", parent.ChangeKey)),
+            // Element order follows the EWS schema (AttachmentType fields, then FileAttachmentType's Content).
             M("Attachments", attachments.Select(a => T("FileAttachment",
                 T("Name", a.Name),
                 T("ContentType", a.ContentType),
+                a.ContentId is null ? null : T("ContentId", a.ContentId),
+                a.ContentId is null ? null : T("IsInline", "true"),
                 T("Content", Convert.ToBase64String(a.Content))))));
 
         var latest = parent;

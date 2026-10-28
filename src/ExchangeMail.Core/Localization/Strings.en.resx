@@ -49,6 +49,9 @@
   <data name="Appointment_EditMeeting" xml:space="preserve">
     <value>Edit meeting</value>
   </data>
+  <data name="Appointment_EditSeries" xml:space="preserve">
+    <value>Edit series</value>
+  </data>
   <data name="Appointment_EndDate" xml:space="preserve">
     <value>End date</value>
   </data>
@@ -81,6 +84,21 @@
   </data>
   <data name="Appointment_ReminderNone" xml:space="preserve">
     <value>None</value>
+  </data>
+  <data name="Appointment_Repeat" xml:space="preserve">
+    <value>Repeat</value>
+  </data>
+  <data name="Appointment_RepeatUntil" xml:space="preserve">
+    <value>Repeat until</value>
+  </data>
+  <data name="Appointment_RepeatUntilBeforeStart" xml:space="preserve">
+    <value>The repeat end date can&apos;t be before the start date.</value>
+  </data>
+  <data name="Appointment_RepeatUntilPlaceholder" xml:space="preserve">
+    <value>No end date</value>
+  </data>
+  <data name="Appointment_SeriesHint" xml:space="preserve">
+    <value>Changes apply to every occurrence in the series. The dates follow the series; you can change the time and duration here.</value>
   </data>
   <data name="Appointment_ShowAs" xml:space="preserve">
     <value>Show as</value>
@@ -181,6 +199,9 @@
   <data name="Calendar_EventMoved" xml:space="preserve">
     <value>Event moved.</value>
   </data>
+  <data name="Calendar_EventResized" xml:space="preserve">
+    <value>Event duration changed.</value>
+  </data>
   <data name="Calendar_EventUpdated" xml:space="preserve">
     <value>Event updated.</value>
   </data>
@@ -226,8 +247,41 @@
   <data name="Calendar_Previous" xml:space="preserve">
     <value>Previous</value>
   </data>
+  <data name="Calendar_RecurringCancelQuestion" xml:space="preserve">
+    <value>This meeting is part of a series. Cancel only this occurrence or the whole series? A cancellation will be sent to the attendees.</value>
+  </data>
+  <data name="Calendar_RecurringCancelTitle" xml:space="preserve">
+    <value>Cancel recurring meeting</value>
+  </data>
+  <data name="Calendar_RecurringDeleteQuestion" xml:space="preserve">
+    <value>This event is part of a series. Delete only this occurrence or the whole series?</value>
+  </data>
+  <data name="Calendar_RecurringDeleteTitle" xml:space="preserve">
+    <value>Delete recurring event</value>
+  </data>
+  <data name="Calendar_RecurringEditQuestion" xml:space="preserve">
+    <value>This event is part of a series. Do you want to edit only this occurrence or the whole series?</value>
+  </data>
+  <data name="Calendar_RecurringEditTitle" xml:space="preserve">
+    <value>Edit recurring event</value>
+  </data>
+  <data name="Calendar_ResizeFailed" xml:space="preserve">
+    <value>Could not change the event&apos;s duration: {0}</value>
+  </data>
+  <data name="Calendar_ResizeMeetingQuestion" xml:space="preserve">
+    <value>The meeting will end at {0} and an update will be sent to the attendees. Continue?</value>
+  </data>
+  <data name="Calendar_ResizeMeetingTitle" xml:space="preserve">
+    <value>Change meeting duration</value>
+  </data>
   <data name="Calendar_SelectEvent" xml:space="preserve">
     <value>Select an event to see its details</value>
+  </data>
+  <data name="Calendar_SeriesLoadFailed" xml:space="preserve">
+    <value>Could not open the series: {0}</value>
+  </data>
+  <data name="Calendar_ThisOccurrence" xml:space="preserve">
+    <value>Just this one</value>
   </data>
   <data name="Calendar_Today" xml:space="preserve">
     <value>Today</value>
@@ -243,6 +297,9 @@
   </data>
   <data name="Calendar_Week" xml:space="preserve">
     <value>Week</value>
+  </data>
+  <data name="Calendar_WholeSeries" xml:space="preserve">
+    <value>The whole series</value>
   </data>
   <data name="Common_Cancel" xml:space="preserve">
     <value>Cancel</value>
@@ -360,6 +417,9 @@
   </data>
   <data name="Compose_ForwardPrefix" xml:space="preserve">
     <value>FW: </value>
+  </data>
+  <data name="Compose_ImageTooLarge" xml:space="preserve">
+    <value>{0} is too large to insert into the message ({1}; at most {2}). You can attach it as a file instead.</value>
   </data>
   <data name="Compose_InvalidAddresses" xml:space="preserve">
     <value>Invalid address: {0}. If you typed a name, pick a person from the list.</value>
@@ -537,6 +597,9 @@
   </data>
   <data name="Editor_Insert" xml:space="preserve">
     <value>Insert</value>
+  </data>
+  <data name="Editor_InsertImage" xml:space="preserve">
+    <value>Insert picture</value>
   </data>
   <data name="Editor_InsertLink" xml:space="preserve">
     <value>Insert link</value>
@@ -933,6 +996,24 @@
   </data>
   <data name="Person_Organization" xml:space="preserve">
     <value>Organization</value>
+  </data>
+  <data name="Recurrence_Daily" xml:space="preserve">
+    <value>Every day</value>
+  </data>
+  <data name="Recurrence_Monthly" xml:space="preserve">
+    <value>Every month (day {0})</value>
+  </data>
+  <data name="Recurrence_None" xml:space="preserve">
+    <value>Does not repeat</value>
+  </data>
+  <data name="Recurrence_Weekdays" xml:space="preserve">
+    <value>Every weekday (Monday–Friday)</value>
+  </data>
+  <data name="Recurrence_Weekly" xml:space="preserve">
+    <value>Every week ({0})</value>
+  </data>
+  <data name="Recurrence_Yearly" xml:space="preserve">
+    <value>Every year ({0})</value>
   </data>
   <data name="Response_Accepted" xml:space="preserve">
     <value>Accepted</value>

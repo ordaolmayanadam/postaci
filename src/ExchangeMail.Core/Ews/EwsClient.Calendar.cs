@@ -31,7 +31,17 @@ public sealed partial class EwsClient
         return root?.Element(TNs + "Items")?.Elements().Select(ParseCalendarEvent).OrderBy(e => e.Start).ToList() ?? [];
     }
 
-    public async Task<CalendarEventDetail> GetAppointmentAsync(EwsItemId id, CancellationToken ct = default)
+    public Task<CalendarEventDetail> GetAppointmentAsync(EwsItemId id, CancellationToken ct = default) =>
+        GetAppointmentAsync(ItemIdElement(id), ct);
+
+    /// <summary>
+    /// The series (recurring master) an occurrence belongs to. Its id edits or deletes the whole series; its start and
+    /// end are those of the first occurrence.
+    /// </summary>
+    public Task<CalendarEventDetail> GetRecurringMasterAsync(EwsItemId occurrence, CancellationToken ct = default) =>
+        GetAppointmentAsync(T("RecurringMasterItemId", new XAttribute("OccurrenceId", occurrence.Id)), ct);
+
+    private async Task<CalendarEventDetail> GetAppointmentAsync(XElement itemId, CancellationToken ct)
     {
         var request = M("GetItem",
             M("ItemShape",
@@ -42,7 +52,7 @@ public sealed partial class EwsClient
                     CalendarSummaryFields
                         .Concat(["item:Body", "calendar:RequiredAttendees", "calendar:OptionalAttendees", "item:ReminderIsSet", "item:ReminderMinutesBeforeStart"])
                         .Select(Field))),
-            M("ItemIds", ItemIdElement(id)));
+            M("ItemIds", itemId));
 
         var item = Single(await ExecuteAsync(request, ct, withTimeZone: true)).Element(MNs + "Items")?.Elements().FirstOrDefault()
                    ?? throw new EwsException(Strings.Ews_EventNotFound, "ErrorItemNotFound");
@@ -59,11 +69,11 @@ public sealed partial class EwsClient
 
     /// <summary>
     /// Updates an appointment or a meeting you organize. With <paramref name="notifyAttendees"/> attendees receive the update.
-    /// The body and the attendee list are only written when the caller says they changed, so formatting and
-    /// optional attendees set in Outlook are preserved.
+    /// The body, the attendee list and the times are only written when the caller says they changed, so formatting and
+    /// optional attendees set in Outlook are preserved, and so are the changed occurrences of a series.
     /// </summary>
     public async Task UpdateAppointmentAsync(EwsItemId id, NewAppointment appointment, bool updateBody, bool updateAttendees,
-        bool notifyAttendees, CancellationToken ct = default)
+        bool updateTimes, bool notifyAttendees, CancellationToken ct = default)
     {
         if (appointment.End <= appointment.Start)
             throw new ArgumentException(Strings.Common_EndBeforeStart, nameof(appointment));
@@ -72,14 +82,20 @@ public sealed partial class EwsClient
         {
             SetCalendarField("item:Subject", T("Subject", appointment.Subject)),
             SetCalendarField("item:ReminderIsSet", T("ReminderIsSet", appointment.ReminderMinutes is null ? "false" : "true")),
-            SetCalendarField("calendar:Start", T("Start", EwsDate(appointment.Start))),
-            SetCalendarField("calendar:End", T("End", EwsDate(appointment.End))),
-            SetCalendarField("calendar:IsAllDayEvent", T("IsAllDayEvent", appointment.IsAllDay ? "true" : "false")),
+        };
+        if (updateTimes)
+        {
+            updates.Add(SetCalendarField("calendar:Start", T("Start", EwsDate(appointment.Start))));
+            updates.Add(SetCalendarField("calendar:End", T("End", EwsDate(appointment.End))));
+            updates.Add(SetCalendarField("calendar:IsAllDayEvent", T("IsAllDayEvent", appointment.IsAllDay ? "true" : "false")));
+        }
+        updates.AddRange(
+        [
             SetCalendarField("calendar:LegacyFreeBusyStatus", T("LegacyFreeBusyStatus", appointment.FreeBusy.ToString())),
             string.IsNullOrWhiteSpace(appointment.Location)
                 ? T("DeleteItemField", Field("calendar:Location"))
                 : SetCalendarField("calendar:Location", T("Location", appointment.Location)),
-        };
+        ]);
         if (appointment.ReminderMinutes is { } minutes)
             updates.Add(SetCalendarField("item:ReminderMinutesBeforeStart", T("ReminderMinutesBeforeStart", minutes)));
         if (updateBody)
@@ -92,7 +108,7 @@ public sealed partial class EwsClient
         await UpdateCalendarItemAsync(id, updates, notifyAttendees, ct);
     }
 
-    /// <summary>Moves an appointment to a new time (drag and drop in the calendar grid).</summary>
+    /// <summary>Gives an appointment a new start and end (moved or resized in the calendar grid).</summary>
     public Task MoveAppointmentAsync(EwsItemId id, DateTimeOffset start, DateTimeOffset end, bool notifyAttendees, CancellationToken ct = default) =>
         UpdateCalendarItemAsync(id,
         [
@@ -181,7 +197,8 @@ public sealed partial class EwsClient
             T("LegacyFreeBusyStatus", appointment.FreeBusy.ToString()),
             string.IsNullOrWhiteSpace(appointment.Location) ? null : T("Location", appointment.Location),
             Attendees("RequiredAttendees", appointment.RequiredAttendees),
-            Attendees("OptionalAttendees", appointment.OptionalAttendees));
+            Attendees("OptionalAttendees", appointment.OptionalAttendees),
+            appointment.Recurrence is { } recurrence ? RecurrenceElement(recurrence, appointment.Start.LocalDateTime.Date) : null);
 
         var request = M("CreateItem",
             new XAttribute("SendMeetingInvitations", isMeeting ? "SendToAllAndSaveCopy" : "SendToNone"),
@@ -193,6 +210,27 @@ public sealed partial class EwsClient
 
         static XElement? Attendees(string name, IList<string> addresses) =>
             addresses.Count == 0 ? null : T(name, addresses.Select(a => T("Attendee", MailboxElement(a))));
+    }
+
+    /// <summary>
+    /// The recurrence of a series whose first occurrence is on <paramref name="firstDay"/> (local), which gives the
+    /// weekday, day of the month and month. The times of day come from the item's Start and End.
+    /// </summary>
+    private static XElement RecurrenceElement(RecurrencePattern pattern, DateTime firstDay)
+    {
+        var rule = pattern.Kind switch
+        {
+            RecurrenceKind.Daily => T("DailyRecurrence", T("Interval", 1)),
+            RecurrenceKind.Weekdays => T("WeeklyRecurrence", T("Interval", 1), T("DaysOfWeek", "Monday Tuesday Wednesday Thursday Friday")),
+            RecurrenceKind.Weekly => T("WeeklyRecurrence", T("Interval", 1), T("DaysOfWeek", firstDay.DayOfWeek.ToString())),
+            RecurrenceKind.Monthly => T("AbsoluteMonthlyRecurrence", T("Interval", 1), T("DayOfMonth", firstDay.Day)),
+            _ => T("AbsoluteYearlyRecurrence", T("DayOfMonth", firstDay.Day),
+                T("Month", CultureInfo.InvariantCulture.DateTimeFormat.GetMonthName(firstDay.Month))),
+        };
+        var start = T("StartDate", firstDay.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
+        return T("Recurrence", rule, pattern.Until is { } until
+            ? T("EndDateRecurrence", start, T("EndDate", until.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)))
+            : T("NoEndRecurrence", start));
     }
 
     /// <summary>Deletes an appointment. For meetings you organize, attendees receive a cancellation.</summary>

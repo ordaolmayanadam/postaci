@@ -36,6 +36,12 @@ public sealed partial class ComposeViewModel : ObservableObject
     /// <summary>Inline images shown in the editor as data: URIs, by content id; turned back into cid: when saving.</summary>
     private readonly Dictionary<string, string> _inlineImages = [];
 
+    /// <summary>The draft's attachments behind <see cref="_inlineImages"/>, by content id; removed with their picture.</summary>
+    private readonly Dictionary<string, string> _inlineAttachmentIds = [];
+
+    /// <summary>Pictures added in the editor that go out with the message being saved (see <see cref="BuildMessageAsync"/>).</summary>
+    private List<(string DataUri, OutgoingAttachment Attachment)> _newPictures = [];
+
     private const long MaxInlineImageBytes = 15 * 1024 * 1024;
 
     public ComposeViewModel(MailSession session, ComposeMode mode, MailDetail? original)
@@ -276,6 +282,7 @@ public sealed partial class ComposeViewModel : ObservableObject
         await RunAsync(async () =>
         {
             _draftId = await _session.Client.SaveDraftAsync(message);
+            KeepNewPictures();
             _isAutoDraft = true;
             if (_discarded)
             {
@@ -363,6 +370,7 @@ public sealed partial class ComposeViewModel : ObservableObject
         {
             var wasResponse = IsResponse;
             _draftId = await _session.Client.SaveDraftAsync(message);
+            KeepNewPictures();
             _isAutoDraft = false; // the user wants to keep it
             await ReloadDraftAsync(replaceBody: wasResponse);
 
@@ -384,9 +392,32 @@ public sealed partial class ComposeViewModel : ObservableObject
         ExistingAttachments.Clear();
         foreach (var a in saved.Attachments.Where(a => !a.IsInline)) ExistingAttachments.Add(a);
         OnAttachmentsChanged();
+        RememberInlineAttachments(saved);
         if (!replaceBody) return;
         OnPropertyChanged(nameof(IsResponse));
         BodyReplaced?.Invoke(this, await ToEditorHtmlAsync(saved));
+    }
+
+    /// <summary>
+    /// The pictures just saved with the draft are now its attachments: the editor keeps showing them as data: URIs,
+    /// which later saves turn back into the same cid: references instead of attaching them again.
+    /// </summary>
+    private void KeepNewPictures()
+    {
+        foreach (var (dataUri, attachment) in _newPictures) _inlineImages[attachment.ContentId!] = dataUri;
+        _newPictures = [];
+    }
+
+    /// <summary>Notes which of the draft's attachments the editor's inline images are; images whose attachment is gone are forgotten.</summary>
+    private void RememberInlineAttachments(MailDetail saved)
+    {
+        _inlineAttachmentIds.Clear();
+        foreach (var a in saved.Attachments.Where(a => !a.IsItemAttachment && !string.IsNullOrEmpty(a.ContentId)))
+        {
+            var cid = a.ContentId!.Trim('<', '>');
+            if (_inlineImages.ContainsKey(cid)) _inlineAttachmentIds[cid] = a.Id;
+        }
+        foreach (var cid in _inlineImages.Keys.Except(_inlineAttachmentIds.Keys).ToList()) _inlineImages.Remove(cid);
     }
 
     /// <summary>The body of a saved draft for the editor, with inline images loaded and the head kept aside.</summary>
@@ -414,14 +445,19 @@ public sealed partial class ComposeViewModel : ObservableObject
             _inlineImages[a.ContentId!.Trim('<', '>')] = data;
             html = MailFormat.ReplaceContentId(html, a.ContentId!, data);
         }
+        RememberInlineAttachments(saved);
         return html;
     }
 
-    /// <summary>The editor's HTML as the draft's body: inline images back to cid: and the original head restored.</summary>
+    /// <summary>
+    /// The editor's HTML with its pictures as cid: references: those already on the draft point to their attachment,
+    /// new ones become inline attachments (<see cref="_newPictures"/>).
+    /// </summary>
     private string FromEditorHtml(string html)
     {
         foreach (var (cid, data) in _inlineImages) html = html.Replace(data, "cid:" + cid, StringComparison.Ordinal);
-        return _bodyHead is null ? html : $"<html><head>{_bodyHead}</head><body>{html}</body></html>";
+        _newPictures = [];
+        return MailFormat.ExtractInlineImages(html, _newPictures);
     }
 
     private async Task<OutgoingMessage?> BuildMessageAsync(bool requireRecipients)
@@ -443,22 +479,24 @@ public sealed partial class ComposeViewModel : ObservableObject
             return null;
         }
 
-        var html = ReadBodyHtmlAsync is null ? InitialHtml : await ReadBodyHtmlAsync();
+        var html = FromEditorHtml(ReadBodyHtmlAsync is null ? InitialHtml : await ReadBodyHtmlAsync());
+        // Pictures deleted in the editor take their attachment off the draft.
+        var removedPictures = _inlineAttachmentIds.Where(p => !MailFormat.ReferencesContentId(html, p.Key)).Select(p => p.Value);
         return new OutgoingMessage
         {
             Mode = Mode,
             ReferenceItemId = _referenceId,
             ExistingDraftId = _draftId,
-            RemovedAttachmentIds = _removedAttachmentIds.ToList(),
+            RemovedAttachmentIds = _removedAttachmentIds.Concat(removedPictures).ToList(),
             To = to,
             Cc = cc,
             Bcc = bcc,
             Subject = Subject.Trim(),
             HtmlBody = _draftId is null
                 ? MailFormat.WrapComposedHtml(html, _session.Preferences.ComposeFontFamily, _session.Preferences.ComposeFontSize)
-                : FromEditorHtml(html),
+                : _bodyHead is null ? html : $"<html><head>{_bodyHead}</head><body>{html}</body></html>",
             Importance = IsHighImportance ? Importance.High : Importance.Normal,
-            Attachments = Attachments.ToList(),
+            Attachments = Attachments.Concat(_newPictures.Select(p => p.Attachment)).ToList(),
         };
     }
 

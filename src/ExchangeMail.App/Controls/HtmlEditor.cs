@@ -49,6 +49,11 @@ public sealed partial class HtmlEditor : UserControl
         toolbar.Children.Add(ToolButton("", Strings.Editor_BulletList, () => ExecAsync("insertUnorderedList")));
         toolbar.Children.Add(TextButton("1.", Strings.Editor_NumberedList, () => ExecAsync("insertOrderedList")));
         toolbar.Children.Add(ToolButton("", Strings.Editor_InsertLink, InsertLinkAsync));
+        toolbar.Children.Add(ToolButton("", Strings.Editor_InsertImage, () =>
+        {
+            ImageRequested?.Invoke(this, EventArgs.Empty);
+            return Task.CompletedTask;
+        }));
         toolbar.Children.Add(Separator());
         toolbar.Children.Add(ToolButton("", Strings.Editor_ClearFormatting, () => ExecAsync("removeFormat")));
 
@@ -169,6 +174,22 @@ public sealed partial class HtmlEditor : UserControl
         await EnsureInitializedAsync();
         var result = await _web.CoreWebView2.ExecuteScriptAsync("document.body.innerHTML");
         return JsonSerializer.Deserialize<string>(result) ?? "";
+    }
+
+    /// <summary>The Insert picture button was clicked; the window picks a file and calls <see cref="InsertImageAsync"/>.</summary>
+    public event EventHandler? ImageRequested;
+
+    /// <summary>
+    /// Inserts a picture at the caret as a data: URI, like a pasted one; it is sent as an inline attachment
+    /// (see MailFormat.ExtractInlineImages).
+    /// </summary>
+    public async Task InsertImageAsync(string contentType, byte[] content)
+    {
+        await EnsureInitializedAsync();
+        _web.Focus(FocusState.Programmatic);
+        var source = $"data:{contentType};base64,{Convert.ToBase64String(content)}";
+        await _web.CoreWebView2.ExecuteScriptAsync(
+            $"(function(s){{var i=document.createElement('img');i.src=s;document.execCommand('insertHTML',false,i.outerHTML);}})({Json(source)});");
     }
 
     /// <summary>Puts the caret at the start of the text.</summary>

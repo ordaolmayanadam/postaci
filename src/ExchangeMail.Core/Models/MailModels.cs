@@ -99,7 +99,8 @@ public sealed record ThreadMessage(
     string ItemClass,
     bool IsRead = true);
 
-public sealed record OutgoingAttachment(string Name, string ContentType, byte[] Content);
+/// <param name="ContentId">Set for a picture in the body (referenced there as cid:), which is attached inline.</param>
+public sealed record OutgoingAttachment(string Name, string ContentType, byte[] Content, string? ContentId = null);
 
 public sealed class OutgoingMessage
 {

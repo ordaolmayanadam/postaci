@@ -207,6 +207,35 @@ public static partial class MailFormat
     public static bool ReferencesContentId(string html, string? contentId) =>
         !string.IsNullOrEmpty(contentId) && html.Contains("cid:" + contentId.Trim('<', '>'), StringComparison.OrdinalIgnoreCase);
 
+    /// <summary>
+    /// Pictures pasted or inserted in the editor are data: URIs, which Outlook and many other mail programs do not
+    /// show. Each one becomes an inline attachment and its src a cid: reference to it; the attachments are returned
+    /// with the data: URI they replace.
+    /// </summary>
+    public static string ExtractInlineImages(string html, List<(string DataUri, Core.Models.OutgoingAttachment Attachment)> pictures)
+    {
+        return DataImageSource().Replace(html, m =>
+        {
+            byte[] content;
+            try
+            {
+                content = Convert.FromBase64String(m.Groups["data"].Value);
+            }
+            catch (FormatException)
+            {
+                return m.Value; // not valid base64: left as it is
+            }
+            var type = m.Groups["type"].Value.ToLowerInvariant();
+            var contentId = $"{Guid.NewGuid():N}@postaci";
+            var extension = type switch { "image/jpeg" => ".jpg", "image/svg+xml" => ".svg", _ => "." + type["image/".Length..] };
+            pictures.Add((m.Groups["uri"].Value, new Core.Models.OutgoingAttachment($"image{pictures.Count + 1:000}{extension}", type, content, contentId)));
+            return m.Groups["prefix"].Value + "cid:" + contentId + m.Groups["quote"].Value;
+        });
+    }
+
+    [GeneratedRegex(@"(?<prefix>\bsrc\s*=\s*(?<quote>[""']))(?<uri>data:(?<type>image/[a-z0-9.+-]+);base64,(?<data>[a-z0-9+/=\s]+))\k<quote>", RegexOptions.IgnoreCase)]
+    private static partial Regex DataImageSource();
+
     public static string GuessContentType(string fileName) => Path.GetExtension(fileName).ToLowerInvariant() switch
     {
         ".pdf" => "application/pdf",
@@ -217,6 +246,7 @@ public static partial class MailFormat
         ".jpg" or ".jpeg" => "image/jpeg",
         ".gif" => "image/gif",
         ".bmp" => "image/bmp",
+        ".webp" => "image/webp",
         ".zip" => "application/zip",
         ".docx" => "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
         ".xlsx" => "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",

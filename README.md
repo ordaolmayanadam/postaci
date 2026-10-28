@@ -156,6 +156,9 @@ denetlemeye devam eder. Tamamen kapatmak için tepsi simgesine sağ tıklayıp *
 - **Biçimli metin:** kalın, italik, altı çizili, yazı rengi ve boyutu, madde işaretli ve numaralı liste, bağlantı.
 - Kime, Bilgi ve Gizli alanlarında **şirket rehberinden otomatik tamamlama**.
 - Dosya seçerek veya **sürükle-bırak** ile ek ekleme.
+- **Metnin içinde resim:** panodan yapıştırılan veya *Resim ekle* ile seçilen resimler gömülü ek olarak gönderilir, böylece
+  Outlook'ta da metnin içinde görünür. 10 MB'tan büyük resimler dosya olarak eklenir. Tarayıcıdan, Office'ten veya
+  Teams'ten kopyalanan resimler yapıştırılınca kırık görünür (bkz. sınırlamalar); bunları *Resim ekle* ile ekleyin.
 - **Taslaklar:** aynı penceredeki her kayıt aynı taslağı günceller. Taslaklar klasöründeki ileti
   *Taslağı düzenle* (veya çift tıklama) ile açılır, düzenlenir ve gönderilir; taslaktaki ekler kaldırılabilir.
 - **Yanıt ve iletmede özgün ileti düzenleyicide görünür:** pencere açılınca taslak oluşturulur, Exchange alıntıyı (iletmede
@@ -167,10 +170,14 @@ denetlemeye devam eder. Tamamen kapatmak için tepsi simgesine sağ tıklayıp *
 ### Takvim
 
 - Ay takviminden gün seçilir. **Gün ve hafta görünümü saat ızgarasıdır** (çakışan etkinlikler yan yana); ay görünümü ajanda listesidir.
-- Etkinlikler **sürükle-bırak** ile taşınır (15 dakikalık adımlarla, günler arasında). Boş bir saate çift tıklamak o saatte yeni etkinlik açar.
+- Etkinlikler **sürükle-bırak** ile taşınır (15 dakikalık adımlarla, günler arasında); **alt kenarından çekilerek** bitiş
+  saati değişir. Boş bir saate çift tıklamak o saatte yeni etkinlik açar.
 - **Yeni etkinlik veya toplantı:** konu, konum, tüm gün, başlangıç/bitiş, katılımcılar, anımsatıcı, durum (boş/belki/meşgul/dışarıda).
+- **Yinelenen etkinlik:** her gün, her iş günü, her hafta, her ay veya her yıl; isteğe bağlı son tekrar tarihiyle.
+  Gün, ay günü ve tarih başlangıçtan alınır.
 - **Uygunluk:** toplantı oluştururken sizin ve katılımcıların meşgul saatleri zaman çizelgesinde görünür.
 - Kendi etkinlikleriniz ve düzenleyeni olduğunuz toplantılar **düzenlenir**; değişiklik katılımcılara bildirilir.
+  Yinelenen bir etkinliği düzenlerken veya silerken değişikliğin yalnızca o tekrara mı, **tüm seriye** mi uygulanacağı sorulur.
 - Davetler kabul edilir, "belki" yanıtı verilir veya reddedilir; düzenlediğiniz toplantı iptal edilince katılımcılara bildirim gider.
 
 ### Kişiler
@@ -337,7 +344,8 @@ veya var olan taslak şu sırayla gönderilir:
 2. `CreateItem(SaveOnly)` + `ReplyToItem` / `ReplyAllToItem` / `ForwardItem`: Exchange alıntıyı ekleyerek taslağı oluşturur.
    Yanıt ve iletmede bu adım yazma penceresi açılırken yapılır; taslağın gövdesi (`GetItem`, gömülü resimler için
    `GetAttachment`) düzenleyiciye yüklenir. Resimler düzenleyicide `data:` adresi olur, kaydederken yeniden `cid:`
-   başvurusuna çevrilir; özgün iletinin `<head>` stilleri korunur.
+   başvurusuna çevrilir; özgün iletinin `<head>` stilleri korunur. Yapıştırılan ya da eklenen yeni resimler gömülü ek
+   (`IsInline`, `ContentId`) olur; düzenleyicide silinen resmin eki taslaktan kaldırılır.
 3. `UpdateItem`: kullanıcının düzenlediği alıcılar, konu, önem ve (taslak varsa) gövde yazılır.
 4. `CreateAttachment` / `DeleteAttachment`: ekler eklenir veya kaldırılır.
 5. `SendItem`: taslak gönderilir ve Gönderilmiş Öğeler'e kaydedilir.
@@ -354,7 +362,11 @@ ile (Silinmiş Öğeler ve Taslaklar hariç) alınır. Her iletinin yalnızca ke
 Arama sonuçları ve Taslaklar / Giden Kutusu her zaman tek tek ileti olarak listelenir.
 
 **Takvim.** Takvim isteklerine Windows saat dilimi (`TimeZoneContext`) eklenir. Böylece tüm gün etkinlikleri ve
-görünümler yerel saate göre hesaplanır. Yinelenen toplantılar `CalendarView` ile tek tek tekrarlara açılır.
+görünümler yerel saate göre hesaplanır. Yinelenen toplantılar `CalendarView` ile tek tek tekrarlara açılır. Serinin
+tamamı, bir tekrarın kimliğiyle `RecurringMasterItemId` üzerinden açılır, düzenlenir veya silinir. Saatler değişmediyse
+başlangıç ve bitiş yazılmaz, böylece tek tek değiştirilmiş tekrarlar korunur. Yeni seri `CreateItem`'da `Recurrence`
+(`DailyRecurrence`, `WeeklyRecurrence`, `AbsoluteMonthlyRecurrence`, `AbsoluteYearlyRecurrence`; `NoEndRecurrence` veya
+`EndDateRecurrence`) ile oluşturulur; saatler serinin ilk tekrarının başlangıç ve bitişinden gelir.
 
 **Sunucu yükü.** Exchange `ErrorServerBusy` döndürdüğünde istemci, sunucunun bildirdiği süre kadar (en fazla 30 sn)
 bekleyip iki kez yeniden dener.
@@ -381,10 +393,15 @@ Ayrıntılar için [gizlilik ilkesine](PRIVACY.md), güvenlik açığı bildirim
 ## Bilinen sınırlamalar ve yol haritası
 
 - Görevler (Tasks) yok.
-- Yinelenen bir toplantının tüm serisini düzenleme yok; ızgarada yapılan değişiklik yalnızca o tekrarı etkiler.
-- Etkinlik süresi ızgarada kenarından çekilerek değiştirilemez; süre düzenleme penceresinden değişir.
+- Bir serinin yinelenme düzeni sonradan değiştirilemez. "İki haftada bir" gibi aralıklı ve "ayın ilk pazartesi" gibi
+  göreli düzenler, tekrar sayısıyla bitiş de yok. Seri düzenlenirken tarihler seriye bağlıdır; ızgarada sürükleme
+  yalnızca o tekrarı etkiler.
 - Konuşma görünümünde yalnızca en son iletinin gömülü resimleri yüklenir; eski iletilerdeki resimler için iletiyi tek başına açın.
-- Yazma penceresinde resim yapıştırma/ekleme ve tablo düzenleme yok.
+- Yazma penceresinde tablo düzenleme yok.
+- Tarayıcı, Office ve Teams bir resmi kopyalarken panoya resmi web adresine veya dosyaya bağlayan bir HTML parçası da
+  koyar; yazma alanı bu parçayı yapıştırır, resim kırık görünür ve alıcıya gitmez. Yapıştırmayı ele almak için yazma
+  alanında sayfa betiklerini açmak gerekir, güvenlik için kapalı tutuluyorlar. Panoda yalnızca resim varsa (ör. Print
+  Screen) sorunsuz yapıştırılır.
 - Hybrid Modern Authentication (OAuth) yok; yalnızca Negotiate (Kerberos/NTLM) ve Basic.
 - S/MIME şifreleme/imza, paylaşılan posta kutuları ve arşiv posta kutusu yok.
 - Arayüz yazı tipi değişikliği yeniden başlatma gerektirir; bazı yerleşik WinUI parçaları kendi boyutunu koruyabilir.

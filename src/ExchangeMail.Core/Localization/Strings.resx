@@ -49,6 +49,9 @@
   <data name="Appointment_EditMeeting" xml:space="preserve">
     <value>Toplantıyı düzenle</value>
   </data>
+  <data name="Appointment_EditSeries" xml:space="preserve">
+    <value>Seriyi düzenle</value>
+  </data>
   <data name="Appointment_EndDate" xml:space="preserve">
     <value>Bitiş tarihi</value>
   </data>
@@ -81,6 +84,21 @@
   </data>
   <data name="Appointment_ReminderNone" xml:space="preserve">
     <value>Yok</value>
+  </data>
+  <data name="Appointment_Repeat" xml:space="preserve">
+    <value>Yinele</value>
+  </data>
+  <data name="Appointment_RepeatUntil" xml:space="preserve">
+    <value>Son tekrar</value>
+  </data>
+  <data name="Appointment_RepeatUntilBeforeStart" xml:space="preserve">
+    <value>Son tekrar, başlangıç tarihinden önce olamaz.</value>
+  </data>
+  <data name="Appointment_RepeatUntilPlaceholder" xml:space="preserve">
+    <value>Bitiş yok</value>
+  </data>
+  <data name="Appointment_SeriesHint" xml:space="preserve">
+    <value>Değişiklikler serinin tüm tekrarlarına uygulanır. Tarihler seriye bağlıdır; saati ve süreyi buradan değiştirebilirsiniz.</value>
   </data>
   <data name="Appointment_ShowAs" xml:space="preserve">
     <value>Durumum</value>
@@ -181,6 +199,9 @@
   <data name="Calendar_EventMoved" xml:space="preserve">
     <value>Etkinlik taşındı.</value>
   </data>
+  <data name="Calendar_EventResized" xml:space="preserve">
+    <value>Etkinliğin süresi değiştirildi.</value>
+  </data>
   <data name="Calendar_EventUpdated" xml:space="preserve">
     <value>Etkinlik güncellendi.</value>
   </data>
@@ -226,8 +247,41 @@
   <data name="Calendar_Previous" xml:space="preserve">
     <value>Önceki</value>
   </data>
+  <data name="Calendar_RecurringCancelQuestion" xml:space="preserve">
+    <value>Bu toplantı bir serinin parçası. Yalnızca bu tekrar mı, tüm seri mi iptal edilsin? Katılımcılara iptal bildirimi gönderilecek.</value>
+  </data>
+  <data name="Calendar_RecurringCancelTitle" xml:space="preserve">
+    <value>Yinelenen toplantıyı iptal et</value>
+  </data>
+  <data name="Calendar_RecurringDeleteQuestion" xml:space="preserve">
+    <value>Bu etkinlik bir serinin parçası. Yalnızca bu tekrar mı, tüm seri mi silinsin?</value>
+  </data>
+  <data name="Calendar_RecurringDeleteTitle" xml:space="preserve">
+    <value>Yinelenen etkinliği sil</value>
+  </data>
+  <data name="Calendar_RecurringEditQuestion" xml:space="preserve">
+    <value>Bu etkinlik bir serinin parçası. Yalnızca bu tekrarı mı, tüm seriyi mi düzenlemek istiyorsunuz?</value>
+  </data>
+  <data name="Calendar_RecurringEditTitle" xml:space="preserve">
+    <value>Yinelenen etkinliği düzenle</value>
+  </data>
+  <data name="Calendar_ResizeFailed" xml:space="preserve">
+    <value>Etkinliğin süresi değiştirilemedi: {0}</value>
+  </data>
+  <data name="Calendar_ResizeMeetingQuestion" xml:space="preserve">
+    <value>Toplantı {0} saatinde bitecek ve katılımcılara güncelleme gönderilecek. Devam edilsin mi?</value>
+  </data>
+  <data name="Calendar_ResizeMeetingTitle" xml:space="preserve">
+    <value>Toplantı süresini değiştir</value>
+  </data>
   <data name="Calendar_SelectEvent" xml:space="preserve">
     <value>Ayrıntıları görmek için bir etkinlik seçin</value>
+  </data>
+  <data name="Calendar_SeriesLoadFailed" xml:space="preserve">
+    <value>Seri açılamadı: {0}</value>
+  </data>
+  <data name="Calendar_ThisOccurrence" xml:space="preserve">
+    <value>Yalnızca bu tekrar</value>
   </data>
   <data name="Calendar_Today" xml:space="preserve">
     <value>Bugün</value>
@@ -243,6 +297,9 @@
   </data>
   <data name="Calendar_Week" xml:space="preserve">
     <value>Hafta</value>
+  </data>
+  <data name="Calendar_WholeSeries" xml:space="preserve">
+    <value>Tüm seri</value>
   </data>
   <data name="Common_Cancel" xml:space="preserve">
     <value>İptal</value>
@@ -360,6 +417,9 @@
   </data>
   <data name="Compose_ForwardPrefix" xml:space="preserve">
     <value>İLT: </value>
+  </data>
+  <data name="Compose_ImageTooLarge" xml:space="preserve">
+    <value>{0} iletinin içine eklenemeyecek kadar büyük ({1}; en fazla {2}). Dosya olarak ekleyebilirsiniz.</value>
   </data>
   <data name="Compose_InvalidAddresses" xml:space="preserve">
     <value>Geçersiz adres: {0}. Ad yazdıysanız listeden bir kişi seçin.</value>
@@ -537,6 +597,9 @@
   </data>
   <data name="Editor_Insert" xml:space="preserve">
     <value>Ekle</value>
+  </data>
+  <data name="Editor_InsertImage" xml:space="preserve">
+    <value>Resim ekle</value>
   </data>
   <data name="Editor_InsertLink" xml:space="preserve">
     <value>Bağlantı ekle</value>
@@ -933,6 +996,24 @@
   </data>
   <data name="Person_Organization" xml:space="preserve">
     <value>Kuruluş</value>
+  </data>
+  <data name="Recurrence_Daily" xml:space="preserve">
+    <value>Her gün</value>
+  </data>
+  <data name="Recurrence_Monthly" xml:space="preserve">
+    <value>Her ay (ayın {0}. günü)</value>
+  </data>
+  <data name="Recurrence_None" xml:space="preserve">
+    <value>Yinelenmez</value>
+  </data>
+  <data name="Recurrence_Weekdays" xml:space="preserve">
+    <value>Her iş günü (Pazartesi–Cuma)</value>
+  </data>
+  <data name="Recurrence_Weekly" xml:space="preserve">
+    <value>Her hafta ({0})</value>
+  </data>
+  <data name="Recurrence_Yearly" xml:space="preserve">
+    <value>Her yıl ({0})</value>
   </data>
   <data name="Response_Accepted" xml:space="preserve">
     <value>Kabul edildi</value>

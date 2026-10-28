@@ -16,7 +16,8 @@ namespace ExchangeMail.App.Controls;
 
 /// <summary>
 /// Outlook-style day/week grid: one column per day, events positioned by time, overlapping events side by side.
-/// Events you can edit are moved by dragging (15-minute steps, across days); double-click a slot to create one.
+/// Events you can edit are moved by dragging (15-minute steps, across days) and get a new end time by dragging their
+/// lower edge; double-click a slot to create one.
 /// </summary>
 public sealed partial class WeekGridView : UserControl
 {
@@ -24,6 +25,8 @@ public sealed partial class WeekGridView : UserControl
     private const double TimeColumnWidth = 56;
     private const int SnapMinutes = 15;
     private const double DragThreshold = 4;
+    /// <summary>Height of the strip at a block's lower edge that resizes instead of moving.</summary>
+    private const double ResizeEdge = 6;
 
     private static readonly SolidColorBrush LineBrush = new(ColorHelper.FromArgb(0x30, 0x80, 0x80, 0x80));
     private static readonly SolidColorBrush TodayBrush = new(ColorHelper.FromArgb(0xFF, 0x0F, 0x6C, 0xBD));
@@ -82,6 +85,9 @@ public sealed partial class WeekGridView : UserControl
 
     /// <summary>An event was dragged to a new local start time.</summary>
     public event EventHandler<(CalendarEntryViewModel Entry, DateTime NewStart)>? EventMoved;
+
+    /// <summary>An event's lower edge was dragged to a new local end time.</summary>
+    public event EventHandler<(CalendarEntryViewModel Entry, DateTime NewEnd)>? EventResized;
 
     public void Show(DateTime start, int days, IReadOnlyList<CalendarEntryViewModel> events, CalendarEntryViewModel? selected)
     {
@@ -256,7 +262,7 @@ public sealed partial class WeekGridView : UserControl
             else columnEnds[column] = effectiveEnd;
             clusterEnd = cluster.Count == 0 ? effectiveEnd : Max(clusterEnd, effectiveEnd);
 
-            result.Add(new ChipLayout(entry, (start - day).TotalHours * HourHeight, (effectiveEnd - start).TotalHours * HourHeight, 0, 1));
+            result.Add(new ChipLayout(entry, day, (start - day).TotalHours * HourHeight, (effectiveEnd - start).TotalHours * HourHeight, 0, 1));
             cluster.Add((result.Count - 1, column));
         }
         if (cluster.Count > 0) FinishCluster();
@@ -331,21 +337,37 @@ public sealed partial class WeekGridView : UserControl
             chip.PointerMoved += (s, e) => OnChipMoved((Border)s, e);
             chip.PointerReleased += (s, e) => OnChipReleased((Border)s, e);
             chip.PointerCaptureLost += (s, _) => CancelDrag((Border)s);
+            chip.PointerExited += (_, _) =>
+            {
+                if (_drag is null) ProtectedCursor = null;
+            };
         }
         return chip;
     }
+
+    /// <summary>The pointer is on the lower edge of a block whose end can be changed (it ends on this day).</summary>
+    private static bool IsOnResizeEdge(Border chip, PointerRoutedEventArgs e) =>
+        chip.Tag is ChipLayout { Entry.CanEdit: true } layout
+        && layout.Entry.Event.End.LocalDateTime <= layout.Day.AddDays(1)
+        && e.GetCurrentPoint(chip).Position.Y >= chip.ActualHeight - ResizeEdge;
 
     private void OnChipPressed(Border chip, CalendarEntryViewModel entry, PointerRoutedEventArgs e)
     {
         var point = e.GetCurrentPoint(_body);
         if (!point.Properties.IsLeftButtonPressed) return;
         e.Handled = true;
-        _drag = new DragState(chip, entry, point.Position);
+        _drag = new DragState(chip, entry, point.Position, IsOnResizeEdge(chip, e));
         chip.CapturePointer(e.Pointer);
     }
 
     private void OnChipMoved(Border chip, PointerRoutedEventArgs e)
     {
+        if (_drag is null)
+        {
+            // Hovering: the lower edge shows the resize cursor.
+            ProtectedCursor = IsOnResizeEdge(chip, e) ? InputSystemCursor.Create(InputSystemCursorShape.SizeNorthSouth) : null;
+            return;
+        }
         if (_drag is not { } drag || drag.Chip != chip) return;
         var position = e.GetCurrentPoint(_body).Position;
         var dx = position.X - drag.Origin.X;
@@ -357,11 +379,16 @@ public sealed partial class WeekGridView : UserControl
             if (!drag.Entry.CanEdit) return; // read-only: treat as a click on release
             drag.IsDragging = true;
             chip.Opacity = 0.75;
-            ProtectedCursor = InputSystemCursor.Create(InputSystemCursorShape.SizeAll);
+            ProtectedCursor = InputSystemCursor.Create(drag.IsResize ? InputSystemCursorShape.SizeNorthSouth : InputSystemCursorShape.SizeAll);
         }
 
-        var (days, minutes) = Snap(chip, dx, dy);
-        chip.RenderTransform = new TranslateTransform { X = days * DayWidth(chip), Y = minutes / 60.0 * HourHeight };
+        if (drag.IsResize)
+            chip.Height = Math.Max(20, drag.Height + ResizeMinutes(chip, dy) / 60.0 * HourHeight);
+        else
+        {
+            var (days, minutes) = Snap(chip, dx, dy);
+            chip.RenderTransform = new TranslateTransform { X = days * DayWidth(chip), Y = minutes / 60.0 * HourHeight };
+        }
         e.Handled = true;
     }
 
@@ -380,11 +407,22 @@ public sealed partial class WeekGridView : UserControl
         }
 
         var position = e.GetCurrentPoint(_body).Position;
+        if (drag.IsResize)
+        {
+            var change = ResizeMinutes(chip, position.Y - drag.Origin.Y);
+            if (change == 0)
+            {
+                Restore(chip, drag);
+                return;
+            }
+            EventResized?.Invoke(this, (drag.Entry, drag.Entry.Event.End.LocalDateTime.AddMinutes(change)));
+            return;
+        }
+
         var (days, minutes) = Snap(chip, position.X - drag.Origin.X, position.Y - drag.Origin.Y);
         if (days == 0 && minutes == 0)
         {
-            chip.RenderTransform = null;
-            chip.Opacity = 1;
+            Restore(chip, drag);
             return;
         }
         EventMoved?.Invoke(this, (drag.Entry, drag.Entry.Event.Start.LocalDateTime.AddDays(days).AddMinutes(minutes)));
@@ -394,9 +432,29 @@ public sealed partial class WeekGridView : UserControl
     {
         if (_drag is not { } drag || drag.Chip != chip) return;
         _drag = null;
-        chip.RenderTransform = null;
-        chip.Opacity = 1;
+        Restore(chip, drag);
         ProtectedCursor = null;
+    }
+
+    private static void Restore(Border chip, DragState drag)
+    {
+        chip.RenderTransform = null;
+        chip.Height = drag.Height;
+        chip.Opacity = 1;
+    }
+
+    /// <summary>
+    /// How many minutes the end moves for a vertical drag of <paramref name="dy"/>: in 15-minute steps, leaving the
+    /// event at least 15 minutes long and ending by midnight.
+    /// </summary>
+    private static int ResizeMinutes(Border chip, double dy)
+    {
+        if (chip.Tag is not ChipLayout layout) return 0;
+        var e = layout.Entry.Event;
+        var minutes = (int)Math.Round(dy / HourHeight * 60 / SnapMinutes) * SnapMinutes;
+        var shortest = SnapMinutes - (int)(e.End - e.Start).TotalMinutes;
+        var latest = (int)(layout.Day.AddDays(1) - e.End.LocalDateTime).TotalMinutes;
+        return Math.Clamp(minutes, Math.Min(shortest, latest), latest);
     }
 
     private (int Days, int Minutes) Snap(Border chip, double dx, double dy)
@@ -423,13 +481,16 @@ public sealed partial class WeekGridView : UserControl
     private static DateTime Max(DateTime a, DateTime b) => a > b ? a : b;
     private static DateTime Min(DateTime a, DateTime b) => a < b ? a : b;
 
-    private sealed record ChipLayout(CalendarEntryViewModel Entry, double Top, double Height, int Column, int Columns);
+    private sealed record ChipLayout(CalendarEntryViewModel Entry, DateTime Day, double Top, double Height, int Column, int Columns);
 
-    private sealed class DragState(Border chip, CalendarEntryViewModel entry, Point origin)
+    /// <summary>A block being moved, or resized when the press was on its lower edge.</summary>
+    private sealed class DragState(Border chip, CalendarEntryViewModel entry, Point origin, bool isResize)
     {
         public Border Chip { get; } = chip;
         public CalendarEntryViewModel Entry { get; } = entry;
         public Point Origin { get; } = origin;
+        public bool IsResize { get; } = isResize;
+        public double Height { get; } = chip.Height;
         public bool IsDragging { get; set; }
     }
 }

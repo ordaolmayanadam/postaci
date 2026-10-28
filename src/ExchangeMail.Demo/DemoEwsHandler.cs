@@ -7,7 +7,8 @@ namespace ExchangeMail.Demo;
 
 /// <summary>
 /// Answers the EWS operations Postacı sends from a <see cref="DemoMailbox"/>, in memory. Reading, marking read,
-/// moving and deleting change the mailbox; everything else (sending, saving, responding) succeeds without effect.
+/// moving, deleting, creating events (also recurring ones) and changing them (subject, location, times; also of a
+/// whole series) change the mailbox; everything else (sending, saving, responding) succeeds without effect.
 /// </summary>
 public sealed class DemoEwsHandler(DemoMailbox mailbox) : HttpMessageHandler
 {
@@ -48,14 +49,16 @@ public sealed class DemoEwsHandler(DemoMailbox mailbox) : HttpMessageHandler
         "FindFolder" => Response(op, [Success(op, M("RootFolder", new XAttribute("IncludesLastItemInRange", true),
             T("Folders", Mailbox.Folders.Where(f => f.ParentId is not null).Select(FolderElement))))]),
         "FindItem" => Response(op, [FindItem(op)]),
-        "GetItem" => Response(op, op.Element(MNs + "ItemIds")!.Elements().Select(id => GetItem(op, Id(id)))),
+        "GetItem" => Response(op, op.Element(MNs + "ItemIds")!.Elements().Select(id => GetItem(op, ItemKey(id)))),
         "FindConversation" => FindConversation(op),
         "GetConversationItems" => Response(op, op.Element(MNs + "Conversations")!.Elements().Select(c => GetConversation(op, Id(c.Element(TNs + "ConversationId")!)))),
         "UpdateItem" => Response(op, op.Descendants(TNs + "ItemChange").Select(c => UpdateItem(op, c))),
-        "DeleteItem" => Response(op, op.Element(MNs + "ItemIds")!.Elements().Select(id => DeleteItem(op, Id(id)))),
+        "DeleteItem" => Response(op, op.Element(MNs + "ItemIds")!.Elements().Select(id => DeleteItem(op, ItemKey(id)))),
         "MoveItem" => Response(op, op.Element(MNs + "ItemIds")!.Elements()
             .Select(id => MoveItem(op, Id(id), Id(op.Element(MNs + "ToFolderId")!.Elements().First())))),
-        "CreateItem" => Response(op, [Success(op, M("Items", T("Message", ItemId(Mailbox.NewId("created")))))]),
+        "CreateItem" => Response(op, [op.Element(MNs + "Items")?.Element(TNs + "CalendarItem") is { } calendarItem
+            ? Success(op, M("Items", T("CalendarItem", ItemId(CreateEvents(calendarItem)))))
+            : Success(op, M("Items", T("Message", ItemId(Mailbox.NewId("created")))))]),
         "SendItem" or "DeleteAttachment" => Response(op, [Success(op)]),
         "CreateAttachment" => Response(op, [Success(op)]),
         "GetAttachment" => Response(op, op.Element(MNs + "AttachmentIds")!.Elements().Select(a => GetAttachment(op, Id(a)))),
@@ -138,6 +141,8 @@ public sealed class DemoEwsHandler(DemoMailbox mailbox) : HttpMessageHandler
             return Success(op, M("Items", MessageElement(message, withBody: true)));
         if (Mailbox.Events.FirstOrDefault(e => e.Id == id) is { } calendarItem)
             return Success(op, M("Items", EventElement(calendarItem)));
+        if (SeriesMaster(id) is { } master)
+            return Success(op, M("Items", EventElement(master)));
         if (Mailbox.Contacts.FirstOrDefault(c => c.Id == id) is { } contact)
             return Success(op, M("Items", ContactElement(contact)));
         return Error(op, "ErrorItemNotFound", "The item does not exist.");
@@ -149,8 +154,63 @@ public sealed class DemoEwsHandler(DemoMailbox mailbox) : HttpMessageHandler
         if (Mailbox.Messages.FirstOrDefault(m => m.Id == id) is { } message
             && change.Descendants(TNs + "IsRead").FirstOrDefault() is { } isRead)
             message.IsRead = (bool)isRead;
+
+        var index = Mailbox.Events.FindIndex(e => e.Id == id);
+        if (index >= 0) Mailbox.Events[index] = Changed(Mailbox.Events[index], change);
+        else if (SeriesMaster(id) is { } master)
+        {
+            // The series' new start and end move every occurrence by the same time and give it the new duration.
+            var updated = Changed(master, change);
+            var shift = updated.Start - master.Start;
+            for (var i = 0; i < Mailbox.Events.Count; i++)
+            {
+                var e = Mailbox.Events[i];
+                if (e.SeriesId != master.SeriesId) continue;
+                Mailbox.Events[i] = e with
+                {
+                    Subject = updated.Subject, Location = updated.Location,
+                    Start = e.Start + shift, End = e.Start + shift + (updated.End - updated.Start),
+                };
+            }
+        }
         return Success(op, M("Items", T("Message", ItemId(id))));
     }
+
+    /// <summary>The event with the subject, location and times an UpdateItem change sets.</summary>
+    private static DemoEvent Changed(DemoEvent e, XElement change)
+    {
+        string? Value(string name) => (string?)change.Descendants(TNs + name).FirstOrDefault();
+        DateTimeOffset Time(string name, DateTimeOffset current) =>
+            Value(name) is { } v ? DateTimeOffset.Parse(v, CultureInfo.InvariantCulture).ToOffset(current.Offset) : current;
+        return e with
+        {
+            Subject = Value("Subject") ?? e.Subject,
+            Location = Value("Location") ?? e.Location,
+            Start = Time("Start", e.Start),
+            End = Time("End", e.End),
+        };
+    }
+
+    private const string SeriesPrefix = "series:";
+
+    /// <summary>
+    /// The id an element names: an item's own id, or for a RecurringMasterItemId the series of the occurrence, whose
+    /// first occurrence stands for the series (as Exchange's recurring master does).
+    /// </summary>
+    private string ItemKey(XElement element)
+    {
+        if (element.Name.LocalName != "RecurringMasterItemId") return Id(element);
+        var occurrenceId = (string?)element.Attribute("OccurrenceId");
+        var series = Mailbox.Events.FirstOrDefault(e => e.Id == occurrenceId)?.SeriesId;
+        return series is null ? "" : SeriesPrefix + series;
+    }
+
+    private DemoEvent? SeriesMaster(string id) =>
+        id.StartsWith(SeriesPrefix, StringComparison.Ordinal)
+            ? Mailbox.Events.Where(e => e.SeriesId == id[SeriesPrefix.Length..]).OrderBy(e => e.Start).FirstOrDefault() is { } first
+                ? first with { Id = id }
+                : null
+            : null;
 
     private XElement DeleteItem(XElement op, string id)
     {
@@ -159,7 +219,7 @@ public sealed class DemoEwsHandler(DemoMailbox mailbox) : HttpMessageHandler
             if (message.FolderId == "deleteditems") Mailbox.Messages.Remove(message);
             else message.FolderId = "deleteditems";
         }
-        Mailbox.Events.RemoveAll(e => e.Id == id);
+        Mailbox.Events.RemoveAll(e => e.Id == id || SeriesPrefix + e.SeriesId == id);
         return Success(op);
     }
 
@@ -276,6 +336,55 @@ public sealed class DemoEwsHandler(DemoMailbox mailbox) : HttpMessageHandler
         e.Attendees.Count > 0
             ? T("RequiredAttendees", e.Attendees.Select((p, i) => T("Attendee", MailboxElement(p), T("ResponseType", i % 3 == 2 ? "Tentative" : "Accept"))))
             : null);
+
+    /// <summary>
+    /// Adds a new appointment to the calendar; a recurring one as its occurrences (up to 100, in the next 90 days
+    /// when it has no end), which share a series. Returns the id of the first.
+    /// </summary>
+    private string CreateEvents(XElement item)
+    {
+        string? Value(string name) => (string?)item.Element(TNs + name);
+        DateTimeOffset Time(string name) => DateTimeOffset.Parse(Value(name)!, CultureInfo.InvariantCulture).ToOffset(Mailbox.Now.Offset);
+        var start = Time("Start");
+        var duration = Time("End") - start;
+        var attendees = item.Descendants(TNs + "EmailAddress")
+            .Select(a => Mailbox.People.FirstOrDefault(p => p.Address.Equals(a.Value, StringComparison.OrdinalIgnoreCase)))
+            .OfType<DemoPerson>().ToList();
+
+        var days = new List<DateTime> { start.Date };
+        string? series = null;
+        if (item.Element(TNs + "Recurrence") is { } recurrence)
+        {
+            series = Mailbox.NewId("series");
+            var rule = recurrence.Elements().First();
+            var until = (DateTime?)recurrence.Descendants(TNs + "EndDate").FirstOrDefault() ?? start.Date.AddDays(90);
+            var weekdays = ((string?)rule.Element(TNs + "DaysOfWeek"))?.Split(' ') ?? [];
+            var dayOfMonth = (int?)rule.Element(TNs + "DayOfMonth");
+            var month = (string?)rule.Element(TNs + "Month");
+            bool Repeats(DateTime d) => rule.Name.LocalName switch
+            {
+                "DailyRecurrence" => true,
+                "WeeklyRecurrence" => weekdays.Contains(d.DayOfWeek.ToString()),
+                "AbsoluteMonthlyRecurrence" => d.Day == dayOfMonth,
+                _ => d.Day == dayOfMonth && CultureInfo.InvariantCulture.DateTimeFormat.GetMonthName(d.Month) == month,
+            };
+            days = [];
+            for (var d = start.Date; d <= until && days.Count < 100; d = d.AddDays(1))
+                if (Repeats(d)) days.Add(d);
+        }
+
+        var ids = days.Select(day =>
+        {
+            var occurrenceStart = start + (day - start.Date);
+            var e = new DemoEvent(Mailbox.NewId("event"), Value("Subject") ?? "", occurrenceStart, occurrenceStart + duration,
+                Value("Location") ?? "", Mailbox.Me, attendees, IsAllDay: Value("IsAllDayEvent") == "true",
+                FreeBusy: Value("LegacyFreeBusyStatus") ?? "Busy", MyResponse: "Organizer",
+                BodyHtml: Value("Body") ?? "", SeriesId: series);
+            Mailbox.Events.Add(e);
+            return e.Id;
+        }).ToList();
+        return ids.FirstOrDefault() ?? Mailbox.NewId("event");
+    }
 
     private XElement Availability(XElement op)
     {

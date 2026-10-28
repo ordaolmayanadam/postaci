@@ -12,6 +12,9 @@ namespace ExchangeMail.App.Views;
 
 public sealed partial class ComposeWindow : Window
 {
+    /// <summary>Larger pictures go as attachments: in the body they would make the message too big to edit and send.</summary>
+    private const long MaxPictureBytes = 10 * 1024 * 1024;
+
     private readonly Dictionary<AutoSuggestBox, CancellationTokenSource> _suggestionRequests = [];
     private bool _canClose;
 
@@ -34,6 +37,7 @@ public sealed partial class ComposeWindow : Window
         ViewModel.ConfirmAsync = ConfirmAsync;
         ViewModel.ReadBodyHtmlAsync = Editor.GetHtmlAsync;
         _ = Editor.SetHtmlAsync(ViewModel.InitialHtml);
+        Editor.ImageRequested += async (_, _) => await InsertPictureAsync();
         ViewModel.DraftSaved += async (_, _) => _savedHtml = await Editor.GetHtmlAsync();
         ViewModel.BodyReplaced += async (_, html) =>
         {
@@ -134,6 +138,29 @@ public sealed partial class ComposeWindow : Window
 
         var files = await picker.PickMultipleFilesAsync();
         await AddFilesAsync(files);
+    }
+
+    private async Task InsertPictureAsync()
+    {
+        var picker = new FileOpenPicker { SuggestedStartLocation = PickerLocationId.PicturesLibrary, ViewMode = PickerViewMode.Thumbnail };
+        foreach (var type in new[] { ".png", ".jpg", ".jpeg", ".gif", ".bmp", ".webp" }) picker.FileTypeFilter.Add(type);
+        WinRT.Interop.InitializeWithWindow.Initialize(picker, WinRT.Interop.WindowNative.GetWindowHandle(this));
+        if (await picker.PickSingleFileAsync() is not { } file) return;
+
+        try
+        {
+            var size = new FileInfo(file.Path).Length;
+            if (size > MaxPictureBytes)
+            {
+                ViewModel.ErrorMessage = Loc.Format(Strings.Compose_ImageTooLarge, file.Name, MailFormat.FileSize(size), MailFormat.FileSize(MaxPictureBytes));
+                return;
+            }
+            await Editor.InsertImageAsync(MailFormat.GuessContentType(file.Name), await File.ReadAllBytesAsync(file.Path));
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        {
+            ViewModel.ErrorMessage = Loc.Format(Strings.Compose_AttachFailed, file.Name, ex.Message);
+        }
     }
 
     private void OnDragOver(object sender, DragEventArgs e)

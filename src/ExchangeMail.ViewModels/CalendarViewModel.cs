@@ -9,6 +9,9 @@ namespace ExchangeMail.ViewModels;
 
 public enum CalendarRange { Day, Week, Month }
 
+/// <summary>What a change to an occurrence of a recurring event applies to.</summary>
+public enum RecurrenceScope { Occurrence, Series }
+
 public sealed partial class CalendarViewModel : ObservableObject
 {
     private readonly MailSession _session;
@@ -87,6 +90,9 @@ public sealed partial class CalendarViewModel : ObservableObject
 
     /// <summary>Asks the user a yes/no question; supplied by the view.</summary>
     public Func<string, string, Task<bool>>? ConfirmAsync { get; set; }
+
+    /// <summary>Asks whether a change applies to one occurrence or the whole series (null: cancelled); supplied by the view.</summary>
+    public Func<string, string, Task<RecurrenceScope?>>? AskScopeAsync { get; set; }
 
     public string AccountEmail => _session.Account.Email;
 
@@ -219,11 +225,12 @@ public sealed partial class CalendarViewModel : ObservableObject
         try
         {
             await _session.Client.CreateAppointmentAsync(appointment);
+            AnchorDate = appointment.Start.LocalDateTime.Date;
+            await LoadAsync();
+            // After reloading, which shows the event count there.
             StatusText = appointment.RequiredAttendees.Count + appointment.OptionalAttendees.Count > 0
                 ? Strings.Calendar_MeetingCreated
                 : Strings.Calendar_EventCreated;
-            AnchorDate = appointment.Start.LocalDateTime.Date;
-            await LoadAsync();
             return true;
         }
         catch (Exception ex) when (ex is EwsException or ArgumentException)
@@ -235,22 +242,52 @@ public sealed partial class CalendarViewModel : ObservableObject
 
     private bool CanEdit() => Detail?.CanEdit == true;
 
+    /// <summary>Opens the editor; for an occurrence of a recurring event, on that occurrence or on the whole series.</summary>
     [RelayCommand(CanExecute = nameof(CanEdit))]
-    private void Edit()
+    private async Task EditAsync()
     {
-        if (Detail is { } detail) EditRequested?.Invoke(this, detail);
+        if (Detail is not { } detail) return;
+        if (detail.Event.IsRecurring && AskScopeAsync is not null)
+        {
+            var scope = await AskScopeAsync(Strings.Calendar_RecurringEditTitle, Strings.Calendar_RecurringEditQuestion);
+            if (scope is null) return;
+            if (scope == RecurrenceScope.Series)
+            {
+                if (await LoadSeriesAsync(detail) is not { } series) return;
+                detail = series;
+            }
+        }
+        EditRequested?.Invoke(this, detail);
     }
 
-    /// <summary>Saves the editor's changes. Attendees of a meeting receive the update.</summary>
+    private async Task<CalendarDetailViewModel?> LoadSeriesAsync(CalendarDetailViewModel occurrence)
+    {
+        try
+        {
+            var master = await _session.Client.GetRecurringMasterAsync(occurrence.Event.ItemId);
+            return new CalendarDetailViewModel(master, _session.Preferences.AlwaysShowRemoteImages, isSeries: true);
+        }
+        catch (EwsException ex)
+        {
+            ErrorMessage = Loc.Format(Strings.Calendar_SeriesLoadFailed, ex.Message);
+            return null;
+        }
+    }
+
+    /// <summary>
+    /// Saves the editor's changes (to the series when <paramref name="original"/> is one). Attendees of a meeting
+    /// receive the update. Unchanged times are not written, so the changed occurrences of a series keep their times.
+    /// </summary>
     public async Task<bool> UpdateAsync(CalendarDetailViewModel original, NewAppointment changes, bool bodyChanged, bool attendeesChanged)
     {
         var notify = original.Event.IsMeeting || changes.RequiredAttendees.Count > 0;
+        var timesChanged = changes.Start != original.Event.Start || changes.End != original.Event.End || changes.IsAllDay != original.Event.IsAllDay;
         try
         {
-            await _session.Client.UpdateAppointmentAsync(original.Event.ItemId, changes, bodyChanged, attendeesChanged, notify);
-            StatusText = notify ? Strings.Calendar_MeetingUpdated : Strings.Calendar_EventUpdated;
+            await _session.Client.UpdateAppointmentAsync(original.Event.ItemId, changes, bodyChanged, attendeesChanged, timesChanged, notify);
             await LoadAsync();
             if (SelectedEvent is { } selected) await LoadDetailAsync(selected);
+            StatusText = notify ? Strings.Calendar_MeetingUpdated : Strings.Calendar_EventUpdated;
             return true;
         }
         catch (Exception ex) when (ex is EwsException or ArgumentException)
@@ -276,16 +313,48 @@ public sealed partial class CalendarViewModel : ObservableObject
             return;
         }
 
+        var moved = false;
         try
         {
             await _session.Client.MoveAppointmentAsync(e.ItemId, start, start + (e.End - e.Start), notifyAttendees: e.IsMeeting);
-            StatusText = Strings.Calendar_EventMoved;
+            moved = true;
         }
         catch (EwsException ex)
         {
             ErrorMessage = Loc.Format(Strings.Calendar_MoveFailed, ex.Message);
         }
         await LoadAsync();
+        if (moved) StatusText = Strings.Calendar_EventMoved;
+    }
+
+    /// <summary>Gives an event a new end time, keeping its start (its lower edge dragged in the grid).</summary>
+    public async Task ResizeAsync(CalendarEntryViewModel entry, DateTime newLocalEnd)
+    {
+        if (!entry.CanEdit) return;
+        var e = entry.Event;
+        var end = new DateTimeOffset(DateTime.SpecifyKind(newLocalEnd, DateTimeKind.Local));
+        if (end == e.End || end <= e.Start) return;
+
+        if (e.IsMeeting && ConfirmAsync is not null
+            && !await ConfirmAsync(Strings.Calendar_ResizeMeetingTitle,
+                Loc.Format(Strings.Calendar_ResizeMeetingQuestion, end.LocalDateTime.ToString("t", CultureInfo.CurrentCulture))))
+        {
+            EventsReloaded?.Invoke(this, EventArgs.Empty); // put the resized block back
+            return;
+        }
+
+        var resized = false;
+        try
+        {
+            await _session.Client.MoveAppointmentAsync(e.ItemId, e.Start, end, notifyAttendees: e.IsMeeting);
+            resized = true;
+        }
+        catch (EwsException ex)
+        {
+            ErrorMessage = Loc.Format(Strings.Calendar_ResizeFailed, ex.Message);
+        }
+        await LoadAsync();
+        if (resized) StatusText = Strings.Calendar_EventResized;
     }
 
     /// <summary>Free/busy of the given attendees and the current user on <paramref name="day"/>.</summary>
@@ -304,15 +373,31 @@ public sealed partial class CalendarViewModel : ObservableObject
     {
         if (Detail is not { } detail) return;
         var cancelMeeting = detail.IsOrganizer && detail.Event.IsMeeting && !detail.Event.IsCancelled;
-        var question = cancelMeeting
-            ? Strings.Calendar_CancelMeetingQuestion
-            : Strings.Calendar_DeleteEventQuestion;
-        if (ConfirmAsync is not null && !await ConfirmAsync(cancelMeeting ? Strings.Calendar_CancelMeetingTitle : Strings.Calendar_DeleteEventTitle, question))
-            return;
+        var scope = RecurrenceScope.Occurrence;
+        if (detail.Event.IsRecurring && AskScopeAsync is not null)
+        {
+            // The choice between this occurrence and the series is also the confirmation.
+            var chosen = cancelMeeting
+                ? await AskScopeAsync(Strings.Calendar_RecurringCancelTitle, Strings.Calendar_RecurringCancelQuestion)
+                : await AskScopeAsync(Strings.Calendar_RecurringDeleteTitle, Strings.Calendar_RecurringDeleteQuestion);
+            if (chosen is not { } s) return;
+            scope = s;
+        }
+        else
+        {
+            var question = cancelMeeting
+                ? Strings.Calendar_CancelMeetingQuestion
+                : Strings.Calendar_DeleteEventQuestion;
+            if (ConfirmAsync is not null && !await ConfirmAsync(cancelMeeting ? Strings.Calendar_CancelMeetingTitle : Strings.Calendar_DeleteEventTitle, question))
+                return;
+        }
 
         try
         {
-            await _session.Client.DeleteAppointmentAsync(detail.Event.ItemId, sendCancellations: cancelMeeting);
+            var id = scope == RecurrenceScope.Series
+                ? (await _session.Client.GetRecurringMasterAsync(detail.Event.ItemId)).Event.ItemId
+                : detail.Event.ItemId;
+            await _session.Client.DeleteAppointmentAsync(id, sendCancellations: cancelMeeting);
             SelectedEvent = null;
             await LoadAsync();
         }
@@ -332,13 +417,13 @@ public sealed partial class CalendarViewModel : ObservableObject
         try
         {
             await _session.Client.RespondToMeetingAsync(detail.Event.ItemId, kind);
+            await LoadAsync();
             StatusText = kind switch
             {
                 MeetingResponse.Accept => Strings.Meeting_Accepted,
                 MeetingResponse.Tentative => Strings.Meeting_TentativeSent,
                 _ => Strings.Meeting_Declined,
             };
-            await LoadAsync();
         }
         catch (EwsException ex)
         {
@@ -389,10 +474,13 @@ public sealed class CalendarEntryViewModel(CalendarEvent e, DateTime day, bool s
         };
 }
 
-public sealed partial class CalendarDetailViewModel(CalendarEventDetail detail, bool allowRemoteContent) : ObservableObject
+public sealed partial class CalendarDetailViewModel(CalendarEventDetail detail, bool allowRemoteContent, bool isSeries = false) : ObservableObject
 {
     public CalendarEventDetail Source => detail;
     public CalendarEvent Event => detail.Event;
+
+    /// <summary>The whole series of a recurring event (its start and end are the first occurrence's).</summary>
+    public bool IsSeries => isSeries;
     public bool CanEdit => IsOrganizer && !Event.IsCancelled;
     public string Subject => string.IsNullOrWhiteSpace(Event.Subject) ? Strings.Common_NoSubject : Event.Subject;
 

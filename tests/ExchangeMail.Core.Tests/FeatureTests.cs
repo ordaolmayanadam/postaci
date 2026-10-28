@@ -141,6 +141,65 @@ public class FeatureTests
         Assert.True(vm.HasAttachmentChanges);
     }
 
+    [Fact]
+    public void Pasted_pictures_become_inline_attachments()
+    {
+        var pictures = new List<(string DataUri, OutgoingAttachment Attachment)>();
+
+        var html = MailFormat.ExtractInlineImages(
+            """<p>Bak</p><img src="data:image/png;base64,AAEC" alt=""><img src='https://example.com/a.png'><img src="data:image/jpeg;base64,AwQ=">""", pictures);
+
+        Assert.Equal(2, pictures.Count);
+        var (dataUri, png) = pictures[0];
+        Assert.Equal("data:image/png;base64,AAEC", dataUri);
+        Assert.Equal(("image001.png", "image/png"), (png.Name, png.ContentType));
+        Assert.Equal([0, 1, 2], png.Content);
+        Assert.Equal("image002.jpg", pictures[1].Attachment.Name);
+        Assert.Equal($"""<p>Bak</p><img src="cid:{png.ContentId}" alt=""><img src='https://example.com/a.png'><img src="cid:{pictures[1].Attachment.ContentId}">""", html);
+    }
+
+    [Fact]
+    public async Task A_picture_is_attached_once_and_removed_from_the_draft_with_its_image()
+    {
+        const string picture = """<img src="data:image/png;base64,AAEC">""";
+        var server = new FakeEwsServer();
+        string ContentId() => server.Request("CreateAttachment").Descendants(T + "ContentId").Single().Value;
+        string Saved(bool withPicture) => DraftDetail("D1", "<p>x</p>", withPicture
+            ? $"""<t:FileAttachment><t:AttachmentId Id="P1" /><t:Name>image001.png</t:Name><t:ContentType>image/png</t:ContentType><t:ContentId>{ContentId()}</t:ContentId><t:Size>3</t:Size><t:IsInline>true</t:IsInline></t:FileAttachment>"""
+            : "");
+        server.On("CreateItem", ItemIdResponse("CreateItem", "D1", "k1"))
+            .On("CreateAttachment", Ok("CreateAttachment", """<m:Attachments><t:FileAttachment><t:AttachmentId Id="P1" RootItemId="D1" RootItemChangeKey="k2" /></t:FileAttachment></m:Attachments>"""))
+            .OnRaw("GetItem", () => FakeEwsServer.Xml(System.Net.HttpStatusCode.OK, FakeEwsServer.Envelope(Saved(withPicture: true))))
+            .On("UpdateItem", ItemIdResponse("UpdateItem", "D1", "k3"))
+            .OnRaw("GetItem", () => FakeEwsServer.Xml(System.Net.HttpStatusCode.OK, FakeEwsServer.Envelope(Saved(withPicture: true))))
+            .On("UpdateItem", ItemIdResponse("UpdateItem", "D1", "k4"))
+            .On("DeleteAttachment", Ok("DeleteAttachment", """<m:RootItemId RootItemId="D1" RootItemChangeKey="k5" />"""))
+            .On("GetItem", ItemIdResponse("GetItem", "D1", "k5"))
+            .OnRaw("GetItem", () => FakeEwsServer.Xml(System.Net.HttpStatusCode.OK, FakeEwsServer.Envelope(Saved(withPicture: false))));
+        var vm = new ComposeViewModel(Session(server), ComposeMode.New, null) { To = "a@sirket.com" };
+        var body = "<p>Bak</p>" + picture;
+        vm.ReadBodyHtmlAsync = () => Task.FromResult(body);
+
+        await vm.SaveDraftCommand.ExecuteAsync(null);
+        var attachment = server.Request("CreateAttachment").Descendants(T + "FileAttachment").Single();
+        Assert.Equal("true", attachment.Element(T + "IsInline")?.Value);
+        var cid = ContentId();
+        var created = server.Request("CreateItem").Descendants(T + "Body").Single().Value;
+        Assert.Contains($"cid:{cid}", created);
+        Assert.DoesNotContain("data:", created);
+
+        // Saving again with the picture still in the editor refers to the same attachment.
+        await vm.SaveDraftCommand.ExecuteAsync(null);
+        Assert.Single(server.Requests, r => r.Name.LocalName == "CreateAttachment");
+        Assert.Contains($"cid:{cid}", server.Requests.Where(r => r.Name.LocalName == "UpdateItem").First().Descendants(T + "Body").Single().Value);
+
+        // Deleting the picture in the editor takes its attachment off the draft.
+        body = "<p>Bak</p>";
+        await vm.SaveDraftCommand.ExecuteAsync(null);
+        Assert.Null(vm.ErrorMessage);
+        Assert.Equal("P1", (string?)server.Request("DeleteAttachment").Descendants(T + "AttachmentId").Single().Attribute("Id"));
+    }
+
     // ---- Automatic replies ----
 
     [Fact]
@@ -207,7 +266,7 @@ public class FeatureTests
             Start = new DateTimeOffset(2026, 10, 28, 10, 0, 0, TimeSpan.FromHours(3)),
             End = new DateTimeOffset(2026, 10, 28, 11, 0, 0, TimeSpan.FromHours(3)),
             ReminderMinutes = null,
-        }, updateBody: false, updateAttendees: false, notifyAttendees: true, TestContext.Current.CancellationToken);
+        }, updateBody: false, updateAttendees: false, updateTimes: true, notifyAttendees: true, TestContext.Current.CancellationToken);
 
         var request = server.Request("UpdateItem");
         Assert.Equal("SendToAllAndSaveCopy", (string?)request.Attribute("SendMeetingInvitationsOrCancellations"));

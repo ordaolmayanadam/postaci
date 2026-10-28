@@ -28,8 +28,12 @@ public sealed class DemoMessage
 
 public sealed record DemoEvent(
     string Id, string Subject, DateTimeOffset Start, DateTimeOffset End, string Location, DemoPerson Organizer,
-    IReadOnlyList<DemoPerson> Attendees, bool IsAllDay = false, bool IsRecurring = false, string FreeBusy = "Busy",
-    string MyResponse = "Accept", string BodyHtml = "");
+    IReadOnlyList<DemoPerson> Attendees, bool IsAllDay = false, string FreeBusy = "Busy",
+    string MyResponse = "Accept", string BodyHtml = "", string? SeriesId = null)
+{
+    /// <summary>An occurrence of a recurring series; the occurrences of one series share <see cref="SeriesId"/>.</summary>
+    public bool IsRecurring => SeriesId is not null;
+}
 
 public sealed record DemoContact(string Id, DemoPerson Person, string Company);
 
@@ -269,20 +273,20 @@ public sealed class DemoMailbox
         var monday = Now.Date.AddDays(-(((int)Now.DayOfWeek + 6) % 7));
 
         DemoEvent At(int day, double startHour, double hours, string subjectTr, string subjectEn, string locationTr, string locationEn,
-            DemoPerson organizer, IReadOnlyList<DemoPerson> attendees, bool recurring = false, string response = "Accept",
+            DemoPerson organizer, IReadOnlyList<DemoPerson> attendees, string? series = null, string response = "Accept",
             string freeBusy = "Busy", string bodyTr = "", string bodyEn = "")
         {
             var start = new DateTimeOffset(monday.AddDays(day).AddHours(startHour), Now.Offset);
             var e = new DemoEvent(NewId("event"), T(subjectTr, subjectEn), start, start.AddHours(hours), T(locationTr, locationEn),
-                organizer, attendees, IsRecurring: recurring, FreeBusy: freeBusy, MyResponse: organizer == Me ? "Organizer" : response,
-                BodyHtml: bodyTr.Length == 0 ? "" : DemoText.Html(T(bodyTr, bodyEn), null));
+                organizer, attendees, FreeBusy: freeBusy, MyResponse: organizer == Me ? "Organizer" : response,
+                BodyHtml: bodyTr.Length == 0 ? "" : DemoText.Html(T(bodyTr, bodyEn), null), SeriesId: series);
             events.Add(e);
             return e;
         }
 
         // Short titles and an hour or more each, so the week grid reads at a glance.
         At(0, 9, 1.5, "Operasyon toplantısı", "Operations meeting", "Toplantı Odası 3", "Meeting Room 3", elif,
-            [Me, burak, can], recurring: true, bodyTr: "Gündem: sevkiyat performansı, depo doluluk oranı, yeni rota planı.",
+            [Me, burak, can], series: "operations", bodyTr: "Gündem: sevkiyat performansı, depo doluluk oranı, yeni rota planı.",
             bodyEn: "Agenda: shipment performance, warehouse capacity, new route plan.");
         At(0, 14, 1.5, "Kampanya planlaması", "Campaign planning", "Toplantı Odası 1", "Meeting Room 1", Me, [can, selin]);
         At(1, 10, 1, "Tedarikçi görüşmesi", "Supplier call", "Teams", "Teams", Me, [burak]);
@@ -297,16 +301,16 @@ public sealed class DemoMailbox
             bodyTr: "2027 bütçe taslağındaki ekip ihtiyaçlarını gözden geçireceğiz.\n\nŞablonu toplantıdan önce doldurmayı unutmayın.",
             bodyEn: "We will go through the team requirements in the 2027 budget draft.\n\nPlease fill in the template before the meeting.");
         At(4, 9, 1, "Rota demosu", "Routing demo", "Teams", "Teams", mert, [Me, elif]);
-        At(4, 15, 1, "Haftalık özet", "Weekly wrap-up", "Teams", "Teams", Me, [burak], recurring: true);
+        At(4, 15, 1, "Haftalık özet", "Weekly wrap-up", "Teams", "Teams", Me, [burak], series: "wrap-up");
 
         var fairStart = new DateTimeOffset(monday.AddDays(3), Now.Offset);
         events.Add(new DemoEvent(NewId("event"), T("Lojistik Fuarı", "Logistics Expo"), fairStart, fairStart.AddDays(1),
             T("İstanbul Fuar Merkezi", "Exhibition Centre"), Me, [], IsAllDay: true, FreeBusy: "Free", MyResponse: "Organizer"));
 
         // Next week, so moving forward in the calendar is not empty.
-        At(7, 9, 1.5, "Operasyon toplantısı", "Operations meeting", "Toplantı Odası 3", "Meeting Room 3", elif, [Me, burak, can], recurring: true);
+        At(7, 9, 1.5, "Operasyon toplantısı", "Operations meeting", "Toplantı Odası 3", "Meeting Room 3", elif, [Me, burak, can], series: "operations");
         At(8, 10, 3, "Ege bölgesi başlangıcı", "South West kick-off", "Toplantı Odası 1", "Meeting Room 1", can, [Me, elif, burak]);
-        At(11, 15, 1, "Haftalık özet", "Weekly wrap-up", "Teams", "Teams", Me, [burak], recurring: true);
+        At(11, 15, 1, "Haftalık özet", "Weekly wrap-up", "Teams", "Teams", Me, [burak], series: "wrap-up");
         return events;
     }
 }

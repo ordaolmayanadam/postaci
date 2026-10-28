@@ -1,3 +1,4 @@
+using System.Globalization;
 using ExchangeMail.Core.Models;
 using ExchangeMail.ViewModels;
 using Microsoft.UI.Xaml;
@@ -12,6 +13,9 @@ public sealed partial class AppointmentDialog : ContentDialog
 {
     private static readonly int?[] ReminderMinutes = [null, 5, 15, 30, 60, 1440];
     private static readonly FreeBusyStatus[] ShowAs = [FreeBusyStatus.Free, FreeBusyStatus.Tentative, FreeBusyStatus.Busy, FreeBusyStatus.OOF];
+    /// <summary>The choices of <see cref="RepeatBox"/>; null: does not repeat.</summary>
+    private static readonly RecurrenceKind?[] Repeats =
+        [null, RecurrenceKind.Daily, RecurrenceKind.Weekdays, RecurrenceKind.Weekly, RecurrenceKind.Monthly, RecurrenceKind.Yearly];
 
     private readonly AvailabilityLookup? _availability;
     private string _initialBody = "";
@@ -29,8 +33,29 @@ public sealed partial class AppointmentDialog : ContentDialog
         StartTime.Time = start.TimeOfDay;
         EndDate.Date = new DateTimeOffset(end.Date);
         EndTime.Time = end.TimeOfDay;
+        UpdateRepeatChoices();
+        StartDate.DateChanged += (_, _) => UpdateRepeatChoices();
         Loaded += (_, _) => SubjectBox.Focus(FocusState.Programmatic);
     }
+
+    /// <summary>The repeat choices name the start's weekday, day of the month and date, so they follow the start date.</summary>
+    private void UpdateRepeatChoices()
+    {
+        var day = StartDate.Date?.Date ?? DateTime.Today;
+        var selected = Math.Max(0, RepeatBox.SelectedIndex);
+        RepeatBox.ItemsSource = new[]
+        {
+            Strings.Recurrence_None,
+            Strings.Recurrence_Daily,
+            Strings.Recurrence_Weekdays,
+            Loc.Format(Strings.Recurrence_Weekly, day.ToString("dddd", CultureInfo.CurrentCulture)),
+            Loc.Format(Strings.Recurrence_Monthly, day.Day),
+            Loc.Format(Strings.Recurrence_Yearly, MailFormat.DayMonth(day)),
+        };
+        RepeatBox.SelectedIndex = selected;
+    }
+
+    private void OnRepeatChanged(object sender, SelectionChangedEventArgs e) => RepeatUntilDate.IsEnabled = RepeatBox.SelectedIndex > 0;
 
     /// <summary>Opens the dialog prefilled with an existing event.</summary>
     public static AppointmentDialog ForEdit(CalendarDetailViewModel detail, AvailabilityLookup? availability = null)
@@ -38,8 +63,15 @@ public sealed partial class AppointmentDialog : ContentDialog
         var e = detail.Event;
         var dialog = new AppointmentDialog(e.Start.LocalDateTime, availability)
         {
-            Title = e.IsMeeting ? Strings.Appointment_EditMeeting : Strings.Appointment_EditEvent,
+            Title = detail.IsSeries ? Strings.Appointment_EditSeries
+                : e.IsMeeting ? Strings.Appointment_EditMeeting
+                : Strings.Appointment_EditEvent,
         };
+        // A series keeps its dates (they come from its recurrence); its time of day and duration can change.
+        dialog.SeriesBar.IsOpen = detail.IsSeries;
+        dialog.RepeatRow.Visibility = Visibility.Collapsed;
+        dialog.StartDate.IsEnabled = !detail.IsSeries;
+        dialog.EndDate.IsEnabled = !detail.IsSeries;
         dialog.SubjectBox.Text = e.Subject;
         dialog.LocationBox.Text = e.Location;
         dialog.AllDayCheck.IsChecked = e.IsAllDay;
@@ -138,6 +170,14 @@ public sealed partial class AppointmentDialog : ContentDialog
         var end = allDay ? Local(endDate.Date.AddDays(1)) : Local(endDate.Date + EndTime.Time);
         if (end <= start) return Strings.Common_EndBeforeStart;
 
+        RecurrencePattern? recurrence = null;
+        if (Repeats[Math.Clamp(RepeatBox.SelectedIndex, 0, Repeats.Length - 1)] is { } kind)
+        {
+            DateOnly? until = RepeatUntilDate.Date is { } u ? DateOnly.FromDateTime(u.Date) : null;
+            if (until < DateOnly.FromDateTime(startDate.Date)) return Strings.Appointment_RepeatUntilBeforeStart;
+            recurrence = new RecurrencePattern(kind, until);
+        }
+
         appointment = new NewAppointment
         {
             Subject = SubjectBox.Text.Trim(),
@@ -149,6 +189,7 @@ public sealed partial class AppointmentDialog : ContentDialog
             RequiredAttendees = attendees,
             ReminderMinutes = ReminderMinutes[Math.Clamp(ReminderBox.SelectedIndex, 0, ReminderMinutes.Length - 1)],
             FreeBusy = ShowAs[Math.Clamp(ShowAsBox.SelectedIndex, 0, ShowAs.Length - 1)],
+            Recurrence = recurrence,
         };
         return null;
     }

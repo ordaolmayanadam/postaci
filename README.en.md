@@ -165,6 +165,9 @@ for new mail. To quit completely, right-click the tray icon and choose **Exit**.
 - **Rich text:** bold, italic, underline, text color and size, bulleted and numbered lists, links.
 - **Autocomplete from the company directory** in the To, Cc and Bcc fields.
 - Add attachments by picking files or by **drag and drop**.
+- **Pictures in the text:** pictures pasted from the clipboard or chosen with *Insert picture* are sent as inline
+  attachments, so they show in the text in Outlook too. Pictures over 10 MB are added as files. Pictures copied from a
+  browser, Office or Teams show up broken when pasted (see the limitations); add those with *Insert picture*.
 - **Drafts:** every save from the same window updates the same draft. A message in the Drafts folder opens with
   **Edit draft** or a double-click, and can be edited and sent; attachments on the draft can be removed.
 - **The original shows in the editor for replies and forwards:** when the window opens a draft is created, Exchange
@@ -178,10 +181,14 @@ for new mail. To quit completely, right-click the tray icon and choose **Exit**.
 
 - Pick a day from the month calendar. **Day and week views are a time grid** (overlapping events side by side); the
   month view is an agenda list.
-- Move events with **drag and drop** (in 15-minute steps, across days). Double-click an empty slot to create an event at that time.
+- Move events with **drag and drop** (in 15-minute steps, across days); **drag the lower edge** to change the end
+  time. Double-click an empty slot to create an event at that time.
 - **New event or meeting:** subject, location, all day, start/end, attendees, reminder, show as (free/tentative/busy/away).
+- **Recurring events:** every day, every weekday, every week, every month or every year, with an optional end date.
+  The weekday, day of the month and date come from the start.
 - **Availability:** when creating a meeting, your and the attendees' busy times are shown on a timeline.
-- Your own events and meetings you organize can be **edited**; changes are sent to attendees.
+- Your own events and meetings you organize can be **edited**; changes are sent to attendees. When you edit or delete
+  a recurring event, you choose whether the change applies to that occurrence only or to the **whole series**.
 - Invitations can be accepted, tentatively accepted or declined; cancelling a meeting you organize notifies attendees.
 
 ### Contacts
@@ -349,7 +356,8 @@ forwards, messages with attachments and existing drafts are sent in this order:
 2. `CreateItem(SaveOnly)` + `ReplyToItem` / `ReplyAllToItem` / `ForwardItem`: Exchange creates the draft with the quote.
    For replies and forwards this happens when the compose window opens; the draft's body (`GetItem`, and
    `GetAttachment` for inline images) is loaded into the editor. Images become `data:` URLs in the editor and are turned
-   back into `cid:` references when saving; the original's `<head>` styles are kept.
+   back into `cid:` references when saving; the original's `<head>` styles are kept. Newly pasted or inserted pictures
+   become inline attachments (`IsInline`, `ContentId`); a picture deleted in the editor takes its attachment off the draft.
 3. `UpdateItem`: write the recipients, subject, importance and (once a draft exists) body edited by the user.
 4. `CreateAttachment` / `DeleteAttachment`: add or remove attachments.
 5. `SendItem`: send the draft and save it to Sent Items.
@@ -367,7 +375,11 @@ from `GetConversationItems` (excluding Deleted Items and Drafts). Each message s
 (`UniqueBody`). Search results and Drafts / Outbox are always listed as individual messages.
 
 **Calendar.** Calendar requests include the Windows time zone (`TimeZoneContext`), so all-day events and views are
-computed in local time. Recurring meetings are expanded into individual occurrences with `CalendarView`.
+computed in local time. Recurring meetings are expanded into individual occurrences with `CalendarView`. The whole
+series is opened, edited or deleted through `RecurringMasterItemId` with an occurrence's id. Unchanged times are not
+written, so occurrences that were changed individually are kept. A new series is created with `Recurrence` in
+`CreateItem` (`DailyRecurrence`, `WeeklyRecurrence`, `AbsoluteMonthlyRecurrence`, `AbsoluteYearlyRecurrence`; with
+`NoEndRecurrence` or `EndDateRecurrence`); its times come from the start and end of the first occurrence.
 
 **Server load.** When Exchange returns `ErrorServerBusy`, the client waits for the back-off time reported by the
 server (at most 30 s) and retries up to twice.
@@ -394,10 +406,15 @@ See the [privacy policy](PRIVACY.en.md) for details, and the [security policy](S
 ## Known limitations and roadmap
 
 - No Tasks.
-- Editing an entire recurring series is not supported; changes made in the grid affect only that occurrence.
-- Event duration cannot be changed by dragging an edge in the grid; change it in the edit dialog.
+- A series' recurrence pattern cannot be changed afterwards. Intervals such as "every two weeks", relative patterns
+  such as "the first Monday of the month" and ending after a number of occurrences are not available. When editing a
+  series its dates follow the series; dragging in the grid affects only that occurrence.
 - In conversation view only the newest message's inline images are loaded; open an older message on its own to see its images.
-- No pasting/inserting images or table editing in the compose window.
+- No table editing in the compose window.
+- When a browser, Office or Teams copies a picture, it also puts an HTML fragment on the clipboard that links the
+  picture to a web address or a file; the editor pastes that fragment, so the picture shows up broken and does not
+  reach the recipient. Handling the paste would need page scripts in the editor, which are kept off for safety.
+  A clipboard holding only a picture (e.g. Print Screen) pastes fine.
 - No Hybrid Modern Authentication (OAuth); only Negotiate (Kerberos/NTLM) and Basic.
 - No S/MIME encryption/signing, shared mailboxes or archive mailbox.
 - Changing the interface font requires a restart; some built-in WinUI parts may keep their own size.

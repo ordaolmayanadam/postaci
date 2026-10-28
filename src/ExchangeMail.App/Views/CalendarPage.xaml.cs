@@ -34,6 +34,7 @@ public sealed partial class CalendarPage : Page
         };
         WeekGrid.SlotDoubleTapped += async (_, start) => await CreateEventAsync(start);
         WeekGrid.EventMoved += async (_, move) => await ViewModel.MoveAsync(move.Entry, move.NewStart);
+        WeekGrid.EventResized += async (_, resize) => await ViewModel.ResizeAsync(resize.Entry, resize.NewEnd);
     }
 
     public CalendarViewModel ViewModel { get; private set; } = null!;
@@ -45,6 +46,7 @@ public sealed partial class CalendarPage : Page
 
         ViewModel = vm;
         ViewModel.ConfirmAsync = (title, message) => Dialogs.ConfirmAsync(XamlRoot, title, message);
+        ViewModel.AskScopeAsync = (title, message) => Dialogs.AskScopeAsync(XamlRoot, title, message);
         ViewModel.PropertyChanged += OnViewModelPropertyChanged;
         ViewModel.EventsReloaded += (_, _) => ShowGrid();
         ViewModel.EditRequested += async (_, detail) => await EditEventAsync(detail);

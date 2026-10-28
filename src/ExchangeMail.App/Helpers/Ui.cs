@@ -1,6 +1,7 @@
 using System.Globalization;
 using System.Runtime.InteropServices;
 using CommunityToolkit.WinUI.Controls;
+using ExchangeMail.ViewModels;
 using Microsoft.UI;
 using Microsoft.UI.Text;
 using Microsoft.UI.Xaml;
@@ -111,6 +112,28 @@ public static class Dialogs
             RequestedTheme = (root.Content as FrameworkElement)?.ActualTheme ?? ElementTheme.Default,
         };
         return await dialog.ShowAsync() == ContentDialogResult.Primary;
+    }
+
+    /// <summary>Asks whether a change to a recurring event applies to this occurrence or the whole series.</summary>
+    public static async Task<RecurrenceScope?> AskScopeAsync(XamlRoot root, string title, string message)
+    {
+        var dialog = new ContentDialog
+        {
+            Title = title,
+            Content = new TextBlock { Text = message, TextWrapping = TextWrapping.Wrap },
+            PrimaryButtonText = Strings.Calendar_ThisOccurrence,
+            SecondaryButtonText = Strings.Calendar_WholeSeries,
+            CloseButtonText = Strings.Common_Cancel,
+            DefaultButton = ContentDialogButton.Primary,
+            XamlRoot = root,
+            RequestedTheme = (root.Content as FrameworkElement)?.ActualTheme ?? ElementTheme.Default,
+        };
+        return await dialog.ShowAsync() switch
+        {
+            ContentDialogResult.Primary => RecurrenceScope.Occurrence,
+            ContentDialogResult.Secondary => RecurrenceScope.Series,
+            _ => null,
+        };
     }
 }
 
