@@ -71,8 +71,12 @@ public static partial class MailFormat
 
     public static bool HasRemoteContent(string html) => RemoteReference().IsMatch(html);
 
-    /// <summary>Background of dark message bodies and editors: the dark theme's darkest tone (AppBackdrop's dark tint).</summary>
-    public const string DarkPageBackground = "#222234";
+    /// <summary>
+    /// Background of dark message bodies and editors: the meeting invitation's InfoBar as it appears in dark theme,
+    /// so the body reads as another card of the reading pane. An opaque color, because WebView2 cannot show the
+    /// window's Mica through itself (transparent areas show the theme's solid base color).
+    /// </summary>
+    public const string DarkPageBackground = "#38353C";
 
     /// <summary>The color scheme a message body is shown in.</summary>
     public enum PageColorScheme
@@ -80,8 +84,8 @@ public static partial class MailFormat
         /// <summary>The browser's default (light).</summary>
         Default,
         /// <summary>
-        /// Offers a dark scheme: text and background the message leaves unset turn dark, colors it sets itself are
-        /// kept (so a light newsletter stays light).
+        /// Offers a dark scheme on <see cref="DarkPageBackground"/>: text and background the message leaves unset
+        /// turn dark, colors it sets itself are kept (so a light newsletter stays light).
         /// </summary>
         Dark,
         /// <summary>Light, also while the viewer reports prefers-color-scheme: dark (one message shown light in dark mode).</summary>
@@ -143,8 +147,8 @@ public static partial class MailFormat
         var css = new StringBuilder();
         css.Append(scheme switch
         {
-            // The app's dark tone instead of the browser's near-black canvas. :where() keeps it below any background
-            // the message gives html itself; a body background of its own still shows over it.
+            // :where() keeps the background below any the message gives html itself; a body background of its own
+            // still shows over it.
             PageColorScheme.Dark => $":root{{color-scheme:light dark}}:where(html){{background:{DarkPageBackground}}}",
             // :where() keeps this below any background the message gives html itself.
             PageColorScheme.Light => ":root{color-scheme:light}:where(html){background:#fff}",

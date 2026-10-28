@@ -52,13 +52,7 @@ public sealed partial class HtmlEditor : UserControl
         toolbar.Children.Add(Separator());
         toolbar.Children.Add(ToolButton("", Strings.Editor_ClearFormatting, () => ExecAsync("removeFormat")));
 
-        var frame = new Border
-        {
-            Child = _web,
-            BorderBrush = new SolidColorBrush(ColorHelper.FromArgb(0x40, 0x80, 0x80, 0x80)),
-            BorderThickness = new Thickness(1),
-            CornerRadius = new CornerRadius(4),
-        };
+        var frame = new Border { Child = _web, Style = Helpers.Ui.AppStyle("MessageBodyFrameStyle") };
 
         var root = new Grid { RowDefinitions = { new RowDefinition { Height = GridLength.Auto }, new RowDefinition() } };
         root.Children.Add(toolbar);

@@ -54,6 +54,12 @@
             </Style>
 
             <!--  The selected event in the week grid; the chip's own color is its free/busy status.  -->
+            <!--  Frame of a message body or editor (WebView2), which paints its own background (see WebViewTheme).  -->
+            <Style x:Key="MessageBodyFrameStyle" TargetType="Border">
+                <Setter Property="BorderBrush" Value="{ThemeResource CardStrokeColorDefaultBrush}" />
+                <Setter Property="BorderThickness" Value="1" />
+                <Setter Property="CornerRadius" Value="{StaticResource ControlCornerRadius}" />
+            </Style>
             <Style x:Key="SelectedEventChipStyle" TargetType="Border">
                 <Setter Property="BorderBrush" Value="{ThemeResource TextFillColorPrimaryBrush}" />
                 <Setter Property="BorderThickness" Value="2" />

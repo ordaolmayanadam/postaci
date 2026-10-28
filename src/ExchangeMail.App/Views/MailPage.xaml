@@ -526,10 +526,7 @@
 
                 <Border
                     Grid.Row="1"
-                    Background="Transparent"
-                    BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
-                    BorderThickness="1"
-                    CornerRadius="{StaticResource ControlCornerRadius}">
+                    Style="{StaticResource MessageBodyFrameStyle}">
                     <WebView2 x:Name="BodyView" />
                 </Border>
             </Grid>
