@@ -14,12 +14,11 @@
             <ColumnDefinition Width="*" />
         </Grid.ColumnDefinitions>
 
-        <!--  List  -->
-        <Grid
-            Background="{ThemeResource LayerFillColorDefaultBrush}"
-            BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
-            BorderThickness="1,1,0,0"
-            CornerRadius="8,0,0,0">
+        <!--
+            List. Like the folder pane and the month view, the first column sits on the navigation view's own content
+            layer; a layer of its own drew a second card in the same corner.
+        -->
+        <Grid>
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
@@ -123,7 +122,8 @@
             Grid.Column="1"
             Background="{ThemeResource LayerFillColorDefaultBrush}"
             BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
-            BorderThickness="1,1,0,0">
+            BorderThickness="1,1,0,0"
+            CornerRadius="8,0,0,0">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="*" />
