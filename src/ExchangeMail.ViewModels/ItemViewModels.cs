@@ -37,6 +37,9 @@ public sealed partial class FolderViewModel(MailFolder folder, int depth) : Obse
     public bool HasUnread => UnreadCount > 0 && WellKnown is not (WellKnownFolder.SentItems or WellKnownFolder.Outbox);
     public string UnreadText => HasUnread ? UnreadCount.ToString() : "";
 
+    public string AccessibleName => AccessibleText.Join(DisplayName, HasUnread ? Loc.Format(Strings.A11y_UnreadCount, UnreadCount) : null);
+    public override string ToString() => AccessibleName;
+
     /// <summary>Segoe Fluent Icons glyph.</summary>
     public string Glyph => WellKnown switch
     {
@@ -173,6 +176,19 @@ public sealed partial class MessageItemViewModel(MailSummary summary, bool showR
     public bool HasAttachments => Summary.HasAttachments;
     public bool IsHighImportance => Summary.Importance == Importance.High;
     public bool IsMeeting => Summary.ItemClass.StartsWith("IPM.Schedule.Meeting", StringComparison.OrdinalIgnoreCase);
+
+    /// <summary>What the row shows, in reading order, with the state its icons and accent bar carry.</summary>
+    public string AccessibleName => AccessibleText.Join(
+        IsUnread ? Strings.A11y_Unread : null,
+        Sender,
+        ShowSubject ? Subject : null,
+        DateText,
+        HasCount ? Loc.Count(MessageCount, Strings.A11y_MessageCount_One, Strings.A11y_MessageCount) : null,
+        IsMeeting ? Strings.A11y_MeetingInvitation : null,
+        HasAttachments ? Strings.A11y_HasAttachments : null,
+        IsHighImportance ? Strings.A11y_HighImportance : null);
+
+    public override string ToString() => AccessibleName;
 }
 
 public sealed class AttachmentViewModel(AttachmentInfo info)
@@ -180,6 +196,7 @@ public sealed class AttachmentViewModel(AttachmentInfo info)
     public AttachmentInfo Info { get; } = info;
     public string Name => Info.Name;
     public string SizeText => Info.Size > 0 ? MailFormat.FileSize(Info.Size) : "";
+    public override string ToString() => AccessibleText.Join(Name, SizeText);
 
     public string Glyph => Info.IsItemAttachment ? "" : Path.GetExtension(Info.Name).ToLowerInvariant() switch
     {

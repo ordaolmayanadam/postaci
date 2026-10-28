@@ -372,6 +372,9 @@ public sealed class CalendarEntryViewModel(CalendarEvent e, DateTime day, bool s
     public bool HasLocation => !string.IsNullOrWhiteSpace(Event.Location);
     public string ResponseText => CalendarFormat.Response(Event);
 
+    public string AccessibleName => AccessibleText.Join(Subject, DayHeader, TimeText, Location, ResponseText);
+    public override string ToString() => AccessibleName;
+
     /// <summary>Colour of the side bar: busy = accent, tentative = amber, free = grey, cancelled = red.</summary>
     /// <summary>Only your own appointments and meetings you organize can be changed.</summary>
     public bool CanEdit => (!Event.IsMeeting || Event.MyResponse == ResponseType.Organizer) && !Event.IsCancelled;

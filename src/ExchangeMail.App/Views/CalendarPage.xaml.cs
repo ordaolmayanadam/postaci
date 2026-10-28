@@ -1,4 +1,5 @@
 using System.ComponentModel;
+using System.Globalization;
 using ExchangeMail.App.Helpers;
 using ExchangeMail.ViewModels;
 using Microsoft.UI.Xaml.Controls;
@@ -15,6 +16,8 @@ public sealed partial class CalendarPage : Page
     {
         InitializeComponent();
         _body = new HtmlViewer(BodyView);
+        // The month view follows the interface language, like the week grid (Monday in Turkish, Sunday in US English).
+        MonthView.FirstDayOfWeek = (Windows.Globalization.DayOfWeek)CultureInfo.CurrentCulture.DateTimeFormat.FirstDayOfWeek;
 
         var preferences = App.Preferences;
         // The month view fills its column; by default the column fits its standard 40 px day cells at the chosen text size.

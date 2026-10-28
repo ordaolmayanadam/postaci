@@ -21,6 +21,24 @@ Gizlilik ilkesi URL'si her iki dilde de aynı sayfaya gider; sayfa kendi içinde
   "3+ / Herkes" ve "Kullanıcılar Etkileşime Girer" (Users Interact) notu.
 - Konum paylaşımı, uygulama içi satın alma, reklam: **hayır**.
 
+### Kısıtlı yetenek: runFullTrust
+
+Paketli her Win32 (WinUI 3 / Windows App SDK) uygulaması bu yeteneği ister; kaldırılamaz. Partner Center'daki
+"Why do you need the runFullTrust capability" alanına:
+
+```text
+Postacı is a desktop (Win32) mail, calendar and contacts client for on-premises Exchange Server, built with WinUI 3 and the Windows App SDK on .NET. Like every packaged Win32 desktop app, it needs runFullTrust to run outside the AppContainer; it cannot run without it.
+
+It uses full trust only for standard desktop features:
+- Connecting over HTTPS to the user's own Exchange server (Exchange Web Services), including Windows integrated sign-in (Kerberos/NTLM) on domain-joined PCs.
+- Storing the user's password in Windows Credential Manager (CredWrite/CredRead) instead of on disk.
+- A notification-area (system tray) icon so the app can keep checking for new mail when its window is closed, and the declared startup task (off by default, enabled only by the user).
+- Showing message bodies in Microsoft Edge WebView2, with scripts disabled.
+- Toast notifications through the declared COM activator.
+
+The app has no telemetry or analytics, contacts no server other than the Exchange server the user configures, does not modify system settings, and does not install drivers or services. The source code is public under the MIT license: https://github.com/ordaolmayanadam/postaci
+```
+
 ### Ekran görüntüleri
 
 - En az bir, en fazla on adet; 1366×768 ya da daha büyük (önerilen 1920×1080), PNG.

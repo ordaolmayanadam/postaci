@@ -238,6 +238,8 @@ public sealed class ContactItemViewModel(ContactInfo contact)
     public ContactInfo Contact { get; } = contact;
     public string DisplayName => string.IsNullOrWhiteSpace(Contact.DisplayName) ? Contact.Email ?? Strings.Contacts_Unnamed : Contact.DisplayName;
     public string? Email => Contact.Email;
+    public string AccessibleName => AccessibleText.Join(DisplayName, ListSecondLine);
+    public override string ToString() => AccessibleName;
     public bool HasEmail => !string.IsNullOrWhiteSpace(Contact.Email);
     public bool IsDirectoryEntry => Contact.IsDirectoryEntry;
 

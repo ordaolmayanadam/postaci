@@ -4,6 +4,27 @@
   <resheader name="version"><value>2.0</value></resheader>
   <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
   <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="A11y_HasAttachments" xml:space="preserve">
+    <value>has attachments</value>
+  </data>
+  <data name="A11y_HighImportance" xml:space="preserve">
+    <value>high importance</value>
+  </data>
+  <data name="A11y_MeetingInvitation" xml:space="preserve">
+    <value>meeting invitation</value>
+  </data>
+  <data name="A11y_MessageCount" xml:space="preserve">
+    <value>{0} messages</value>
+  </data>
+  <data name="A11y_MessageCount_One" xml:space="preserve">
+    <value>{0} message</value>
+  </data>
+  <data name="A11y_Unread" xml:space="preserve">
+    <value>unread</value>
+  </data>
+  <data name="A11y_UnreadCount" xml:space="preserve">
+    <value>{0} unread</value>
+  </data>
   <data name="Appointment_Attendees" xml:space="preserve">
     <value>Attendees</value>
   </data>

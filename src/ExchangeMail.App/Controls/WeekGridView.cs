@@ -5,6 +5,7 @@ using Microsoft.UI;
 using Microsoft.UI.Input;
 using Microsoft.UI.Text;
 using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Automation;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
@@ -137,7 +138,7 @@ public sealed partial class WeekGridView : UserControl
             var allDayEvents = _events.Where(e => IsAllDayLike(e) && Covers(e, day)).ToList();
             anyAllDay |= allDayEvents.Count > 0;
             var strip = new StackPanel { Spacing = 2, Margin = new Thickness(2, 0, 2, 4) };
-            foreach (var e in allDayEvents) strip.Children.Add(Chip(e, compact: true));
+            foreach (var e in allDayEvents) strip.Children.Add(Chip(e, height: null));
             AddToColumn(_allDay, strip, d);
 
             AddToColumn(_body, DayColumn(day, isToday), d);
@@ -181,9 +182,10 @@ public sealed partial class WeekGridView : UserControl
 
         foreach (var layout in LayoutDay(day))
         {
-            var chip = Chip(layout.Entry, compact: false);
+            var height = Math.Max(20, layout.Height - 2);
+            var chip = Chip(layout.Entry, height);
             chip.Tag = layout;
-            chip.Height = Math.Max(20, layout.Height - 2);
+            chip.Height = height;
             Canvas.SetTop(chip, layout.Top);
             canvas.Children.Add(chip);
         }
@@ -261,8 +263,18 @@ public sealed partial class WeekGridView : UserControl
         return result;
     }
 
-    private Border Chip(CalendarEntryViewModel entry, bool compact)
+    /// <summary>
+    /// An event chip. Timed chips (<paramref name="height"/> given) give the subject only the lines that leave room for
+    /// the time below it; when not even that fits, the chip shows the subject alone. All-day chips are one line.
+    /// </summary>
+    private Border Chip(CalendarEntryViewModel entry, double? height)
     {
+        const double verticalPadding = 6;
+        var subjectLine = 16 * Ui.TextScale;
+        var timeLine = 15 * Ui.TextScale;
+        var subjectLines = height is { } h ? (int)Math.Floor((h - verticalPadding - timeLine) / subjectLine) : 0;
+        var showTime = subjectLines >= 1;
+
         var text = new StackPanel();
         text.Children.Add(new TextBlock
         {
@@ -271,10 +283,11 @@ public sealed partial class WeekGridView : UserControl
             FontWeight = FontWeights.SemiBold,
             Foreground = ChipText,
             TextTrimming = TextTrimming.CharacterEllipsis,
-            TextWrapping = compact ? TextWrapping.NoWrap : TextWrapping.Wrap,
-            MaxLines = compact ? 1 : 3,
+            // Whole words: a long word is trimmed with an ellipsis instead of being split over two lines.
+            TextWrapping = showTime ? TextWrapping.WrapWholeWords : TextWrapping.NoWrap,
+            MaxLines = Math.Clamp(subjectLines, 1, 3),
         });
-        if (!compact)
+        if (showTime)
         {
             text.Children.Add(new TextBlock
             {
@@ -297,13 +310,14 @@ public sealed partial class WeekGridView : UserControl
             Opacity = entry.Event.IsCancelled ? 0.55 : 1,
         };
         ToolTipService.SetToolTip(chip, $"{entry.Subject}\n{entry.TimeText}{(entry.HasLocation ? "\n" + entry.Location : "")}");
+        AutomationProperties.SetName(chip, entry.AccessibleName);
 
         chip.DoubleTapped += (_, e) =>
         {
             e.Handled = true;
             EventOpened?.Invoke(this, entry);
         };
-        if (compact)
+        if (height is null) // all-day chips only select; timed chips can also be dragged to a new time
         {
             chip.Tapped += (_, e) =>
             {
