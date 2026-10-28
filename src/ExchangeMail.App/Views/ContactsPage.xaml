@@ -27,21 +27,22 @@
             </Grid.RowDefinitions>
 
             <StackPanel Padding="12,12,12,4" Spacing="8">
-                <Grid>
-                    <TextBlock Text="{h:L Key=Nav_Contacts}" Style="{StaticResource SubtitleTextBlockStyle}" />
-                    <StackPanel HorizontalAlignment="Right" Orientation="Horizontal" Spacing="8">
-                        <ProgressRing Width="16" Height="16" IsActive="{x:Bind ViewModel.IsLoading, Mode=OneWay}" />
-                        <Button Click="OnNewContact" ToolTipService.ToolTip="{h:L Key=Contacts_NewTooltip}">
-                            <StackPanel Orientation="Horizontal" Spacing="8">
-                                <FontIcon Glyph="&#xE8FA;" FontSize="14" />
-                                <TextBlock Text="{h:L Key=Contacts_New}" />
-                            </StackPanel>
-                            <Button.KeyboardAccelerators>
-                                <KeyboardAccelerator Key="N" Modifiers="Control" />
-                            </Button.KeyboardAccelerators>
-                        </Button>
-                    </StackPanel>
-                </Grid>
+                <!--  Like New mail and New event: no page title, the new-item button at the top left.  -->
+                <StackPanel Orientation="Horizontal" Spacing="12">
+                    <Button
+                        Click="OnNewContact"
+                        Style="{StaticResource AccentButtonStyle}"
+                        ToolTipService.ToolTip="{h:L Key=Contacts_NewTooltip}">
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <FontIcon Glyph="&#xE710;" FontSize="14" />
+                            <TextBlock Text="{h:L Key=Contacts_New}" />
+                        </StackPanel>
+                        <Button.KeyboardAccelerators>
+                            <KeyboardAccelerator Key="N" Modifiers="Control" />
+                        </Button.KeyboardAccelerators>
+                    </Button>
+                    <ProgressRing Width="16" Height="16" IsActive="{x:Bind ViewModel.IsLoading, Mode=OneWay}" />
+                </StackPanel>
                 <RadioButtons MaxColumns="2" SelectedIndex="{x:Bind ViewModel.SourceIndex, Mode=TwoWay}">
                     <RadioButton Content="{h:L Key=Contacts_Mine}" />
                     <RadioButton Content="{h:L Key=Contacts_Directory}" />
@@ -163,51 +164,98 @@
             </StackPanel>
 
             <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" Visibility="{x:Bind ViewModel.HasSelection, Mode=OneWay}">
-                <StackPanel
-                    MaxWidth="640"
-                    Padding="24,4,24,24"
-                    HorizontalAlignment="Left"
-                    Spacing="24">
-                    <StackPanel Orientation="Horizontal" Spacing="16">
-                        <PersonPicture Width="72" Height="72" DisplayName="{x:Bind ViewModel.Selected.DisplayName, Mode=OneWay}" />
-                        <StackPanel VerticalAlignment="Center" Spacing="4">
-                            <TextBlock
-                                Text="{x:Bind ViewModel.Selected.DisplayName, Mode=OneWay}"
-                                Style="{StaticResource SubtitleTextBlockStyle}"
-                                IsTextSelectionEnabled="True" />
-                            <TextBlock
-                                Text="{x:Bind ViewModel.Selected.Subtitle, Mode=OneWay}"
-                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                IsTextSelectionEnabled="True"
-                                TextWrapping="Wrap" />
-                        </StackPanel>
-                    </StackPanel>
+                <!--  The card fills the pane up to 640 px of content, aligned left, whatever the length of its lines.  -->
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" MaxWidth="688" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <StackPanel Padding="24,4,24,24" Spacing="24">
+                        <!--
+                            A contact card: name with title, department and company each on a line of its own, then the
+                            ways to reach the person. Every line wraps, so long names and titles fit; empty ones are hidden.
+                        -->
+                        <Border
+                            Padding="20"
+                            Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                            BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                            BorderThickness="1"
+                            CornerRadius="{StaticResource OverlayCornerRadius}">
+                            <StackPanel Spacing="16">
+                                <Grid ColumnSpacing="16">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="*" />
+                                    </Grid.ColumnDefinitions>
+                                    <PersonPicture Width="72" Height="72" VerticalAlignment="Top" DisplayName="{x:Bind ViewModel.Selected.DisplayName, Mode=OneWay}" />
+                                    <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2">
+                                        <TextBlock
+                                            Text="{x:Bind ViewModel.Selected.DisplayName, Mode=OneWay}"
+                                            Style="{StaticResource SubtitleTextBlockStyle}"
+                                            IsTextSelectionEnabled="True"
+                                            TextWrapping="Wrap" />
+                                        <TextBlock
+                                            Text="{x:Bind ViewModel.Selected.JobTitle, Mode=OneWay}"
+                                            IsTextSelectionEnabled="True"
+                                            TextWrapping="Wrap"
+                                            Visibility="{x:Bind ViewModel.Selected.HasJobTitle, Mode=OneWay, FallbackValue=Collapsed}" />
+                                        <TextBlock
+                                            Text="{x:Bind ViewModel.Selected.Department, Mode=OneWay}"
+                                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                            IsTextSelectionEnabled="True"
+                                            TextWrapping="Wrap"
+                                            Visibility="{x:Bind ViewModel.Selected.HasDepartment, Mode=OneWay, FallbackValue=Collapsed}" />
+                                        <TextBlock
+                                            Text="{x:Bind ViewModel.Selected.Company, Mode=OneWay}"
+                                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                            IsTextSelectionEnabled="True"
+                                            TextWrapping="Wrap"
+                                            Visibility="{x:Bind ViewModel.Selected.HasCompany, Mode=OneWay, FallbackValue=Collapsed}" />
+                                    </StackPanel>
+                                </Grid>
 
-                    <Grid
-                        Padding="16"
-                        Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
-                        BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
-                        BorderThickness="1"
-                        ColumnSpacing="24"
-                        CornerRadius="{StaticResource ControlCornerRadius}"
-                        RowSpacing="12">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="Auto" />
-                            <ColumnDefinition Width="*" />
-                        </Grid.ColumnDefinitions>
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto" />
-                            <RowDefinition Height="Auto" />
-                            <RowDefinition Height="Auto" />
-                        </Grid.RowDefinitions>
-                        <TextBlock Text="{h:L Key=Common_Email}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
-                        <TextBlock Grid.Column="1" Text="{x:Bind ViewModel.Selected.Email, Mode=OneWay}" IsTextSelectionEnabled="True" />
-                        <TextBlock Grid.Row="1" Text="{h:L Key=Contacts_BusinessPhone}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
-                        <TextBlock Grid.Row="1" Grid.Column="1" Text="{x:Bind ViewModel.Selected.BusinessPhone, Mode=OneWay}" IsTextSelectionEnabled="True" />
-                        <TextBlock Grid.Row="2" Text="{h:L Key=Contacts_MobilePhone}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
-                        <TextBlock Grid.Row="2" Grid.Column="1" Text="{x:Bind ViewModel.Selected.MobilePhone, Mode=OneWay}" IsTextSelectionEnabled="True" />
-                    </Grid>
-                </StackPanel>
+                                <Border
+                                    Height="1"
+                                    Background="{ThemeResource DividerStrokeColorDefaultBrush}"
+                                    Visibility="{x:Bind ViewModel.Selected.HasContactDetails, Mode=OneWay, FallbackValue=Collapsed}" />
+
+                                <Grid ColumnSpacing="12" Visibility="{x:Bind ViewModel.Selected.HasEmail, Mode=OneWay, FallbackValue=Collapsed}">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="*" />
+                                    </Grid.ColumnDefinitions>
+                                    <FontIcon VerticalAlignment="Center" Glyph="&#xE715;" FontSize="16" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                    <StackPanel Grid.Column="1">
+                                        <TextBlock Text="{h:L Key=Common_Email}" Style="{StaticResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                        <TextBlock Text="{x:Bind ViewModel.Selected.Email, Mode=OneWay}" IsTextSelectionEnabled="True" TextWrapping="Wrap" />
+                                    </StackPanel>
+                                </Grid>
+                                <Grid ColumnSpacing="12" Visibility="{x:Bind ViewModel.Selected.HasBusinessPhone, Mode=OneWay, FallbackValue=Collapsed}">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="*" />
+                                    </Grid.ColumnDefinitions>
+                                    <FontIcon VerticalAlignment="Center" Glyph="&#xE717;" FontSize="16" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                    <StackPanel Grid.Column="1">
+                                        <TextBlock Text="{h:L Key=Contacts_BusinessPhone}" Style="{StaticResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                        <TextBlock Text="{x:Bind ViewModel.Selected.BusinessPhone, Mode=OneWay}" IsTextSelectionEnabled="True" TextWrapping="Wrap" />
+                                    </StackPanel>
+                                </Grid>
+                                <Grid ColumnSpacing="12" Visibility="{x:Bind ViewModel.Selected.HasMobilePhone, Mode=OneWay, FallbackValue=Collapsed}">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="*" />
+                                    </Grid.ColumnDefinitions>
+                                    <FontIcon VerticalAlignment="Center" Glyph="&#xE8EA;" FontSize="16" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                    <StackPanel Grid.Column="1">
+                                        <TextBlock Text="{h:L Key=Contacts_MobilePhone}" Style="{StaticResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                        <TextBlock Text="{x:Bind ViewModel.Selected.MobilePhone, Mode=OneWay}" IsTextSelectionEnabled="True" TextWrapping="Wrap" />
+                                    </StackPanel>
+                                </Grid>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+                </Grid>
             </ScrollViewer>
         </Grid>
 

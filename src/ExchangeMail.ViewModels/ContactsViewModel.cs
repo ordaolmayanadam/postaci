@@ -252,4 +252,13 @@ public sealed class ContactItemViewModel(ContactInfo contact)
     public bool HasBusinessPhone => !string.IsNullOrWhiteSpace(Contact.BusinessPhone);
     public bool HasMobilePhone => !string.IsNullOrWhiteSpace(Contact.MobilePhone);
     public bool HasSubtitle => Subtitle.Length > 0;
+
+    // The contact card shows these on lines of their own.
+    public string JobTitle => Contact.JobTitle ?? "";
+    public string Department => Contact.Department ?? "";
+    public string Company => Contact.Company ?? "";
+    public bool HasJobTitle => !string.IsNullOrWhiteSpace(Contact.JobTitle);
+    public bool HasDepartment => !string.IsNullOrWhiteSpace(Contact.Department);
+    public bool HasCompany => !string.IsNullOrWhiteSpace(Contact.Company);
+    public bool HasContactDetails => HasEmail || HasBusinessPhone || HasMobilePhone;
 }
