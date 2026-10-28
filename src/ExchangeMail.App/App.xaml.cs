@@ -16,9 +16,11 @@ public partial class App : Application
     public App()
     {
         // The package's own app data folder (removed with the app); the zip releases' settings are copied over once.
-        AppInfo.UseDataDirectory(ApplicationData.Current.LocalFolder.Path);
+        // The demo mailbox keeps its settings apart, so the real account is neither migrated into it nor used.
+        var dataDirectory = ApplicationData.Current.LocalFolder.Path;
+        AppInfo.UseDataDirectory(DemoMode.IsRequested ? Path.Combine(dataDirectory, "Demo") : dataDirectory);
         Diagnostics.LogDirectory = AppInfo.DataDirectory;
-        AppInfo.MigrateEarlierData();
+        if (!DemoMode.IsRequested) AppInfo.MigrateEarlierData();
         Settings = new SettingsStore();
         Environment.SetEnvironmentVariable("WEBVIEW2_USER_DATA_FOLDER", Path.Combine(AppInfo.DataDirectory, "WebView2"));
 
@@ -123,6 +125,7 @@ public partial class App : Application
     protected override void OnLaunched(LaunchActivatedEventArgs args)
     {
         Preferences = Settings.LoadPreferences();
+        if (DemoMode.IsRequested) DemoMode.ApplyTo(Preferences);
         // Before any window exists: XAML reads its texts once, when it is loaded.
         Loc.Apply(Loc.Resolve(Preferences.Language, System.Globalization.CultureInfo.CurrentUICulture));
         ApplyControlLanguage();
@@ -138,6 +141,9 @@ public partial class App : Application
         MainWindow = new MainWindow();
         MainWindow.Closed += (_, _) => Notifications.Unregister();
         MainWindow.Activate();
+#if DEBUG
+        if (DemoMode.IsRequested) MainWindow.ShowMail(DemoMode.CreateSession(Preferences));
+#endif
         if (StartedInTray) MainWindow.HideToTray(showHint: false);
     }
 }

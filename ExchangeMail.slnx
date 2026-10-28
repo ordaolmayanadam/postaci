@@ -11,6 +11,9 @@
     <Project Path="src/ExchangeMail.Core/ExchangeMail.Core.csproj">
       <Platform Solution="*|x64" Project="x64" />
     </Project>
+    <Project Path="src/ExchangeMail.Demo/ExchangeMail.Demo.csproj">
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
     <Project Path="src/ExchangeMail.ViewModels/ExchangeMail.ViewModels.csproj">
       <Platform Solution="*|x64" Project="x64" />
     </Project>

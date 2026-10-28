@@ -58,6 +58,8 @@
 
   <ItemGroup>
     <ProjectReference Include="..\ExchangeMail.ViewModels\ExchangeMail.ViewModels.csproj" />
+    <!-- The made-up mailbox behind ‒‒demo (Helpers\DemoMode.cs); not part of Release builds. -->
+    <ProjectReference Include="..\ExchangeMail.Demo\ExchangeMail.Demo.csproj" Condition="'$(Configuration)' == 'Debug'" />
   </ItemGroup>
   <ItemGroup>
     <Using Include="ExchangeMail.Core.Localization" />

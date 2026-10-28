@@ -79,7 +79,10 @@ public partial class LocalizationTests
     {
         // Subject prefixes recognised in replies from other clients, not shown as UI text.
         string[] allowed = ["\"Postacı\"", "\"İLT:\""];
+        // The demo mailbox's Turkish and English content is mailbox data, not interface text.
+        var demo = $"{Path.DirectorySeparatorChar}ExchangeMail.Demo{Path.DirectorySeparatorChar}";
         var offenders = SourceFiles("*.cs")
+            .Where(f => !f.Contains(demo, StringComparison.Ordinal))
             .SelectMany(f => File.ReadAllLines(f).Select((line, i) => (File: Path.GetFileName(f), Line: i + 1, Text: line.Trim())))
             .Where(l => !l.Text.StartsWith("//", StringComparison.Ordinal))
             .Where(l => TurkishLiteralPattern().Matches(l.Text).Any(m => !allowed.Contains(m.Value)))

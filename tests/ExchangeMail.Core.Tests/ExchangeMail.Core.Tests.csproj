@@ -11,6 +11,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\src\ExchangeMail.Core\ExchangeMail.Core.csproj" />
     <ProjectReference Include="..\..\src\ExchangeMail.ViewModels\ExchangeMail.ViewModels.csproj" />
+    <ProjectReference Include="..\..\src\ExchangeMail.Demo\ExchangeMail.Demo.csproj" />
   </ItemGroup>
   <ItemGroup>
     <Using Include="Xunit" />
