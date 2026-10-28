@@ -100,7 +100,8 @@ public sealed partial class HtmlEditor : UserControl
         var dark = Helpers.WebViewTheme.IsDark(_web);
         Helpers.WebViewTheme.Apply(_web, dark);
         return _web.CoreWebView2.ExecuteScriptAsync(
-            $"document.documentElement.style.colorScheme = {Json(dark ? "dark" : "light")};").AsTask();
+            $"document.documentElement.style.colorScheme = {Json(dark ? "dark" : "light")};" +
+            $"document.documentElement.style.background = {Json(dark ? ViewModels.MailFormat.DarkPageBackground : "")};").AsTask();
     }
 
     /// <summary>Uses the compose font from Settings (the same font wraps the message when it is sent).</summary>

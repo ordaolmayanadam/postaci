@@ -71,6 +71,9 @@ public static partial class MailFormat
 
     public static bool HasRemoteContent(string html) => RemoteReference().IsMatch(html);
 
+    /// <summary>Background of dark message bodies and editors: the dark theme's darkest tone (AppBackdrop's dark tint).</summary>
+    public const string DarkPageBackground = "#222234";
+
     /// <summary>The color scheme a message body is shown in.</summary>
     public enum PageColorScheme
     {
@@ -140,7 +143,9 @@ public static partial class MailFormat
         var css = new StringBuilder();
         css.Append(scheme switch
         {
-            PageColorScheme.Dark => ":root{color-scheme:light dark}",
+            // The app's dark tone instead of the browser's near-black canvas. :where() keeps it below any background
+            // the message gives html itself; a body background of its own still shows over it.
+            PageColorScheme.Dark => $":root{{color-scheme:light dark}}:where(html){{background:{DarkPageBackground}}}",
             // :where() keeps this below any background the message gives html itself.
             PageColorScheme.Light => ":root{color-scheme:light}:where(html){background:#fff}",
             _ => "",

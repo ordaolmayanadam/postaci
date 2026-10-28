@@ -13,7 +13,8 @@ namespace ExchangeMail.App.Helpers;
 /// </summary>
 public sealed partial class AppBackdrop : SystemBackdrop
 {
-    private static readonly Color DarkTint = Color.FromArgb(0xFF, 0x22, 0x22, 0x34);
+    /// <summary>The darkest tone of the dark theme; dark message bodies use it too (MailFormat.DarkPageBackground).</summary>
+    internal static readonly Color DarkTint = Color.FromArgb(0xFF, 0x22, 0x22, 0x34);
     private static readonly Color DarkFallback = Color.FromArgb(0xFF, 0x24, 0x24, 0x36);
 
     private MicaController? _mica;

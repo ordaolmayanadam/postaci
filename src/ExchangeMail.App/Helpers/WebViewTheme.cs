@@ -2,7 +2,6 @@ using Microsoft.UI;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.Web.WebView2.Core;
-using Windows.UI;
 
 namespace ExchangeMail.App.Helpers;
 
@@ -13,9 +12,6 @@ namespace ExchangeMail.App.Helpers;
 /// </summary>
 internal static class WebViewTheme
 {
-    /// <summary>The dark canvas Chromium paints for color-scheme: dark, so nothing flashes white before a page loads.</summary>
-    private static readonly Color DarkCanvas = Color.FromArgb(0xFF, 0x12, 0x12, 0x12);
-
     public static bool IsDark(FrameworkElement element) =>
         App.Preferences.DarkMessageBodies && element.ActualTheme == ElementTheme.Dark;
 
@@ -25,7 +21,8 @@ internal static class WebViewTheme
     /// </summary>
     public static void Apply(WebView2 view, bool darkPage)
     {
-        view.DefaultBackgroundColor = darkPage ? DarkCanvas : Colors.White;
+        // The page's own dark background (not Chromium's near-black canvas), so nothing flashes before a page loads.
+        view.DefaultBackgroundColor = darkPage ? AppBackdrop.DarkTint : Colors.White;
         if (view.CoreWebView2 is { } core)
             core.Profile.PreferredColorScheme = IsDark(view) ? CoreWebView2PreferredColorScheme.Dark : CoreWebView2PreferredColorScheme.Light;
     }
