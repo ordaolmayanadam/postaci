@@ -71,6 +71,20 @@ public static partial class MailFormat
 
     public static bool HasRemoteContent(string html) => RemoteReference().IsMatch(html);
 
+    /// <summary>The color scheme a message body is shown in.</summary>
+    public enum PageColorScheme
+    {
+        /// <summary>The browser's default (light).</summary>
+        Default,
+        /// <summary>
+        /// Offers a dark scheme: text and background the message leaves unset turn dark, colors it sets itself are
+        /// kept (so a light newsletter stays light).
+        /// </summary>
+        Dark,
+        /// <summary>Light, also while the viewer reports prefers-color-scheme: dark (one message shown light in dark mode).</summary>
+        Light,
+    }
+
     /// <summary>
     /// One HTML document for a conversation: each message's own text under a header with sender, date and
     /// recipients, newest first. Header values are encoded; the bodies go through the same display policy (CSP,
@@ -83,12 +97,13 @@ public static partial class MailFormat
         {
             var to = string.Join("; ", m.To.Select(a => a.Display));
             sb.Append("<div style=\"padding:12px 0 16px;border-bottom:1px solid rgba(128,128,128,.35)\">")
-              .Append("<div style=\"font-family:'Segoe UI',sans-serif;font-size:12px;color:#6b6b6b;margin-bottom:10px\">")
-              .Append("<b style=\"color:#1a1a1a;font-size:13px\">").Append(WebUtility.HtmlEncode(m.From?.Display ?? "")).Append("</b>")
-              .Append(" · ").Append(WebUtility.HtmlEncode(LongDate(m.Received)));
+              // The header takes the text color (dimmed, not a fixed gray), so it reads in the dark scheme too.
+              .Append("<div style=\"font-family:'Segoe UI',sans-serif;font-size:12px;margin-bottom:10px\">")
+              .Append("<b style=\"font-size:13px\">").Append(WebUtility.HtmlEncode(m.From?.Display ?? "")).Append("</b>")
+              .Append("<span style=\"opacity:.7\"> · ").Append(WebUtility.HtmlEncode(LongDate(m.Received)));
             if (to.Length > 0)
                 sb.Append("<br>").Append(WebUtility.HtmlEncode(Strings.Mail_ToLabel)).Append(' ').Append(WebUtility.HtmlEncode(to));
-            sb.Append("</div><div>");
+            sb.Append("</span></div><div>");
             if (m.Body.Length > 0)
                 sb.Append(m.IsHtml ? ExtractBodyHtml(m.Body) : WebUtility.HtmlEncode(m.Body).ReplaceLineEndings("<br>"));
             else
@@ -116,11 +131,20 @@ public static partial class MailFormat
 
     /// <summary>
     /// Applies the reader's preferences to HTML prepared by <see cref="PrepareForDisplay"/>: a default font (messages
-    /// that set their own fonts keep them unless <paramref name="overrideFonts"/>) and a zoom level in percent.
+    /// that set their own fonts keep them unless <paramref name="overrideFonts"/>), a zoom level in percent and the
+    /// color scheme (see <see cref="PageColorScheme"/>).
     /// </summary>
-    public static string ApplyReadingPreferences(string preparedHtml, string? fontFamily, bool overrideFonts, int zoomPercent)
+    public static string ApplyReadingPreferences(string preparedHtml, string? fontFamily, bool overrideFonts, int zoomPercent,
+        PageColorScheme scheme = PageColorScheme.Default)
     {
         var css = new StringBuilder();
+        css.Append(scheme switch
+        {
+            PageColorScheme.Dark => ":root{color-scheme:light dark}",
+            // :where() keeps this below any background the message gives html itself.
+            PageColorScheme.Light => ":root{color-scheme:light}:where(html){background:#fff}",
+            _ => "",
+        });
         if (!string.IsNullOrWhiteSpace(fontFamily))
         {
             var stack = FontStack(fontFamily);

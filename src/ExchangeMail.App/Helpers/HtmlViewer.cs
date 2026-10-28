@@ -20,17 +20,42 @@ public sealed class HtmlViewer
     private readonly string _tempFolder = Path.Combine(TempRoot, Guid.NewGuid().ToString("N"));
     private bool _ready;
     private string? _pending;
+    private bool _forceLight;
 
     public HtmlViewer(WebView2 view)
     {
         _view = view;
-        // Reading font and zoom apply to the open message right away.
+        // Reading font, zoom and the dark setting apply to the open message right away, and so does a theme change.
         App.Preferences.PropertyChanged += (_, e) =>
         {
             if (e.PropertyName is nameof(UserPreferences.ReadingFontFamily) or nameof(UserPreferences.ReadingFontOverride)
-                or nameof(UserPreferences.ReadingZoom))
+                or nameof(UserPreferences.ReadingZoom) or nameof(UserPreferences.DarkMessageBodies))
                 Show(_pending);
+            if (e.PropertyName == nameof(UserPreferences.DarkMessageBodies)) DarkChanged?.Invoke(this, EventArgs.Empty);
         };
+        _view.ActualThemeChanged += (_, _) =>
+        {
+            Show(_pending);
+            DarkChanged?.Invoke(this, EventArgs.Empty);
+        };
+    }
+
+    /// <summary>Messages are shown dark (dark theme, and the setting is on).</summary>
+    public bool IsDark => WebViewTheme.IsDark(_view);
+
+    /// <summary>Raised when <see cref="IsDark"/> may have changed.</summary>
+    public event EventHandler? DarkChanged;
+
+    /// <summary>Shows the current message with a light background although messages are dark (one that is hard to read dark).</summary>
+    public bool ForceLight
+    {
+        get => _forceLight;
+        set
+        {
+            if (_forceLight == value) return;
+            _forceLight = value;
+            Show(_pending);
+        }
     }
 
     public static string TempRoot { get; } = Path.Combine(Path.GetTempPath(), ViewModels.AppInfo.Id);
@@ -86,7 +111,12 @@ public sealed class HtmlViewer
         _pending = html;
         if (!_ready) return;
         var p = App.Preferences;
-        html = MailFormat.ApplyReadingPreferences(html ?? Empty, p.ReadingFontFamily, p.ReadingFontOverride, p.ReadingZoom);
+        var dark = IsDark && !_forceLight;
+        WebViewTheme.Apply(_view, dark);
+        var scheme = dark ? MailFormat.PageColorScheme.Dark
+            : IsDark ? MailFormat.PageColorScheme.Light // "Light background" while the profile reports dark
+            : MailFormat.PageColorScheme.Default;
+        html = MailFormat.ApplyReadingPreferences(html ?? Empty, p.ReadingFontFamily, p.ReadingFontOverride, p.ReadingZoom, scheme);
 
         if (html.Length <= MaxInlineHtmlLength)
         {

@@ -781,6 +781,9 @@
   <data name="Mail_ItemsSelected" xml:space="preserve">
     <value>{0} öğe seçildi</value>
   </data>
+  <data name="Mail_LightBackground" xml:space="preserve">
+    <value>Açık arka plan</value>
+  </data>
   <data name="Mail_MarkReadFailed" xml:space="preserve">
     <value>Okundu olarak işaretlenemedi: {0}</value>
   </data>
@@ -969,6 +972,12 @@
   </data>
   <data name="Settings_ComposeSample" xml:space="preserve">
     <value>Merhaba Ayşe Hanım, yarınki toplantı için gündemi paylaşıyorum.</value>
+  </data>
+  <data name="Settings_DarkBodies" xml:space="preserve">
+    <value>Koyu temada iletiler de koyu</value>
+  </data>
+  <data name="Settings_DarkBodiesHint" xml:space="preserve">
+    <value>Kendi renklerini belirlemeyen iletiler ve yazma alanları koyu gösterilir. Okunması zor bir iletide okuma bölmesindeki "Açık arka plan" düğmesini kullanın.</value>
   </data>
   <data name="Settings_DefaultFont" xml:space="preserve">
     <value>Varsayılan</value>

@@ -20,8 +20,8 @@ public sealed partial class HtmlEditor : UserControl
         <meta http-equiv="Content-Security-Policy" content="img-src data:; style-src 'unsafe-inline'">
         <style>
           html,body{height:100%;margin:0}
-          body{box-sizing:border-box;padding:12px 14px;color:#1a1a1a;background:#fff;outline:none;overflow-wrap:break-word}
-          p{margin:0} img{max-width:100%} a{color:#0563c1}
+          body{box-sizing:border-box;padding:12px 14px;outline:none;overflow-wrap:break-word}
+          p{margin:0} img{max-width:100%} a{color:LinkText}
           blockquote{margin:0 0 0 .8ex;border-left:2px solid #ccc;padding-left:1ex}
         </style></head><body contenteditable="true" spellcheck="true" lang="{{Loc.Current}}"></body></html>
         """;
@@ -55,7 +55,6 @@ public sealed partial class HtmlEditor : UserControl
         var frame = new Border
         {
             Child = _web,
-            Background = new SolidColorBrush(Microsoft.UI.Colors.White),
             BorderBrush = new SolidColorBrush(ColorHelper.FromArgb(0x40, 0x80, 0x80, 0x80)),
             BorderThickness = new Thickness(1),
             CornerRadius = new CornerRadius(4),
@@ -74,11 +73,34 @@ public sealed partial class HtmlEditor : UserControl
         };
         App.Preferences.PropertyChanged += async (_, e) =>
         {
-            if (e.PropertyName is not (nameof(ViewModels.UserPreferences.ComposeFontFamily) or nameof(ViewModels.UserPreferences.ComposeFontSize))) return;
             if (!_ready.Task.IsCompletedSuccessfully) return;
-            try { await ApplyDefaultFontAsync(); }
+            try
+            {
+                if (e.PropertyName is nameof(ViewModels.UserPreferences.ComposeFontFamily) or nameof(ViewModels.UserPreferences.ComposeFontSize))
+                    await ApplyDefaultFontAsync();
+                else if (e.PropertyName == nameof(ViewModels.UserPreferences.DarkMessageBodies))
+                    await ApplyColorSchemeAsync();
+            }
             catch (Exception) { /* editor closed */ }
         };
+        _web.ActualThemeChanged += async (_, _) =>
+        {
+            if (!_ready.Task.IsCompletedSuccessfully) return;
+            try { await ApplyColorSchemeAsync(); }
+            catch (Exception) { /* editor closed */ }
+        };
+    }
+
+    /// <summary>
+    /// Dark or light writing area, like message bodies. Only the document's own style changes; the message's HTML
+    /// carries no colors from it, so recipients see it as written.
+    /// </summary>
+    private Task ApplyColorSchemeAsync()
+    {
+        var dark = Helpers.WebViewTheme.IsDark(_web);
+        Helpers.WebViewTheme.Apply(_web, dark);
+        return _web.CoreWebView2.ExecuteScriptAsync(
+            $"document.documentElement.style.colorScheme = {Json(dark ? "dark" : "light")};").AsTask();
     }
 
     /// <summary>Uses the compose font from Settings (the same font wraps the message when it is sent).</summary>
@@ -115,6 +137,7 @@ public sealed partial class HtmlEditor : UserControl
                 if (!args.Uri.StartsWith("data:", StringComparison.OrdinalIgnoreCase) && args.Uri != "about:blank") args.Cancel = true;
             };
             core.NewWindowRequested += (_, args) => args.Handled = true;
+            Helpers.WebViewTheme.Apply(_web, Helpers.WebViewTheme.IsDark(_web)); // no white flash while the document loads
 
             var loaded = new TaskCompletionSource();
             void OnCompleted(CoreWebView2 sender, CoreWebView2NavigationCompletedEventArgs args)
@@ -129,6 +152,7 @@ public sealed partial class HtmlEditor : UserControl
             // Content goes in by script, so large drafts are not limited by NavigateToString's 2 MB cap.
             await core.ExecuteScriptAsync($"document.body.innerHTML = {Json(_html)};");
             await ApplyDefaultFontAsync();
+            await ApplyColorSchemeAsync();
             _ready.TrySetResult();
         }
         catch (Exception ex)

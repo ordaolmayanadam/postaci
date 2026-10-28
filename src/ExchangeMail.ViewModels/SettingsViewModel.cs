@@ -147,6 +147,12 @@ public sealed partial class SettingsViewModel : ObservableObject
         set => Preferences.AlwaysShowRemoteImages = value;
     }
 
+    public bool DarkMessageBodies
+    {
+        get => Preferences.DarkMessageBodies;
+        set => Preferences.DarkMessageBodies = value;
+    }
+
     /// <summary>Signature HTML for the editor (converted from a legacy plain-text signature if needed).</summary>
     public string SignatureHtml
     {
@@ -287,6 +293,7 @@ public sealed partial class SettingsViewModel : ObservableObject
             case nameof(UserPreferences.MarkAsReadDelaySeconds): OnPropertyChanged(nameof(MarkAsReadDelaySeconds)); break;
             case nameof(UserPreferences.RefreshIntervalSeconds): OnPropertyChanged(nameof(RefreshIndex)); break;
             case nameof(UserPreferences.AlwaysShowRemoteImages): OnPropertyChanged(nameof(AlwaysShowRemoteImages)); break;
+            case nameof(UserPreferences.DarkMessageBodies): OnPropertyChanged(nameof(DarkMessageBodies)); break;
             case nameof(UserPreferences.SignatureHtml): OnPropertyChanged(nameof(SignatureHtml)); break;
             case nameof(UserPreferences.ShowNotifications): OnPropertyChanged(nameof(ShowNotifications)); break;
             case nameof(UserPreferences.MinimizeToTray): OnPropertyChanged(nameof(MinimizeToTray)); break;

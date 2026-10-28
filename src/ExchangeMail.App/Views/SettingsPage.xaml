@@ -254,6 +254,16 @@
                     </ComboBox>
                 </toolkit:SettingsCard>
 
+                <toolkit:SettingsCard Header="{h:L Key=Settings_DarkBodies}" Description="{h:L Key=Settings_DarkBodiesHint}">
+                    <toolkit:SettingsCard.HeaderIcon>
+                        <FontIcon Glyph="&#xE708;" />
+                    </toolkit:SettingsCard.HeaderIcon>
+                    <ToggleSwitch
+                        IsOn="{x:Bind ViewModel.DarkMessageBodies, Mode=TwoWay}"
+                        OffContent="{h:L Key=Common_Off}"
+                        OnContent="{h:L Key=Common_On}" />
+                </toolkit:SettingsCard>
+
                 <toolkit:SettingsCard Header="{h:L Key=Settings_FolderDensity}" Description="{h:L Key=Settings_FolderDensityHint}">
                     <toolkit:SettingsCard.HeaderIcon>
                         <FontIcon Glyph="&#xE8FD;" />

@@ -781,6 +781,9 @@
   <data name="Mail_ItemsSelected" xml:space="preserve">
     <value>{0} items selected</value>
   </data>
+  <data name="Mail_LightBackground" xml:space="preserve">
+    <value>Light background</value>
+  </data>
   <data name="Mail_MarkReadFailed" xml:space="preserve">
     <value>Could not mark as read: {0}</value>
   </data>
@@ -969,6 +972,12 @@
   </data>
   <data name="Settings_ComposeSample" xml:space="preserve">
     <value>Hello Jane, here is the agenda for tomorrow's meeting.</value>
+  </data>
+  <data name="Settings_DarkBodies" xml:space="preserve">
+    <value>Dark messages in dark theme</value>
+  </data>
+  <data name="Settings_DarkBodiesHint" xml:space="preserve">
+    <value>Messages that don't set their own colors, and the writing areas, are shown dark. If a message is hard to read, use "Light background" in the reading pane.</value>
   </data>
   <data name="Settings_DefaultFont" xml:space="preserve">
     <value>Default</value>

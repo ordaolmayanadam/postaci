@@ -17,6 +17,8 @@ public sealed partial class UserPreferences : ObservableObject
     [ObservableProperty] private string _signature = "";
     [ObservableProperty] private string _signatureHtml = "";
     [ObservableProperty] private AppTheme _theme = AppTheme.System;
+    /// <summary>In dark theme, messages without colors of their own (and the editors) are shown dark too.</summary>
+    [ObservableProperty] private bool _darkMessageBodies = true;
     [ObservableProperty] private bool _showNotifications = true;
 
     /// <summary>Closing the main window hides it to the notification area instead of quitting.</summary>

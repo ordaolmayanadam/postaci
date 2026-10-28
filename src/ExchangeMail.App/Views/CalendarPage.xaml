@@ -272,7 +272,7 @@
 
                 <Border
                     Grid.Row="1"
-                    Background="White"
+                    Background="Transparent"
                     BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
                     BorderThickness="1"
                     CornerRadius="{StaticResource ControlCornerRadius}">

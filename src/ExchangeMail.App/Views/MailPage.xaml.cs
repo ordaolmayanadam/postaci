@@ -32,6 +32,8 @@ public sealed partial class MailPage : Page
     {
         InitializeComponent();
         _body = new HtmlViewer(BodyView);
+        _body.DarkChanged += (_, _) => UpdateLightBackgroundButton();
+        Loaded += (_, _) => UpdateLightBackgroundButton();
 
         var preferences = App.Preferences;
         Ui.RestoreWidth(FolderColumn, preferences.MailFolderPaneWidth);
@@ -107,6 +109,10 @@ public sealed partial class MailPage : Page
         if (_shownDetail is not null) _shownDetail.PropertyChanged -= OnDetailPropertyChanged;
         _shownDetail = ViewModel.Current;
         if (_shownDetail is not null) _shownDetail.PropertyChanged += OnDetailPropertyChanged;
+        // "Light background" is for the message it was chosen on; the next one is shown dark again.
+        LightBackgroundButton.IsChecked = false;
+        _body.ForceLight = false;
+        UpdateLightBackgroundButton();
         _body.Show(_shownDetail?.DisplayHtml);
         ShowAddresses(_shownDetail?.Detail);
     }
@@ -184,6 +190,15 @@ public sealed partial class MailPage : Page
         flyout.ShowAt(anchor);
         _ = card.LoadAsync(person);
     }
+
+    private void UpdateLightBackgroundButton()
+    {
+        LightBackgroundButton.Visibility = _body.IsDark ? Visibility.Visible : Visibility.Collapsed;
+        LightBackgroundButton.IsEnabled = _shownDetail is not null;
+    }
+
+    private void OnLightBackgroundClick(object sender, RoutedEventArgs e) =>
+        _body.ForceLight = LightBackgroundButton.IsChecked == true;
 
     private void OnDetailPropertyChanged(object? sender, PropertyChangedEventArgs e)
     {
