@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<!-- 9:16 poster art, 1440×2160: icon, name and tagline above a glimpse of the app. ?lang=tr|en -->
+<html><head><meta charset="utf-8">
+<link rel="stylesheet" href="common.css">
+<style>
+  body { width: 1440px; height: 2160px; }
+  #icon { position: absolute; left: 470px; top: 230px; }
+  .title { position: absolute; top: 790px; width: 100%; text-align: center; font-size: 190px; margin: 0; }
+  /* Balanced lines: no word left alone on the second one. */
+  .tagline { position: absolute; top: 1050px; left: 170px; width: 1100px; text-align: center; font-size: 66px; line-height: 1.25; margin: 0; text-wrap: balance; }
+</style></head>
+<body>
+  <div id="icon" class="icon"></div>
+  <h1 class="title">Postacı</h1>
+  <p class="tagline" id="tagline"></p>
+  <script src="icon.js"></script>
+  <script>
+    placeIcon('icon', 500);
+    document.getElementById('tagline').textContent = TEXT.tagline;
+    placeWindow('1-mail', 150, 1440, 1900);
+  </script>
+</body></html>

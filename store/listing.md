@@ -46,6 +46,20 @@ The app has no telemetry or analytics, contacts no server other than the Exchang
 - Önerilen sıra: posta (okuma bölmesi açık, açık tema) → konuşma görünümü → takvim haftalık görünüm → kişiler →
   koyu tema → ayarlar. Her iki dil için ayrı görüntü yüklenebilir; arayüz dilini Ayarlar → Görünüm → Dil'den seçin.
 
+### Mağaza görselleri
+
+`store/images/` altında; kaynakları `store/art/` (HTML), yeniden üretmek için `pwsh store/art/render.ps1`
+(Microsoft Edge ile, ekran görüntüleri `store/screenshots/`'tan alınır).
+
+| Partner Center alanı | Dosya | Boyut |
+|---|---|---|
+| 9:16 Poster art | `poster-9x16-tr.png` / `poster-9x16-en.png` | 1440×2160 |
+| 1:1 Box art | `box-1x1.png` (iki dilde aynı) | 2160×2160 |
+| 16:9 Super hero art | `hero-16x9-tr.png` / `hero-16x9-en.png` | 3840×2160 |
+
+Super hero art ürün adını içeremez: üzerinde başlık yok, ekran görüntülerinin adı taşıyan başlık çubuğu kırpılır.
+Store başlığı ve düğmeleri sol alta bindirdiği için pencereler sağ üstte durur.
+
 ---
 
 ## Türkçe (tr-TR)
