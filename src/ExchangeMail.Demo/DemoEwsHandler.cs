@@ -70,6 +70,8 @@ public sealed class DemoEwsHandler(DemoMailbox mailbox) : HttpMessageHandler
                 T("InternalReply", T("Message", "")), T("ExternalReply", T("Message", "")))),
         "SetUserOofSettingsRequest" => M("SetUserOofSettingsResponse", ResponseMessage("ResponseMessage")),
         "Subscribe" => Response(op, [Success(op, M("SubscriptionId", "demo-subscription"))]),
+        "GetReminders" => GetReminders(op),
+        "PerformReminderAction" => PerformReminderAction(op),
         _ => Response(op, [Error(op, "ErrorInvalidOperation", "The demo mailbox does not support " + op.Name.LocalName + ".")]),
     };
 
@@ -384,6 +386,42 @@ public sealed class DemoEwsHandler(DemoMailbox mailbox) : HttpMessageHandler
             return e.Id;
         }).ToList();
         return ids.FirstOrDefault() ?? Mailbox.NewId("event");
+    }
+
+    /// <summary>Reminders dismissed, and the new reminder times of snoozed ones, by event id.</summary>
+    private readonly HashSet<string> _dismissed = [];
+    private readonly Dictionary<string, DateTimeOffset> _snoozed = [];
+
+    /// <summary>Every timed event reminds 15 minutes before it starts (as EventElement says), until dismissed.</summary>
+    private XElement GetReminders(XElement op)
+    {
+        var begin = DateTimeOffset.Parse((string)op.Element(MNs + "BeginTime")!, CultureInfo.InvariantCulture);
+        var end = DateTimeOffset.Parse((string)op.Element(MNs + "EndTime")!, CultureInfo.InvariantCulture);
+        var reminders = Mailbox.Events
+            .Where(e => !e.IsAllDay && !_dismissed.Contains(e.Id))
+            .Select(e => (Event: e, Time: _snoozed.TryGetValue(e.Id, out var snoozed) ? snoozed : e.Start.AddMinutes(-15)))
+            .Where(r => r.Time >= begin && r.Time <= end)
+            .Select(r => T("Reminder",
+                T("Subject", r.Event.Subject),
+                T("Location", r.Event.Location),
+                T("ReminderTime", Utc(r.Time)),
+                T("StartDate", Utc(r.Event.Start)),
+                T("EndDate", Utc(r.Event.End)),
+                ItemId(r.Event.Id),
+                T("ReminderGroup", "Calendar"),
+                T("UID", r.Event.Id)));
+        return M("GetRemindersResponse", new XAttribute("ResponseClass", "Success"), M("ResponseCode", "NoError"), M("Reminders", reminders));
+    }
+
+    private XElement PerformReminderAction(XElement op)
+    {
+        foreach (var action in op.Descendants(TNs + "ReminderItemAction"))
+        {
+            var id = Id(action.Element(TNs + "ItemId")!);
+            if ((string?)action.Element(TNs + "ActionType") == "Dismiss") _dismissed.Add(id);
+            else _snoozed[id] = DateTimeOffset.Parse((string)action.Element(TNs + "NewReminderTime")!, CultureInfo.InvariantCulture);
+        }
+        return M("PerformReminderActionResponse", new XAttribute("ResponseClass", "Success"), M("ResponseCode", "NoError"), M("UpdatedItemIds"));
     }
 
     private XElement Availability(XElement op)

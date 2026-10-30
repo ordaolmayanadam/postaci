@@ -949,6 +949,12 @@
   <data name="Meeting_Declined" xml:space="preserve">
     <value>Toplantı reddedildi.</value>
   </data>
+  <data name="Meeting_Join" xml:space="preserve">
+    <value>Toplantıya katıl</value>
+  </data>
+  <data name="Meeting_JoinTooltip" xml:space="preserve">
+    <value>{0} adresinde açılır</value>
+  </data>
   <data name="Meeting_ResponseFailed" xml:space="preserve">
     <value>Yanıt gönderilemedi: {0}</value>
   </data>
@@ -1014,6 +1020,18 @@
   </data>
   <data name="Recurrence_Yearly" xml:space="preserve">
     <value>Her yıl ({0})</value>
+  </data>
+  <data name="Reminder_Dismiss" xml:space="preserve">
+    <value>Kapat</value>
+  </data>
+  <data name="Reminder_Snooze" xml:space="preserve">
+    <value>Ertele</value>
+  </data>
+  <data name="Reminder_SnoozeHour" xml:space="preserve">
+    <value>1 saat</value>
+  </data>
+  <data name="Reminder_SnoozeMinutes" xml:space="preserve">
+    <value>{0} dakika</value>
   </data>
   <data name="Response_Accepted" xml:space="preserve">
     <value>Kabul edildi</value>
@@ -1153,6 +1171,15 @@
   <data name="Settings_MarkReadWhenSelected" xml:space="preserve">
     <value>Seçildiğinde</value>
   </data>
+  <data name="Settings_MeetingHosts" xml:space="preserve">
+    <value>Kurumun toplantı adresleri</value>
+  </data>
+  <data name="Settings_MeetingHostsHint" xml:space="preserve">
+    <value>Teams, Zoom, Google Meet, Webex ve Jitsi bağlantıları kendiliğinden tanınır. Kurum içi bir toplantı sunucusu varsa adresini ekleyin; birden fazlasını virgülle ayırın.</value>
+  </data>
+  <data name="Settings_MeetingHostsPlaceholder" xml:space="preserve">
+    <value>jitsi.kurum.example, toplanti.kurum.example</value>
+  </data>
   <data name="Settings_MinimizeToTray" xml:space="preserve">
     <value>Kapatınca sistem tepsisine küçült</value>
   </data>
@@ -1197,6 +1224,12 @@
   </data>
   <data name="Settings_RefreshIntervalHint" xml:space="preserve">
     <value>Gelen kutusu ve klasör sayıları bu aralıkla yenilenir.</value>
+  </data>
+  <data name="Settings_Reminders" xml:space="preserve">
+    <value>Etkinlik anımsatıcıları</value>
+  </data>
+  <data name="Settings_RemindersHint" xml:space="preserve">
+    <value>Anımsatıcısı olan etkinlikler zamanı gelince bildirim olarak gösterilir. Kapat ve Ertele Exchange&apos;e yazılır, Outlook&apos;ta da geçerli olur.</value>
   </data>
   <data name="Settings_RemoteImages" xml:space="preserve">
     <value>Uzak resimleri her zaman göster</value>

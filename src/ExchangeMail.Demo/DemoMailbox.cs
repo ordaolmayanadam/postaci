@@ -307,6 +307,13 @@ public sealed class DemoMailbox
         events.Add(new DemoEvent(NewId("event"), T("Lojistik Fuarı", "Logistics Expo"), fairStart, fairStart.AddDays(1),
             T("İstanbul Fuar Merkezi", "Exhibition Centre"), Me, [], IsAllDay: true, FreeBusy: "Free", MyResponse: "Organizer"));
 
+        // Starts within half an hour, so its reminder is due as the demo opens; it meets on the company's own Jitsi.
+        var soon = new DateTimeOffset(Now.Date, Now.Offset).AddMinutes(Math.Ceiling((Now.TimeOfDay.TotalMinutes + 10) / 15) * 15);
+        var jitsi = T("https://jitsi.kuzeylojistik.example/rota-planlama", "https://jitsi.harbor.example/route-planning");
+        events.Add(new DemoEvent(NewId("event"), T("Hızlı görüşme", "Quick sync"), soon, soon.AddMinutes(30), "Jitsi", Me, [mert],
+            MyResponse: "Organizer",
+            BodyHtml: DemoText.Html(T($"Rota planı üzerinden kısaca geçelim.\n\nKatılmak için: {jitsi}", $"A quick look at the route plan.\n\nJoin: {jitsi}"), null)));
+
         // Next week, so moving forward in the calendar is not empty.
         At(7, 9, 1.5, "Operasyon toplantısı", "Operations meeting", "Toplantı Odası 3", "Meeting Room 3", elif, [Me, burak, can], series: "operations");
         At(8, 10, 3, "Ege bölgesi başlangıcı", "South West kick-off", "Toplantı Odası 1", "Meeting Room 1", can, [Me, elif, burak]);

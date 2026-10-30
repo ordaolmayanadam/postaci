@@ -146,5 +146,11 @@ public sealed partial class CalendarPage : Page
         }
     }
 
+    /// <summary>Opens the meeting in its app (Teams, Zoom, ...) or the browser.</summary>
+    private void OnJoinMeeting(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+    {
+        if (ViewModel.Detail?.JoinUrl is { } url) _ = Windows.System.Launcher.LaunchUriAsync(new Uri(url));
+    }
+
     private void OnErrorClosed(InfoBar sender, object args) => ViewModel.ErrorMessage = null;
 }

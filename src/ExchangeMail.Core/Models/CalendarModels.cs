@@ -28,7 +28,21 @@ public sealed record CalendarEventDetail(
     bool IsHtml,
     IReadOnlyList<Attendee> RequiredAttendees,
     IReadOnlyList<Attendee> OptionalAttendees,
-    int? ReminderMinutes = null);
+    int? ReminderMinutes = null,
+    string? JoinUrl = null);
+
+/// <summary>
+/// A reminder Exchange keeps for the mailbox (the ones Outlook pops up). <see cref="ItemId"/> is what dismissing
+/// or snoozing it acts on.
+/// </summary>
+public sealed record EventReminder(
+    EwsItemId ItemId,
+    string Subject,
+    string Location,
+    DateTimeOffset Start,
+    DateTimeOffset End,
+    DateTimeOffset ReminderTime,
+    bool IsCalendar);
 
 public sealed record BusyInterval(DateTimeOffset Start, DateTimeOffset End, FreeBusyStatus Status);
 

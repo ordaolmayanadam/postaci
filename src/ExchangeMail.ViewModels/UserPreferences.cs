@@ -21,6 +21,15 @@ public sealed partial class UserPreferences : ObservableObject
     [ObservableProperty] private bool _darkMessageBodies = true;
     [ObservableProperty] private bool _showNotifications = true;
 
+    /// <summary>Event reminders are shown as notifications (dismiss and snooze reach Exchange).</summary>
+    [ObservableProperty] private bool _showReminders = true;
+
+    /// <summary>
+    /// Hosts of the organization's own meeting servers ("jitsi.company.example, meet.company.example"), recognized
+    /// for "Join meeting" next to the well-known services.
+    /// </summary>
+    [ObservableProperty] private string _meetingHosts = "";
+
     /// <summary>Closing the main window hides it to the notification area instead of quitting.</summary>
     [ObservableProperty] private bool _minimizeToTray = true;
 

@@ -131,6 +131,33 @@
                     </StackPanel>
                 </toolkit:SettingsCard>
 
+                <TextBlock Text="{h:L Key=Nav_Calendar}" Style="{StaticResource SettingsSectionHeaderTextBlockStyle}" />
+
+                <toolkit:SettingsCard Header="{h:L Key=Settings_Reminders}" Description="{h:L Key=Settings_RemindersHint}">
+                    <toolkit:SettingsCard.HeaderIcon>
+                        <FontIcon Glyph="&#xE823;" />
+                    </toolkit:SettingsCard.HeaderIcon>
+                    <ToggleSwitch
+                        IsOn="{x:Bind ViewModel.ShowReminders, Mode=TwoWay}"
+                        OffContent="{h:L Key=Common_Off}"
+                        OnContent="{h:L Key=Common_On}" />
+                </toolkit:SettingsCard>
+
+                <toolkit:SettingsCard
+                    HorizontalContentAlignment="Stretch"
+                    ContentAlignment="Vertical"
+                    Header="{h:L Key=Settings_MeetingHosts}"
+                    Description="{h:L Key=Settings_MeetingHostsHint}">
+                    <toolkit:SettingsCard.HeaderIcon>
+                        <FontIcon Glyph="&#xE714;" />
+                    </toolkit:SettingsCard.HeaderIcon>
+                    <!--  Saved when the box loses focus, not on every key.  -->
+                    <TextBox
+                        AutomationProperties.Name="{h:L Key=Settings_MeetingHosts}"
+                        PlaceholderText="{h:L Key=Settings_MeetingHostsPlaceholder}"
+                        Text="{x:Bind ViewModel.MeetingHosts, Mode=TwoWay, UpdateSourceTrigger=LostFocus}" />
+                </toolkit:SettingsCard>
+
                 <!--  Automatic replies: turning them on opens the details.  -->
                 <TextBlock Text="{h:L Key=Settings_AutoReplies}" Style="{StaticResource SettingsSectionHeaderTextBlockStyle}" />
 

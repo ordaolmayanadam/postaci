@@ -15,6 +15,7 @@ public sealed partial class ShellPage : Page
     private MailSession? _session;
     private DispatcherQueueTimer? _pollTimer;
     private CancellationTokenSource? _watchCts;
+    private ReminderWatcher? _reminders;
 
     public ShellPage()
     {
@@ -77,8 +78,37 @@ public sealed partial class ShellPage : Page
         });
         _ = watcher.RunAsync(_watchCts.Token);
 
+        // Event reminders; Snooze and Dismiss on their notifications come back here.
+        _reminders = new ReminderWatcher(session.Client, () => MeetingLink.ParseHosts(session.Preferences.MeetingHosts));
+        _reminders.Due += (_, due) => DispatcherQueue.TryEnqueue(() =>
+        {
+            if (session.Preferences.ShowReminders) App.Notifications.ShowReminder(due);
+        });
+        _reminders.Gone += (_, key) => DispatcherQueue.TryEnqueue(() => App.Notifications.RemoveReminder(key));
+        App.Notifications.ReminderActionRequested += OnReminderAction;
+        App.Notifications.CalendarRequested += OnCalendarRequested;
+        if (App.Notifications.TryTakeLaunchReminderAction(out var launchReminder)) OnReminderAction(this, launchReminder!);
+        _ = _reminders.RunAsync(_watchCts.Token);
+
         Nav.SelectedItem = MailItem;
     }
+
+    private async void OnReminderAction(object? sender, Services.ReminderAction action)
+    {
+        if (_reminders is null) return;
+        try
+        {
+            if (action.SnoozeFor is { } delay) await _reminders.SnoozeAsync(action.Id, delay);
+            else await _reminders.DismissAsync(action.Id);
+        }
+        catch (Exception ex) when (ex is ExchangeMail.Core.Ews.EwsException or HttpRequestException or IOException)
+        {
+            // The reminder stays in Exchange and is shown again at the next check.
+            Diagnostics.Log("Reminder action", ex);
+        }
+    }
+
+    private void OnCalendarRequested(object? sender, EventArgs e) => Nav.SelectedItem = CalendarItem;
 
     protected override void OnNavigatedFrom(NavigationEventArgs e)
     {
@@ -86,6 +116,8 @@ public sealed partial class ShellPage : Page
         _pollTimer?.Stop();
         _watchCts?.Cancel();
         App.Notifications.MessageRequested -= OnNotificationClicked;
+        App.Notifications.ReminderActionRequested -= OnReminderAction;
+        App.Notifications.CalendarRequested -= OnCalendarRequested;
         App.Notifications.SetBadge(0);
         App.MainWindow.SetUnreadCount(0);
         if (Current == this) Current = null;

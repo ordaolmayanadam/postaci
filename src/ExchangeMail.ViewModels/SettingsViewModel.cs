@@ -171,6 +171,19 @@ public sealed partial class SettingsViewModel : ObservableObject
         set => Preferences.ShowNotifications = value;
     }
 
+    public bool ShowReminders
+    {
+        get => Preferences.ShowReminders;
+        set => Preferences.ShowReminders = value;
+    }
+
+    /// <summary>The organization's meeting servers, kept as typed; <see cref="MeetingLink.ParseHosts"/> reads them.</summary>
+    public string MeetingHosts
+    {
+        get => Preferences.MeetingHosts;
+        set => Preferences.MeetingHosts = value.Trim();
+    }
+
     private static bool IsBlankHtml(string html) => MailFormat.HtmlToPlainText(html).Length == 0 && !html.Contains("<img", StringComparison.OrdinalIgnoreCase);
 
     public int ThemeIndex
@@ -296,6 +309,8 @@ public sealed partial class SettingsViewModel : ObservableObject
             case nameof(UserPreferences.DarkMessageBodies): OnPropertyChanged(nameof(DarkMessageBodies)); break;
             case nameof(UserPreferences.SignatureHtml): OnPropertyChanged(nameof(SignatureHtml)); break;
             case nameof(UserPreferences.ShowNotifications): OnPropertyChanged(nameof(ShowNotifications)); break;
+            case nameof(UserPreferences.ShowReminders): OnPropertyChanged(nameof(ShowReminders)); break;
+            case nameof(UserPreferences.MeetingHosts): OnPropertyChanged(nameof(MeetingHosts)); break;
             case nameof(UserPreferences.MinimizeToTray): OnPropertyChanged(nameof(MinimizeToTray)); break;
             case nameof(UserPreferences.UiFontFamily):
                 OnPropertyChanged(nameof(UiFontChoice));

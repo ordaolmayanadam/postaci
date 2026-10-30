@@ -192,6 +192,13 @@
             </Grid.RowDefinitions>
 
             <CommandBar HorizontalAlignment="Left" Background="Transparent" DefaultLabelPosition="Right">
+                <!--  Only for events that link to an online meeting (see MeetingLink).  -->
+                <AppBarButton
+                    Click="OnJoinMeeting"
+                    Icon="Video"
+                    Label="{h:L Key=Meeting_Join}"
+                    ToolTipService.ToolTip="{x:Bind ViewModel.Detail.JoinTooltip, Mode=OneWay, FallbackValue=''}"
+                    Visibility="{x:Bind ViewModel.Detail.HasJoinUrl, Mode=OneWay, FallbackValue=Collapsed}" />
                 <AppBarButton Icon="Edit" Label="{h:L Key=Common_Edit}" Command="{x:Bind ViewModel.EditCommand}" />
                 <AppBarButton Icon="Accept" Label="{h:L Key=Meeting_Accept}" Command="{x:Bind ViewModel.RespondCommand}" CommandParameter="Accept" />
                 <AppBarButton Label="{h:L Key=Response_Tentative}" Command="{x:Bind ViewModel.RespondCommand}" CommandParameter="Tentative">

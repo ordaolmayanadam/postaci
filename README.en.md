@@ -190,6 +190,12 @@ for new mail. To quit completely, right-click the tray icon and choose **Exit**.
 - Your own events and meetings you organize can be **edited**; changes are sent to attendees. When you edit or delete
   a recurring event, you choose whether the change applies to that occurrence only or to the **whole series**.
 - Invitations can be accepted, tentatively accepted or declined; cancelling a meeting you organize notifies attendees.
+- **Reminders:** an event with a reminder shows a Windows notification that stays on screen when the reminder is due.
+  *Snooze* (5 minutes to 1 hour) and *Dismiss* are saved in Exchange, so they apply in Outlook and on phones too; a
+  reminder dismissed elsewhere takes its notification away.
+- **Join meeting:** when an event links to an online meeting, the details pane and the reminder notification offer
+  *Join meeting*. Teams, Zoom, Google Meet, Webex and Jitsi (including company servers with "jitsi" in their name) are
+  recognized automatically; other company servers can be added in Settings.
 
 ### Contacts
 
@@ -210,6 +216,7 @@ for new mail. To quit completely, right-click the tray icon and choose **Exit**.
 | Section | Options |
 |---|---|
 | **Mail** | When to mark as read, new-mail check interval, always show remote images, signature, notifications |
+| **Calendar** | Event reminders, your organization's meeting addresses |
 | **Automatic replies** | On/off, time range, internal and external reply text, external audience |
 | **Application** | Minimize to tray on close, start with Windows |
 | **Appearance** | Theme (Windows / light / dark; the dark theme uses soft slate-blue tones), language (Windows / Türkçe / English, applied after restart), folder list (compact / comfortable) |
@@ -369,6 +376,11 @@ subscription is recreated, and when the server is unreachable it retries at inte
 minutes. As a fallback, polling continues at the interval set in Settings; a notification is shown for unread messages
 not seen before. Requests carry an `X-AnchorMailbox` header so multi-server deployments route them to the mailbox's
 server.
+
+**Reminders.** The mailbox's reminders are read every minute with `GetReminders`. Those that are due, for events not
+yet over, are shown once each. *Snooze* and *Dismiss* are written with `PerformReminderAction`; a snoozed reminder
+comes back at its new time. The meeting address comes from Exchange's `JoinOnlineMeetingUrl` field first, otherwise
+from the location and the description.
 
 **Conversations.** In conversation view the list comes from `FindConversation` and the selected conversation's messages
 from `GetConversationItems` (excluding Deleted Items and Drafts). Each message shows only the text it added

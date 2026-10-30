@@ -50,7 +50,8 @@ public sealed partial class EwsClient
                 T("FilterHtmlContent", "true"),
                 T("AdditionalProperties",
                     CalendarSummaryFields
-                        .Concat(["item:Body", "calendar:RequiredAttendees", "calendar:OptionalAttendees", "item:ReminderIsSet", "item:ReminderMinutesBeforeStart"])
+                        .Concat(["item:Body", "calendar:RequiredAttendees", "calendar:OptionalAttendees", "item:ReminderIsSet", "item:ReminderMinutesBeforeStart",
+                            "calendar:JoinOnlineMeetingUrl"])
                         .Select(Field))),
             M("ItemIds", itemId));
 
@@ -64,7 +65,8 @@ public sealed partial class EwsClient
             !string.Equals((string?)body?.Attribute("BodyType"), "Text", StringComparison.OrdinalIgnoreCase),
             ParseAttendees(item.Element(TNs + "RequiredAttendees")),
             ParseAttendees(item.Element(TNs + "OptionalAttendees")),
-            (bool?)item.Element(TNs + "ReminderIsSet") == true ? (int?)item.Element(TNs + "ReminderMinutesBeforeStart") ?? 15 : null);
+            (bool?)item.Element(TNs + "ReminderIsSet") == true ? (int?)item.Element(TNs + "ReminderMinutesBeforeStart") ?? 15 : null,
+            (string?)item.Element(TNs + "JoinOnlineMeetingUrl") is { Length: > 0 } join ? join : null);
     }
 
     /// <summary>

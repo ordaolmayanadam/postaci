@@ -179,6 +179,12 @@ denetlemeye devam eder. Tamamen kapatmak için tepsi simgesine sağ tıklayıp *
 - Kendi etkinlikleriniz ve düzenleyeni olduğunuz toplantılar **düzenlenir**; değişiklik katılımcılara bildirilir.
   Yinelenen bir etkinliği düzenlerken veya silerken değişikliğin yalnızca o tekrara mı, **tüm seriye** mi uygulanacağı sorulur.
 - Davetler kabul edilir, "belki" yanıtı verilir veya reddedilir; düzenlediğiniz toplantı iptal edilince katılımcılara bildirim gider.
+- **Anımsatıcılar:** anımsatıcısı olan etkinlik, zamanı gelince ekranda kalan bir Windows bildirimi olarak gösterilir.
+  *Ertele* (5 dakika–1 saat) ve *Kapat* Exchange'e yazılır, Outlook ve telefonda da geçerli olur; başka yerde kapatılan
+  anımsatıcının bildirimi kaldırılır.
+- **Toplantıya katıl:** etkinlik bir çevrimiçi toplantıya bağlanıyorsa ayrıntı bölmesinde ve anımsatıcı bildiriminde
+  *Toplantıya katıl* düğmesi çıkar. Teams, Zoom, Google Meet, Webex ve Jitsi (adında "jitsi" geçen kurum sunucuları
+  dahil) kendiliğinden tanınır; başka kurum içi sunucular Ayarlar'dan eklenir.
 
 ### Kişiler
 
@@ -198,6 +204,7 @@ denetlemeye devam eder. Tamamen kapatmak için tepsi simgesine sağ tıklayıp *
 | Bölüm | Seçenekler |
 |---|---|
 | Posta | Okundu işaretleme zamanı, yeni posta denetim aralığı, uzak resimleri her zaman gösterme, imza, bildirimler |
+| Takvim | Etkinlik anımsatıcıları, kurumun toplantı adresleri |
 | Otomatik yanıtlar | Açık/kapalı, zaman aralığı, iç ve dış yanıt metinleri, dış alıcı kapsamı |
 | Uygulama | Kapatınca tepsiye küçült, Windows açılışında başlat |
 | Görünüm | Tema (Windows / açık / koyu; koyu tema yumuşak lacivert-gri tonlu), dil (Windows / Türkçe / English; yeniden başlatınca uygulanır), klasör listesi (kompakt / rahat) |
@@ -356,6 +363,11 @@ gelince klasör sayıları ve görünen liste hemen yenilenir. Bağlantı 10 dak
 kurulur, sunucuya ulaşılamazsa 15 saniyeden 5 dakikaya kadar artan aralıklarla denenir. Yedek olarak ayarlardaki
 aralıkla yoklama sürer; daha önce görülmemiş okunmamış iletiler için bildirim gösterilir. İstekler, çok sunuculu
 kurulumlarda doğru posta kutusu sunucusuna gitmesi için `X-AnchorMailbox` başlığı taşır.
+
+**Anımsatıcılar.** Posta kutusunun anımsatıcıları dakikada bir `GetReminders` ile okunur. Zamanı gelmiş ve etkinliği
+henüz bitmemiş olanlar birer kez bildirilir. *Ertele* ve *Kapat* `PerformReminderAction` ile yazılır; ertelenen
+anımsatıcı yeni zamanında yeniden gelir. Toplantı adresi önce Exchange'in `JoinOnlineMeetingUrl` alanından, yoksa
+konum ve açıklamadan alınır.
 
 **Konuşmalar.** Konuşma görünümünde liste `FindConversation` ile, seçilen konuşmanın iletileri `GetConversationItems`
 ile (Silinmiş Öğeler ve Taslaklar hariç) alınır. Her iletinin yalnızca kendi eklediği metin (`UniqueBody`) gösterilir.

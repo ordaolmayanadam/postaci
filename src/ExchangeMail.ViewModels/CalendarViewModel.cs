@@ -200,7 +200,7 @@ public sealed partial class CalendarViewModel : ObservableObject
         {
             var detail = await _session.Client.GetAppointmentAsync(entry.Event.ItemId, cts.Token);
             if (!cts.IsCancellationRequested)
-                Detail = new CalendarDetailViewModel(detail, _session.Preferences.AlwaysShowRemoteImages);
+                Detail = DetailOf(detail);
         }
         catch (OperationCanceledException)
         {
@@ -218,6 +218,10 @@ public sealed partial class CalendarViewModel : ObservableObject
             if (_detailCts == cts) IsLoadingDetail = false;
         }
     }
+
+    private CalendarDetailViewModel DetailOf(CalendarEventDetail detail, bool isSeries = false) =>
+        new(detail, _session.Preferences.AlwaysShowRemoteImages, isSeries,
+            MeetingLink.Find(detail.JoinUrl, detail.Event.Location, detail.Body, MeetingLink.ParseHosts(_session.Preferences.MeetingHosts)));
 
     /// <summary>Creates an appointment or meeting from the editor dialog and reloads the view.</summary>
     public async Task<bool> CreateAsync(NewAppointment appointment)
@@ -265,7 +269,7 @@ public sealed partial class CalendarViewModel : ObservableObject
         try
         {
             var master = await _session.Client.GetRecurringMasterAsync(occurrence.Event.ItemId);
-            return new CalendarDetailViewModel(master, _session.Preferences.AlwaysShowRemoteImages, isSeries: true);
+            return DetailOf(master, isSeries: true);
         }
         catch (EwsException ex)
         {
@@ -474,10 +478,16 @@ public sealed class CalendarEntryViewModel(CalendarEvent e, DateTime day, bool s
         };
 }
 
-public sealed partial class CalendarDetailViewModel(CalendarEventDetail detail, bool allowRemoteContent, bool isSeries = false) : ObservableObject
+public sealed partial class CalendarDetailViewModel(CalendarEventDetail detail, bool allowRemoteContent, bool isSeries = false, string? joinUrl = null)
+    : ObservableObject
 {
     public CalendarEventDetail Source => detail;
     public CalendarEvent Event => detail.Event;
+
+    /// <summary>The online meeting the event links to (see <see cref="MeetingLink"/>), or null.</summary>
+    public string? JoinUrl => joinUrl;
+    public bool HasJoinUrl => joinUrl is not null;
+    public string JoinTooltip => joinUrl is null ? "" : Loc.Format(Strings.Meeting_JoinTooltip, new Uri(joinUrl).Host);
 
     /// <summary>The whole series of a recurring event (its start and end are the first occurrence's).</summary>
     public bool IsSeries => isSeries;
