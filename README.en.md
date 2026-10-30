@@ -377,10 +377,13 @@ minutes. As a fallback, polling continues at the interval set in Settings; a not
 not seen before. Requests carry an `X-AnchorMailbox` header so multi-server deployments route them to the mailbox's
 server.
 
-**Reminders.** The mailbox's reminders are read every minute with `GetReminders`. Those that are due, for events not
-yet over, are shown once each. *Snooze* and *Dismiss* are written with `PerformReminderAction`; a snoozed reminder
-comes back at its new time. The meeting address comes from Exchange's `JoinOnlineMeetingUrl` field first, otherwise
-from the location and the description.
+**Reminders.** The mailbox's due reminders are read every minute with `GetReminders` (`CurrentReminders`). Those for
+events not yet over are shown once each; a reminder is identified by its item and the event's start, not by the
+reminder time Exchange reports, which can change from one query to the next. *Snooze* and *Dismiss* are written with
+`PerformReminderAction` and also remembered in the app: a dismissed reminder does not come back even if Exchange still
+lists it, and a snoozed one returns at its new time. The meeting address comes from Exchange's `JoinOnlineMeetingUrl`
+field first, otherwise from the location and the description; addresses typed without `http(s)://`
+(`meet.company.example/room`) are opened over https.
 
 **Conversations.** In conversation view the list comes from `FindConversation` and the selected conversation's messages
 from `GetConversationItems` (excluding Deleted Items and Drafts). Each message shows only the text it added

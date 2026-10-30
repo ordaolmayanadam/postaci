@@ -6,18 +6,21 @@ namespace ExchangeMail.ViewModels;
 /// <summary>A reminder that is due, with the online meeting to join when the event links to one.</summary>
 public sealed record DueReminder(EventReminder Reminder, string? JoinUrl)
 {
-    /// <summary>Identifies this showing of the reminder; a snoozed reminder comes back with a new key.</summary>
+    /// <summary>Identifies the reminder of this event (occurrence), whatever reminder time Exchange reports for it.</summary>
     public string Key => ReminderWatcher.KeyOf(Reminder);
 }
 
 /// <summary>
 /// Reads the mailbox's reminders every minute and reports the ones that are due, once each, so they can be shown as
-/// notifications. Dismissing and snoozing go to Exchange, so Outlook and phones agree. Reminders of events that are
-/// already over are left to Outlook.
+/// notifications. Dismissing and snoozing go to Exchange, so Outlook and phones agree, and are also remembered here:
+/// a reminder the user dismissed or snoozed is not shown again (before its snooze ends) even if Exchange still
+/// lists it. Reminders of events that are already over are left to Outlook.
 /// </summary>
 public sealed class ReminderWatcher(EwsClient client, Func<IEnumerable<string>> meetingHosts)
 {
     private readonly Dictionary<string, DueReminder> _shown = [];
+    private readonly HashSet<string> _dismissed = [];
+    private readonly Dictionary<string, DateTimeOffset> _snoozedUntil = [];
 
     public TimeSpan Interval { get; init; } = TimeSpan.FromMinutes(1);
 
@@ -27,7 +30,7 @@ public sealed class ReminderWatcher(EwsClient client, Func<IEnumerable<string>> 
     /// <summary>A reminder became due.</summary>
     public event EventHandler<DueReminder>? Due;
 
-    /// <summary>A reminder that was reported is no longer due (dismissed or snoozed, here or in Outlook); the argument is its key.</summary>
+    /// <summary>A reminder that was reported is no longer due (dismissed or snoozed elsewhere, in Outlook); the argument is its key.</summary>
     public event EventHandler<string>? Gone;
 
     public async Task RunAsync(CancellationToken ct)
@@ -63,7 +66,10 @@ public sealed class ReminderWatcher(EwsClient client, Func<IEnumerable<string>> 
     {
         var now = Now();
         var reminders = await client.GetRemindersAsync(now.AddDays(-1), now.AddDays(1), ct);
-        var due = reminders.Where(r => r.IsCalendar && r.ReminderTime <= now && r.End > now)
+        var due = reminders
+            .Where(r => r.IsCalendar && r.ReminderTime <= now + Interval && r.End > now
+                && !_dismissed.Contains(r.ItemId.Id)
+                && !(_snoozedUntil.TryGetValue(r.ItemId.Id, out var until) && until > now))
             .GroupBy(KeyOf).ToDictionary(g => g.Key, g => g.First());
 
         foreach (var key in _shown.Keys.Except(due.Keys).ToList())
@@ -76,23 +82,35 @@ public sealed class ReminderWatcher(EwsClient client, Func<IEnumerable<string>> 
             if (_shown.ContainsKey(key)) continue;
             var shown = new DueReminder(reminder, await FindJoinUrlAsync(reminder, ct));
             _shown[key] = shown;
+            // Times only: the subject stays out of the log.
+            Diagnostics.Log($"Reminder due: reminder {reminder.ReminderTime:u}, start {reminder.Start:u}, {reminders.Count} current");
             Due?.Invoke(this, shown);
         }
     }
 
+    /// <summary>Dismisses the reminder in Exchange; it is not shown again here either way.</summary>
     public async Task DismissAsync(EwsItemId id)
     {
-        await client.DismissReminderAsync(id);
+        _dismissed.Add(id.Id);
         Forget(id);
+        var changed = await client.DismissReminderAsync(id);
+        Diagnostics.Log($"Reminder dismissed, Exchange {(changed ? "updated the item" : "reported no change")}");
     }
 
+    /// <summary>Snoozes the reminder in Exchange; it is shown again here when the delay is over.</summary>
     public async Task SnoozeAsync(EwsItemId id, TimeSpan delay)
     {
-        await client.SnoozeReminderAsync(id, Now() + delay);
-        Forget(id); // comes back as due with its new reminder time
+        _snoozedUntil[id.Id] = Now() + delay;
+        Forget(id);
+        var changed = await client.SnoozeReminderAsync(id, Now() + delay);
+        Diagnostics.Log($"Reminder snoozed for {delay.TotalMinutes:0} min, Exchange {(changed ? "updated the item" : "reported no change")}");
     }
 
-    internal static string KeyOf(EventReminder r) => $"{r.ItemId.Id}|{r.ReminderTime.UtcTicks}";
+    /// <summary>
+    /// The item and the start of the event: Exchange can report a different reminder time for the same reminder
+    /// from one check to the next, which must not make it a new one.
+    /// </summary>
+    internal static string KeyOf(EventReminder r) => $"{r.ItemId.Id}|{r.Start.UtcTicks}";
 
     private void Forget(EwsItemId id)
     {

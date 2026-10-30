@@ -243,11 +243,17 @@ public sealed class NotificationService
         return true;
     }
 
-    private void OnInvoked(AppNotificationManager sender, AppNotificationActivatedEventArgs args)
+    private void OnInvoked(AppNotificationManager sender, AppNotificationActivatedEventArgs args) => HandleActivation(args);
+
+    /// <summary>
+    /// A click on one of this app's notifications while it runs: raised by the notification manager, or handed over
+    /// by a second start (see Program). Called on a background thread.
+    /// </summary>
+    public void HandleActivation(AppNotificationActivatedEventArgs args)
     {
-        // Raised on a background thread.
         if (ReminderActionOf(args) is { } reminder)
         {
+            ViewModels.Diagnostics.Log($"Reminder notification: {(reminder.SnoozeFor is null ? "dismiss" : "snooze")}");
             App.MainWindow.DispatcherQueue.TryEnqueue(() => ReminderActionRequested?.Invoke(this, reminder));
             return;
         }

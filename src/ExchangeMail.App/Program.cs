@@ -51,6 +51,13 @@ public static class Program
     {
         // Signing in to Windows starts the startup task; an instance that is already running stays as it is.
         if (args.Kind == ExtendedActivationKind.StartupTask) return;
+        // A click on a notification (Snooze, Dismiss, a message) that Windows delivered by starting a new process.
+        if (args.Kind == ExtendedActivationKind.AppNotification
+            && args.Data is Microsoft.Windows.AppNotifications.AppNotificationActivatedEventArgs clicked)
+        {
+            App.Notifications.HandleActivation(clicked);
+            return;
+        }
         App.MainWindow?.DispatcherQueue.TryEnqueue(() => App.MainWindow.BringToFront());
     }
 

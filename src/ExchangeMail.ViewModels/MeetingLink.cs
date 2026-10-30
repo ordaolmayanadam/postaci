@@ -14,6 +14,11 @@ public static partial class MeetingLink
     private static readonly string[] KnownHosts =
         ["teams.microsoft.com", "teams.live.com", "zoom.us", "meet.google.com", "webex.com", "meet.jit.si", "whereby.com", "gotomeeting.com"];
 
+    /// <summary>
+    /// The first meeting address in the join address, the location or the body (HTML or text). Addresses may come
+    /// with http(s):// or without a scheme ("meet.company.example/room", opened over https); a server without a
+    /// meeting path (a bare host in a signature) does not count.
+    /// </summary>
     public static string? Find(string? joinUrl, string? location, string? body, IEnumerable<string>? extraHosts = null)
     {
         var hosts = KnownHosts.Concat(extraHosts ?? []).ToList();
@@ -22,8 +27,10 @@ public static partial class MeetingLink
             if (string.IsNullOrEmpty(text)) continue;
             foreach (Match m in Address().Matches(WebUtility.HtmlDecode(text)))
             {
-                var candidate = m.Value.TrimEnd('.', ',', ';', ':', ')', '!', '?');
-                if (Uri.TryCreate(candidate, UriKind.Absolute, out var uri) && uri.Scheme == Uri.UriSchemeHttps && IsMeeting(uri, hosts))
+                var path = m.Groups["path"].Value.TrimEnd('.', ',', ';', ':', ')', '!', '?');
+                if (path.Length <= 1) continue;
+                var scheme = m.Groups["scheme"].Success ? m.Groups["scheme"].Value.ToLowerInvariant() : "https://";
+                if (Uri.TryCreate(scheme + m.Groups["host"].Value + path, UriKind.Absolute, out var uri) && IsMeeting(uri, hosts))
                     return uri.AbsoluteUri;
             }
         }
@@ -43,6 +50,8 @@ public static partial class MeetingLink
         uri.Host.Split('.').Any(label => label.Contains("jitsi", StringComparison.OrdinalIgnoreCase))
         || hosts.Any(h => uri.Host.Equals(h, StringComparison.OrdinalIgnoreCase) || uri.Host.EndsWith("." + h, StringComparison.OrdinalIgnoreCase));
 
-    [GeneratedRegex(@"https://[^\s""'<>]+", RegexOptions.IgnoreCase)]
+    // A host with a path, after http(s):// or on its own; not inside an e-mail address or another word.
+    [GeneratedRegex(@"(?<![\w@.\-/])(?<scheme>https?://)?(?<host>(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z]{2,})(?<path>/[^\s""'<>]*)?",
+        RegexOptions.IgnoreCase)]
     private static partial Regex Address();
 }

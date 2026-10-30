@@ -364,10 +364,12 @@ kurulur, sunucuya ulaşılamazsa 15 saniyeden 5 dakikaya kadar artan aralıklarl
 aralıkla yoklama sürer; daha önce görülmemiş okunmamış iletiler için bildirim gösterilir. İstekler, çok sunuculu
 kurulumlarda doğru posta kutusu sunucusuna gitmesi için `X-AnchorMailbox` başlığı taşır.
 
-**Anımsatıcılar.** Posta kutusunun anımsatıcıları dakikada bir `GetReminders` ile okunur. Zamanı gelmiş ve etkinliği
-henüz bitmemiş olanlar birer kez bildirilir. *Ertele* ve *Kapat* `PerformReminderAction` ile yazılır; ertelenen
-anımsatıcı yeni zamanında yeniden gelir. Toplantı adresi önce Exchange'in `JoinOnlineMeetingUrl` alanından, yoksa
-konum ve açıklamadan alınır.
+**Anımsatıcılar.** Posta kutusunun zamanı gelmiş anımsatıcıları dakikada bir `GetReminders` (`CurrentReminders`) ile
+okunur. Etkinliği henüz bitmemiş olanlar birer kez bildirilir; bir anımsatıcı, Exchange'in bildirdiği anımsatıcı
+saatiyle değil öğe ve etkinlik başlangıcıyla tanınır, çünkü bu saat sorgudan sorguya değişebilir. *Ertele* ve *Kapat*
+`PerformReminderAction` ile yazılır ve uygulamada da hatırlanır: Exchange öğeyi hâlâ listelese bile kapatılan anımsatıcı
+yeniden çıkmaz, ertelenen yeni zamanında gelir. Toplantı adresi önce Exchange'in `JoinOnlineMeetingUrl` alanından, yoksa
+konum ve açıklamadan alınır; `http(s)://` olmadan yazılmış adresler (`toplanti.kurum.example/oda`) https ile açılır.
 
 **Konuşmalar.** Konuşma görünümünde liste `FindConversation` ile, seçilen konuşmanın iletileri `GetConversationItems`
 ile (Silinmiş Öğeler ve Taslaklar hariç) alınır. Her iletinin yalnızca kendi eklediği metin (`UniqueBody`) gösterilir.
