@@ -108,8 +108,16 @@ Store başlığı ve düğmeleri sol alta bindirdiği için pencereler sağ üst
 
 **Bu sürümdeki yenilikler** (1500 karakter)
 
-> Microsoft Store'daki ilk sürüm. Önceki zip sürümünü kullandıysanız hesap ayarlarınız ve tercihleriniz ilk açılışta
-> kendiliğinden taşınır.
+> Yeni:
+> - Etkinlik anımsatıcıları: anımsatıcısı olan etkinlikler zamanı gelince Windows bildirimi olarak gösterilir. Ertele
+>   ve Kapat Exchange'e kaydedilir, Outlook'ta ve telefonda da geçerli olur.
+> - Toplantıya katıl: Teams, Zoom, Google Meet, Webex ve Jitsi toplantılarına takvimden ve anımsatıcı bildiriminden
+>   tek tıkla katılın. Kurum içi toplantı sunucularınızı Ayarlar → Takvim'den ekleyebilirsiniz.
+> - Ayarlar'da yeni Takvim bölümü: anımsatıcıları açıp kapatma ve kurumun toplantı adresleri.
+>
+> Düzeltmeler:
+> - Kapatılan bir anımsatıcının birkaç dakikada bir yeniden görünmesi giderildi.
+> - http:// veya https:// olmadan yazılmış toplantı adresleri de tanınıyor.
 
 **Ürün özellikleri** (en fazla 20, her biri 200 karakter)
 
@@ -117,6 +125,7 @@ Store başlığı ve düğmeleri sol alta bindirdiği için pencereler sağ üst
 - Anında yeni posta, Windows bildirimleri ve görev çubuğu rozeti
 - Konuşma görünümü ve sunucu taraflı arama
 - Takvim ızgarasında sürükle-bırak ve katılımcı uygunluğu
+- Etkinlik anımsatıcıları ve tek tıkla toplantıya katılma (Teams, Zoom, Meet, Webex, Jitsi)
 - Kişisel kişiler ve şirket rehberi
 - Etki alanında Windows oturumuyla parolasız bağlantı
 - Betiksiz okuma, uzak resimler varsayılan olarak engelli
@@ -180,8 +189,16 @@ Exchange, e-posta, posta, takvim, EWS, Outlook alternatifi, kişiler
 
 **What's new in this version** (1500 characters)
 
-> First release on the Microsoft Store. If you used the earlier zip version, your account settings and preferences are
-> moved over automatically the first time you start the app.
+> New:
+> - Event reminders: events with a reminder show a Windows notification when it is due. Snooze and Dismiss are saved
+>   in Exchange, so they apply in Outlook and on your phone too.
+> - Join meeting: join Teams, Zoom, Google Meet, Webex and Jitsi meetings with one click from the calendar and from the
+>   reminder notification. Add your organization's own meeting servers under Settings → Calendar.
+> - A new Calendar section in Settings: turn reminders on or off and add your organization's meeting addresses.
+>
+> Fixes:
+> - A dismissed reminder no longer comes back every few minutes.
+> - Meeting addresses written without http:// or https:// are recognized too.
 
 **Product features** (up to 20, 200 characters each)
 
@@ -189,6 +206,7 @@ Exchange, e-posta, posta, takvim, EWS, Outlook alternatifi, kişiler
 - Instant new mail, Windows notifications and taskbar badge
 - Conversation view and server-side search
 - Drag-and-drop calendar grid with attendee availability
+- Event reminders and one-click meeting join (Teams, Zoom, Meet, Webex, Jitsi)
 - Personal contacts and the company directory
 - Password-less sign-in with your Windows session on domain-joined PCs
 - Script-free reading, remote images blocked by default
