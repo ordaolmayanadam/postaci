@@ -847,8 +847,14 @@
   <data name="Mail_LightBackground" xml:space="preserve">
     <value>Açık arka plan</value>
   </data>
+  <data name="Mail_MarkRead" xml:space="preserve">
+    <value>Okundu yap</value>
+  </data>
   <data name="Mail_MarkReadFailed" xml:space="preserve">
     <value>Okundu olarak işaretlenemedi: {0}</value>
+  </data>
+  <data name="Mail_MarkUnread" xml:space="preserve">
+    <value>Okunmadı yap</value>
   </data>
   <data name="Mail_Meeting" xml:space="preserve">
     <value>Toplantı</value>
@@ -906,6 +912,12 @@
   </data>
   <data name="Mail_SelectItem" xml:space="preserve">
     <value>Okumak için bir öğe seçin</value>
+  </data>
+  <data name="Mail_SelectMode" xml:space="preserve">
+    <value>Seç</value>
+  </data>
+  <data name="Mail_SelectModeTooltip" xml:space="preserve">
+    <value>Birden çok ileti seç</value>
   </data>
   <data name="Mail_SendReceive" xml:space="preserve">
     <value>Gönder/Al</value>

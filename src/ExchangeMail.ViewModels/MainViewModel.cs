@@ -96,6 +96,8 @@ public sealed partial class MainViewModel : ObservableObject
         OnPropertyChanged(nameof(PlaceholderText));
         DeleteCommand.NotifyCanExecuteChanged();
         ToggleReadCommand.NotifyCanExecuteChanged();
+        MarkReadCommand.NotifyCanExecuteChanged();
+        MarkUnreadCommand.NotifyCanExecuteChanged();
         MoveToCommand.NotifyCanExecuteChanged();
     }
 
@@ -617,18 +619,35 @@ public sealed partial class MainViewModel : ObservableObject
 
     /// <summary>Marks the selection read, or unread when all of it is read already.</summary>
     [RelayCommand(CanExecute = nameof(CanActOnSelection))]
-    private async Task ToggleReadAsync()
+    private Task ToggleReadAsync() => SetSelectionReadAsync(_selection.Any(i => !i.IsRead), onlyChanged: false);
+
+    private bool CanMarkRead() => _selection.Any(i => !i.IsRead);
+
+    private bool CanMarkUnread() => _selection.Any(i => i.IsRead);
+
+    /// <summary>Marks the selection read (the unread ones in it).</summary>
+    [RelayCommand(CanExecute = nameof(CanMarkRead))]
+    private Task MarkReadAsync() => SetSelectionReadAsync(true);
+
+    /// <summary>Marks the selection unread (the read ones in it).</summary>
+    [RelayCommand(CanExecute = nameof(CanMarkUnread))]
+    private Task MarkUnreadAsync() => SetSelectionReadAsync(false);
+
+    /// <summary>Marks the selection read or unread; with <paramref name="onlyChanged"/> only the rows that change.</summary>
+    private async Task SetSelectionReadAsync(bool isRead, bool onlyChanged = true)
     {
-        var items = _selection.ToList();
+        var items = _selection.Where(i => !onlyChanged || i.IsRead != isRead).ToList();
         if (items.Count == 0) return;
         try
         {
-            await SetReadAsync(items, items.Any(i => !i.IsRead));
+            await SetReadAsync(items, isRead);
         }
         catch (EwsException ex)
         {
             ErrorMessage = ex.Message;
         }
+        MarkReadCommand.NotifyCanExecuteChanged();
+        MarkUnreadCommand.NotifyCanExecuteChanged();
     }
 
     /// <summary>Runs <paramref name="action"/> and, if it worked, takes the rows out of the list. False on failure.</summary>

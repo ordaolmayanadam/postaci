@@ -275,6 +275,28 @@ public class MainViewModelTests
     }
 
     [Fact]
+    public async Task Mark_unread_and_mark_read_change_only_the_rows_that_differ()
+    {
+        var (server, vm) = await LoadThreeAsync(("UpdateItem", Ok("UpdateItem",
+            """<m:Items><t:Message><t:ItemId Id="A" ChangeKey="a2" /></t:Message></m:Items>""")));
+        vm.SetSelection([vm.Messages[1], vm.Messages[2]]);
+        Assert.True(vm.MarkReadCommand.CanExecute(null));
+        Assert.True(vm.MarkUnreadCommand.CanExecute(null));
+        var unreadBefore = vm.SelectedFolder!.UnreadCount;
+
+        await vm.MarkUnreadCommand.ExecuteAsync(null);
+
+        // Only the read one is sent; now both are unread, so Mark unread has nothing left to do.
+        var change = Assert.Single(server.Request("UpdateItem").Descendants(Tns + "ItemChange"));
+        Assert.Equal("A", (string?)change.Descendants(Tns + "ItemId").Single().Attribute("Id"));
+        Assert.False(vm.Messages[1].IsRead);
+        Assert.False(vm.Messages[2].IsRead);
+        Assert.Equal(unreadBefore + 1, vm.SelectedFolder.UnreadCount);
+        Assert.False(vm.MarkUnreadCommand.CanExecute(null));
+        Assert.True(vm.MarkReadCommand.CanExecute(null));
+    }
+
+    [Fact]
     public async Task Toggling_a_mixed_selection_marks_everything_read()
     {
         var (server, vm) = await LoadThreeAsync(("UpdateItem", Ok("UpdateItem",

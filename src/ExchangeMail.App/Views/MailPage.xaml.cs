@@ -323,20 +323,59 @@ public sealed partial class MailPage : Page
         if (ViewModel.Current is { } current) current.AllowRemoteContent = true;
     }
 
+    /// <summary>Fills a Move menu (toolbar, several selected) with the folders.</summary>
     private void OnMoveFlyoutOpening(object sender, object e)
     {
-        MoveFlyout.Items.Clear();
-        foreach (var folder in ViewModel.Folders)
+        var flyout = (MenuFlyout)sender;
+        flyout.Items.Clear();
+        foreach (var item in MoveItems()) flyout.Items.Add(item);
+    }
+
+    private IEnumerable<MenuFlyoutItem> MoveItems() => ViewModel.Folders
+        .Where(folder => folder != ViewModel.SelectedFolder)
+        .Select(folder => new MenuFlyoutItem
         {
-            if (folder == ViewModel.SelectedFolder) continue;
-            MoveFlyout.Items.Add(new MenuFlyoutItem
-            {
-                Text = new string(' ', folder.Depth) + folder.DisplayName,
-                Icon = new FontIcon { Glyph = folder.Glyph },
-                Command = ViewModel.MoveToCommand,
-                CommandParameter = folder,
-            });
+            Text = new string('\u2003', folder.Depth) + folder.DisplayName,
+            Icon = new FontIcon { Glyph = folder.Glyph },
+            Command = ViewModel.MoveToCommand,
+            CommandParameter = folder,
+        });
+
+    /// <summary>Check boxes on the rows (Multiple) or the usual click, Ctrl and Shift selection (Extended).</summary>
+    private void OnSelectModeClick(object sender, RoutedEventArgs e) =>
+        MessageList.SelectionMode = SelectModeButton.IsChecked == true ? ListViewSelectionMode.Multiple : ListViewSelectionMode.Extended;
+
+    /// <summary>
+    /// Right click (or the menu key) on a row: what can be done with the selection. A row outside the selection is
+    /// selected alone first, as in Outlook and Explorer.
+    /// </summary>
+    private void OnMessageListContextRequested(UIElement sender, ContextRequestedEventArgs e)
+    {
+        var source = e.OriginalSource as FrameworkElement;
+        var row = source?.DataContext as MessageItemViewModel ?? (source as ListViewItem)?.Content as MessageItemViewModel;
+        if (row is null) return;
+        e.Handled = true;
+        if (!MessageList.SelectedItems.Contains(row))
+        {
+            MessageList.SelectedItems.Clear();
+            MessageList.SelectedItems.Add(row);
         }
+
+        var move = new MenuFlyoutSubItem { Text = Strings.Mail_Move, Icon = new FontIcon { Glyph = "\uE8DE" } };
+        foreach (var item in MoveItems()) move.Items.Add(item);
+        var menu = new MenuFlyout
+        {
+            Items =
+            {
+                new MenuFlyoutItem { Text = Strings.Mail_MarkRead, Icon = new FontIcon { Glyph = "\uE8C3" }, Command = ViewModel.MarkReadCommand },
+                new MenuFlyoutItem { Text = Strings.Mail_MarkUnread, Icon = new FontIcon { Glyph = "\uE715" }, Command = ViewModel.MarkUnreadCommand },
+                new MenuFlyoutSeparator(),
+                move,
+                new MenuFlyoutItem { Text = Strings.Common_Delete, Icon = new FontIcon { Glyph = "\uE74D" }, Command = ViewModel.DeleteCommand },
+            },
+        };
+        if (e.TryGetPosition(sender, out var point)) menu.ShowAt(sender, new FlyoutShowOptions { Position = point });
+        else menu.ShowAt(source);
     }
 
     private async void OnAttachmentClick(object sender, ItemClickEventArgs e)

@@ -136,6 +136,15 @@
                             Command="{x:Bind ViewModel.ClearSearchCommand}"
                             Visibility="{x:Bind ViewModel.IsSearchActive, Mode=OneWay}" />
                         <ProgressRing Width="16" Height="16" IsActive="{x:Bind ViewModel.IsLoadingList, Mode=OneWay}" />
+                        <!--  Check boxes on the rows, for picking several messages without Ctrl or Shift (mouse, touch).  -->
+                        <ToggleButton
+                            x:Name="SelectModeButton"
+                            Padding="8,4"
+                            AutomationProperties.Name="{h:L Key=Mail_SelectModeTooltip}"
+                            ToolTipService.ToolTip="{h:L Key=Mail_SelectModeTooltip}"
+                            Click="OnSelectModeClick">
+                            <FontIcon Glyph="&#xE762;" FontSize="14" />
+                        </ToggleButton>
                         <ToggleButton
                             Padding="8,4"
                             AutomationProperties.Name="{h:L Key=Mail_ConversationView}"
@@ -179,6 +188,7 @@
                 DoubleTapped="OnMessageDoubleTapped"
                 DragItemsCompleted="OnMessagesDragCompleted"
                 DragItemsStarting="OnMessagesDragStarting"
+                ContextRequested="OnMessageListContextRequested"
                 KeyDown="OnMessageListKeyDown"
                 SelectionChanged="OnMessageSelectionChanged">
                 <!--  The text starts near the search box: a narrower left edge than the default 16.  -->
@@ -367,7 +377,44 @@
                 Spacing="8"
                 Visibility="{x:Bind ViewModel.ShowPlaceholder, Mode=OneWay}">
                 <FontIcon Glyph="&#xE715;" FontSize="48" Foreground="{ThemeResource TextFillColorTertiaryBrush}" />
-                <TextBlock Text="{x:Bind ViewModel.PlaceholderText, Mode=OneWay}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                <TextBlock
+                    HorizontalAlignment="Center"
+                    Text="{x:Bind ViewModel.PlaceholderText, Mode=OneWay}"
+                    Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                <!--  What can be done with several selected messages, in plain sight.  -->
+                <StackPanel
+                    Margin="0,8,0,0"
+                    Orientation="Horizontal"
+                    Spacing="8"
+                    Visibility="{x:Bind ViewModel.IsMultiSelect, Mode=OneWay}">
+                    <Button Command="{x:Bind ViewModel.MarkReadCommand}">
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <FontIcon Glyph="&#xE8C3;" FontSize="16" />
+                            <TextBlock Text="{h:L Key=Mail_MarkRead}" />
+                        </StackPanel>
+                    </Button>
+                    <Button Command="{x:Bind ViewModel.MarkUnreadCommand}">
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <FontIcon Glyph="&#xE715;" FontSize="16" />
+                            <TextBlock Text="{h:L Key=Mail_MarkUnread}" />
+                        </StackPanel>
+                    </Button>
+                    <DropDownButton>
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <FontIcon Glyph="&#xE8DE;" FontSize="16" />
+                            <TextBlock Text="{h:L Key=Mail_Move}" />
+                        </StackPanel>
+                        <DropDownButton.Flyout>
+                            <MenuFlyout Opening="OnMoveFlyoutOpening" />
+                        </DropDownButton.Flyout>
+                    </DropDownButton>
+                    <Button Command="{x:Bind ViewModel.DeleteCommand}">
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <FontIcon Glyph="&#xE74D;" FontSize="16" />
+                            <TextBlock Text="{h:L Key=Common_Delete}" />
+                        </StackPanel>
+                    </Button>
+                </StackPanel>
             </StackPanel>
 
             <ProgressRing
