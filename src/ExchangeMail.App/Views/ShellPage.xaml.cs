@@ -52,6 +52,7 @@ public sealed partial class ShellPage : Page
 
         Mail.ComposeRequested += OnComposeRequested;
         Mail.NewMailArrived += OnNewMailArrived;
+        Mail.MessagesRead += (_, ids) => App.Notifications.RemoveReadMail(ids);
         Mail.PropertyChanged += OnMailPropertyChanged;
         App.Notifications.MessageRequested += OnNotificationClicked;
         // Started by a click on a notification: show that message once the inbox is there.

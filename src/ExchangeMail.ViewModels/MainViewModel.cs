@@ -47,6 +47,12 @@ public sealed partial class MainViewModel : ObservableObject
 
     /// <summary>Raised by the background poll for unread mail that arrived in the inbox since the last poll.</summary>
     public event EventHandler<IReadOnlyList<MailSummary>>? NewMailArrived;
+
+    /// <summary>
+    /// Item ids of messages that are read now: marked read here, or seen read in the inbox by the background poll
+    /// (read in Outlook or on a phone). Their new mail notifications can go.
+    /// </summary>
+    public event EventHandler<IReadOnlyCollection<string>>? MessagesRead;
     public ObservableCollection<MessageItemViewModel> Messages { get; } = [];
 
     [ObservableProperty]
@@ -480,6 +486,7 @@ public sealed partial class MainViewModel : ObservableObject
             item.SetRead(isRead);
             if (SelectedFolder is { } folder) folder.UnreadCount = Math.Max(0, folder.UnreadCount + item.UnreadItems - before);
         }
+        if (isRead) MessagesRead?.Invoke(this, items.SelectMany(i => i.ItemIds).Select(i => i.Id).ToList());
     }
 
     [RelayCommand]
@@ -880,6 +887,8 @@ public sealed partial class MainViewModel : ObservableObject
         }
         var fresh = inboxPage.Items.Where(i => _knownInboxIds.Add(i.ItemId.Id) && !i.IsRead).ToList();
         if (fresh.Count > 0) NewMailArrived?.Invoke(this, fresh);
+        var read = inboxPage.Items.Where(i => i.IsRead).Select(i => i.ItemId.Id).ToList();
+        if (read.Count > 0) MessagesRead?.Invoke(this, read);
     }
 
     /// <summary>Shows a message of the inbox, e.g. after its notification was clicked.</summary>

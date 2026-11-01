@@ -55,8 +55,11 @@ public class MainViewModelTests
         Assert.False(vm.IsListEmpty);
         IReadOnlyList<MailSummary>? notified = null;
         vm.NewMailArrived += (_, items) => notified = items;
+        IReadOnlyCollection<string>? read = null;
+        vm.MessagesRead += (_, ids) => read = ids;
 
         var added = await vm.BackgroundRefreshAsync();
+        Assert.Equal(["B", "A"], read!); // B's notification can go: it was read in another client
 
         Assert.Equal(1, added);
         Assert.Equal(["C", "B", "A"], vm.Messages.Select(m => m.Id.Id));
@@ -139,11 +142,14 @@ public class MainViewModelTests
     {
         var (vm, server) = await OpenInboxAsync(MarkAsReadMode.WhenSelected);
         server.On("UpdateItem", MarkedRead).On("GetItem", Detail("B"));
+        IReadOnlyCollection<string>? read = null;
+        vm.MessagesRead += (_, ids) => read = ids;
 
         vm.SelectedMessage = vm.Messages[0];
         await WaitUntil(() => vm.Current is not null);
 
         Assert.True(vm.Messages[0].IsRead);
+        Assert.Equal(["B"], read!);
         Assert.Equal(0, vm.SelectedFolder!.UnreadCount);
         Assert.Equal(["UpdateItem", "GetItem"], server.Operations.Skip(3));
         Assert.Null(vm.ErrorMessage);

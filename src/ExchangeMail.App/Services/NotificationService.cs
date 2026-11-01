@@ -17,7 +17,11 @@ public sealed record ReminderAction(EwsItemId Id, TimeSpan? SnoozeFor);
 public sealed class NotificationService
 {
     private const string ReminderGroup = "reminder";
+    private const string MailGroup = "mail";
     private static readonly int[] SnoozeMinutes = [5, 10, 15, 30, 60];
+
+    // New mail notifications still on screen or in the notification centre: tag → ids of their messages not read yet.
+    private readonly Dictionary<string, HashSet<string>> _mailNotifications = [];
 
     private bool _registered;
     private bool _launchRequested;
@@ -91,11 +95,42 @@ public sealed class NotificationService
 
         try
         {
-            AppNotificationManager.Default.Show(builder.BuildNotification());
+            var notification = builder.BuildNotification();
+            notification.Tag = Guid.NewGuid().ToString("N");
+            notification.Group = MailGroup;
+            AppNotificationManager.Default.Show(notification);
+            _mailNotifications[notification.Tag] = items.Select(i => i.ItemId.Id).ToHashSet();
         }
         catch (Exception ex)
         {
             ViewModels.Diagnostics.Log("New mail notification", ex);
+        }
+    }
+
+    /// <summary>
+    /// Takes away the new mail notifications whose messages are all read now (in Postacı or elsewhere). Notifications
+    /// shown before Postacı was last started are not known and stay.
+    /// </summary>
+    public async void RemoveReadMail(IReadOnlyCollection<string> readIds)
+    {
+        if (!_registered || _mailNotifications.Count == 0) return;
+        var done = new List<string>();
+        foreach (var (tag, unread) in _mailNotifications)
+        {
+            unread.ExceptWith(readIds);
+            if (unread.Count == 0) done.Add(tag);
+        }
+        foreach (var tag in done)
+        {
+            _mailNotifications.Remove(tag);
+            try
+            {
+                await AppNotificationManager.Default.RemoveByTagAndGroupAsync(tag, MailGroup);
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine(ex);
+            }
         }
     }
 
