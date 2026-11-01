@@ -273,6 +273,18 @@ bu yüzden `Postaci.exe` doğrudan çalıştırılmaz. Çalıştırmak için Vis
 olarak kaydedip başlatır; bunun için Windows'ta **Geliştirici Modu** açık olmalıdır
 (Ayarlar → Sistem → Geliştiriciler için).
 
+Debug derlemesi **Postacı Dev** adıyla, ayrı bir paket kimliğiyle kurulur; Store'dan kurulmuş Postacı'nın yanında
+ikisi birlikte çalışabilir. Ayarları, önbelleği ve oturumu ayrıdır (Windows Kimlik Bilgileri'ndeki parola ortaktır).
+Visual Studio olmadan derleyip kurmak için:
+
+```powershell
+dotnet build src\ExchangeMail.App -c Debug -p:Platform=x64
+Add-AppxPackage -Register src\ExchangeMail.App\bin\x64\Debug\net10.0-windows10.0.19041.0\win-x64\AppxManifest.xml
+```
+
+Sonra Başlat menüsünden **Postacı Dev**'i açın. Uydurma verilerle denemek için `--demo` ile başlatılabilir
+(bkz. `Helpers\DemoMode.cs`).
+
 > Çözümün tamamını (`dotnet test` köke çalıştırarak) Linux/macOS'ta derlemeye çalışmayın: WinUI projesinin XAML
 > derleyicisi yalnızca Windows'ta çalışır. Test projesini `--project` ile çalıştırın.
 

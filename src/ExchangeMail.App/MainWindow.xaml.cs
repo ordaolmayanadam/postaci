@@ -14,6 +14,9 @@ public sealed partial class MainWindow : Window
     public static string IconPath { get; } = Path.Combine(AppContext.BaseDirectory, "Assets", "Postaci.ico");
     private static string UnreadIconPath { get; } = Path.Combine(AppContext.BaseDirectory, "Assets", "Postaci-unread.ico");
 
+    // The package's name: "Postacı", or "Postacı Dev" for a debug build installed beside it.
+    private static string DisplayName { get; } = Windows.ApplicationModel.Package.Current.DisplayName;
+
     private TrayIcon? _tray;
     private bool _exitRequested;
 
@@ -21,7 +24,8 @@ public sealed partial class MainWindow : Window
     {
         InitializeComponent();
         SystemBackdrop = new AppBackdrop();
-        Title = AppInfo.Name;
+        Title = DisplayName;
+        TitleText.Text = DisplayName;
         ExtendsContentIntoTitleBar = true;
         SetTitleBar(AppTitleBar);
         AppWindow.TitleBar.PreferredHeightOption = TitleBarHeightOption.Standard;
@@ -36,7 +40,7 @@ public sealed partial class MainWindow : Window
 
         try
         {
-            _tray = new TrayIcon(IconPath, UnreadIconPath, AppInfo.Name);
+            _tray = new TrayIcon(IconPath, UnreadIconPath, DisplayName);
             _tray.Clicked += (_, _) => BringToFront();
             _tray.MenuProvider = BuildTrayMenu;
         }
@@ -94,15 +98,15 @@ public sealed partial class MainWindow : Window
         {
             preferences.TrayHintShown = true;
             App.SavePreferences();
-            App.Notifications.ShowInfo(Loc.Format(Strings.Tray_StillRunningTitle, AppInfo.Name), Strings.Tray_StillRunningText);
+            App.Notifications.ShowInfo(Loc.Format(Strings.Tray_StillRunningTitle, DisplayName), Strings.Tray_StillRunningText);
         }
     }
 
     /// <summary>Updates the tray icon and tooltip with the inbox's unread count.</summary>
     public void SetUnreadCount(int unread) =>
         _tray?.Update(unread > 0, unread > 0
-            ? Loc.Format(unread == 1 ? Strings.Tray_UnreadTooltip_One : Strings.Tray_UnreadTooltip, AppInfo.Name, unread)
-            : AppInfo.Name);
+            ? Loc.Format(unread == 1 ? Strings.Tray_UnreadTooltip_One : Strings.Tray_UnreadTooltip, DisplayName, unread)
+            : DisplayName);
 
     /// <summary>Really closes the app (tray menu "Çıkış").</summary>
     /// <summary>Takes the icon out of the notification area now (before a restart ends the process).</summary>
@@ -130,7 +134,7 @@ public sealed partial class MainWindow : Window
         var shell = ShellPage.Current;
         return
         [
-            new TrayMenuItem(Loc.Format(Strings.Tray_Open, AppInfo.Name), BringToFront, IsDefault: true),
+            new TrayMenuItem(Loc.Format(Strings.Tray_Open, DisplayName), BringToFront, IsDefault: true),
             new TrayMenuItem(Strings.Mail_New, () =>
             {
                 BringToFront();

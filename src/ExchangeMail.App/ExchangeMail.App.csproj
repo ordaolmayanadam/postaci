@@ -64,4 +64,26 @@
   <ItemGroup>
     <Using Include="ExchangeMail.Core.Localization" />
   </ItemGroup>
+
+  <!--
+    Debug builds install as a separate app, "Postacı Dev", beside the one from the Store: another package identity,
+    display name and notification activator class (two packages cannot register the same COM class). It has its own
+    settings, sign-in and cache. Release builds (the Store packages) use Package.appxmanifest as it is.
+  -->
+  <Target Name="UseDevPackageManifest" BeforeTargets="_ValidatePresenceOfAppxManifestItems" Condition="'$(Configuration)' == 'Debug'">
+    <PropertyGroup>
+      <_DevManifest>$(MSBuildProjectDirectory)\$(IntermediateOutputPath)Package.Dev.appxmanifest</_DevManifest>
+      <_DevManifestText>$([System.IO.File]::ReadAllText('$(MSBuildProjectDirectory)\Package.appxmanifest'))</_DevManifestText>
+      <_DevManifestText>$(_DevManifestText.Replace('Name="ordaolmayanadam.Postaci"', 'Name="ordaolmayanadam.Postaci.Dev"'))</_DevManifestText>
+      <_DevManifestText>$(_DevManifestText.Replace('&lt;DisplayName&gt;Postacı&lt;/DisplayName&gt;', '&lt;DisplayName&gt;Postacı Dev&lt;/DisplayName&gt;'))</_DevManifestText>
+      <_DevManifestText>$(_DevManifestText.Replace('DisplayName="Postacı"', 'DisplayName="Postacı Dev"'))</_DevManifestText>
+      <_DevManifestText>$(_DevManifestText.Replace('48ED4A3C-A416-4DEC-9C32-F5215A2B374E', '7541C521-96E6-4927-A6B3-46B6D7CF07B1'))</_DevManifestText>
+    </PropertyGroup>
+    <!-- Escaped, so semicolons in the manifest do not split it into several lines. -->
+    <WriteLinesToFile File="$(_DevManifest)" Lines="$([MSBuild]::Escape($(_DevManifestText)))" Overwrite="true" WriteOnlyWhenDifferent="true" Encoding="utf-8" />
+    <ItemGroup>
+      <AppxManifest Remove="@(AppxManifest)" />
+      <AppxManifest Include="$(_DevManifest)" SubType="Designer" />
+    </ItemGroup>
+  </Target>
 </Project>

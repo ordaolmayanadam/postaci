@@ -46,7 +46,7 @@ internal static partial class DemoText
 
     public static string PlainText(string html)
     {
-        var text = Tags().Replace(Styles().Replace(html, "").Replace("</p>", " "), "");
+        var text = Tags().Replace(Styles().Replace(html, "").Replace("</p>", " ").Replace("</td>", " "), "");
         return Spaces().Replace(WebUtility.HtmlDecode(text), " ").Trim();
     }
 

@@ -14,7 +14,7 @@
         <Grid x:Name="AppTitleBar" Padding="16,0,0,0">
             <StackPanel Orientation="Horizontal" Spacing="12" VerticalAlignment="Center">
                 <Image Width="16" Height="16" Source="ms-appx:///Assets/Postaci-64.png" />
-                <TextBlock Text="Postacı" Style="{StaticResource CaptionTextBlockStyle}" VerticalAlignment="Center" />
+                <TextBlock x:Name="TitleText" Style="{StaticResource CaptionTextBlockStyle}" VerticalAlignment="Center" />
             </StackPanel>
         </Grid>
 

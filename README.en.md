@@ -284,6 +284,18 @@ identity, so `Postaci.exe` is not started directly. To run it, open `ExchangeMai
 **ExchangeMail.App** as the startup project, select the **x64** platform and press F5. Visual Studio registers the
 package unsigned and starts it; this needs Windows **Developer Mode** (Settings → System → For developers).
 
+A Debug build installs as **Postacı Dev**, with a package identity of its own, so it runs beside Postacı installed
+from the Store. Its settings, cache and session are separate (the password in Windows Credential Manager is shared).
+To build and install it without Visual Studio:
+
+```powershell
+dotnet build src\ExchangeMail.App -c Debug -p:Platform=x64
+Add-AppxPackage -Register src\ExchangeMail.App\bin\x64\Debug\net10.0-windows10.0.19041.0\win-x64\AppxManifest.xml
+```
+
+Then open **Postacı Dev** from the Start menu. It can be started with `--demo` to try it with made-up data
+(see `Helpers\DemoMode.cs`).
+
 > Do not build the whole solution (e.g. by running `dotnet test` at the root) on Linux/macOS: the WinUI project's
 > XAML compiler only runs on Windows. Run the test project with `--project`.
 
