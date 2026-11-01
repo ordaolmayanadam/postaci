@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using System.Xml.Linq;
 using ExchangeMail.Core.Models;
 using static ExchangeMail.Core.Ews.Xml;
@@ -20,6 +21,7 @@ public sealed partial class EwsClient
                     Field("contacts:JobTitle"),
                     Field("contacts:Department"),
                     IndexedField("contacts:EmailAddress", "EmailAddress1"),
+                    Email1SmtpField(),
                     IndexedField("contacts:PhoneNumber", "BusinessPhone"),
                     IndexedField("contacts:PhoneNumber", "MobilePhone"))),
             M("IndexedPageItemView",
@@ -34,6 +36,7 @@ public sealed partial class EwsClient
                    ?? throw new EwsException(Strings.Ews_RootFolderMissing);
 
         var items = root.Element(TNs + "Items")?.Elements().Select(ParseContact).ToList() ?? [];
+        await ResolveLegacyAddressesAsync(items, ct);
         return new ContactPage(
             items,
             (int?)root.Attribute("TotalItemsInView") ?? items.Count,
@@ -81,8 +84,9 @@ public sealed partial class EwsClient
         var phones = new[] { ("BusinessPhone", contact.BusinessPhone), ("MobilePhone", contact.MobilePhone) }
             .Where(p => !string.IsNullOrWhiteSpace(p.Item2)).ToList();
 
-        // Element order follows the EWS schema for ContactItemType.
+        // Element order follows the EWS schema for ContactItemType (ExtendedProperty is an item field, before them all).
         var item = T("Contact",
+            string.IsNullOrWhiteSpace(contact.Email) ? null : Email1SmtpProperty(contact.Email.Trim()),
             T("DisplayName", displayName),
             Optional("GivenName", contact.GivenName),
             Optional("CompanyName", contact.Company),
@@ -135,6 +139,9 @@ public sealed partial class EwsClient
                 ? T("DeleteItemField", IndexedField(uri, key))
                 : SetContactField(IndexedField(uri, key), T(dictionary, T("Entry", new XAttribute("Key", key), value.Trim()))));
         }
+        updates.Add(string.IsNullOrWhiteSpace(contact.Email)
+            ? T("DeleteItemField", Email1SmtpField())
+            : SetContactField(Email1SmtpField(), Email1SmtpProperty(contact.Email.Trim())));
 
         var request = M("UpdateItem",
             new XAttribute("ConflictResolution", "AlwaysOverwrite"),
@@ -193,6 +200,56 @@ public sealed partial class EwsClient
             string.IsNullOrEmpty(photo) ? null : TryBase64(photo));
     }
 
+    // Exchange-internal address → SMTP address (null when the directory no longer knows it), for the session.
+    private readonly ConcurrentDictionary<string, string?> _legacyAddresses = new(StringComparer.OrdinalIgnoreCase);
+
+    /// <summary>
+    /// For contacts whose e-mail 1 is still the Exchange-internal address after <see cref="ContactEmail"/> (saved
+    /// elsewhere without the SMTP address alongside, see <see cref="Email1SmtpField"/>): each such address is looked
+    /// up in the directory once per session and replaced with its SMTP address; one the directory does not know is
+    /// dropped, as it is no address to write to.
+    /// </summary>
+    private async Task ResolveLegacyAddressesAsync(List<ContactInfo> items, CancellationToken ct)
+    {
+        var pending = items.Select(i => i.Email).OfType<string>().Where(IsLegacyAddress)
+            .Distinct(StringComparer.OrdinalIgnoreCase).Where(dn => !_legacyAddresses.ContainsKey(dn)).ToList();
+        await Parallel.ForEachAsync(pending, new ParallelOptions { MaxDegreeOfParallelism = 4, CancellationToken = ct },
+            async (dn, token) => _legacyAddresses[dn] = await FindSmtpAddressAsync(dn, token));
+
+        for (var i = 0; i < items.Count; i++)
+        {
+            if (items[i].Email is { } email && IsLegacyAddress(email))
+                items[i] = items[i] with { Email = _legacyAddresses.GetValueOrDefault(email) };
+        }
+    }
+
+    private static bool IsLegacyAddress(string address) =>
+        address.StartsWith("/o=", StringComparison.OrdinalIgnoreCase) || address.StartsWith("EX:", StringComparison.OrdinalIgnoreCase);
+
+    private async Task<string?> FindSmtpAddressAsync(string legacyAddress, CancellationToken ct)
+    {
+        var dn = legacyAddress.StartsWith("EX:", StringComparison.OrdinalIgnoreCase) ? legacyAddress[3..] : legacyAddress;
+        // The current legacyExchangeDN matches as EX:; a mailbox moved between organizations keeps its old one as X500.
+        foreach (var entry in new[] { "EX:" + dn, "X500:" + dn })
+        {
+            var request = M("ResolveNames",
+                new XAttribute("ReturnFullContactData", "false"),
+                new XAttribute("SearchScope", "ActiveDirectory"),
+                M("UnresolvedEntry", entry));
+            try
+            {
+                var message = ResponseMessages(await ExecuteAsync(request, ct)).FirstOrDefault();
+                var address = ParseMailbox(message?.Element(MNs + "ResolutionSet")?.Element(TNs + "Resolution")?.Element(TNs + "Mailbox"))?.Address;
+                if (!string.IsNullOrEmpty(address) && address.Contains('@')) return address;
+            }
+            catch (EwsException)
+            {
+                // Not resolvable this way; try the next form.
+            }
+        }
+        return null;
+    }
+
     private static string? NullIfEmpty(string? value) => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
 
     private static byte[]? TryBase64(string value)
@@ -215,10 +272,32 @@ public sealed partial class EwsClient
         return value.StartsWith("SMTP:", StringComparison.OrdinalIgnoreCase) ? value[5..] : value;
     }
 
+    /// <summary>
+    /// PidLidEmail1OriginalDisplayName (MS-OXOCNTC): the SMTP address behind e-mail 1. When the address belongs to a
+    /// mailbox of the organization, Exchange stores e-mail 1 in its internal form (legacyExchangeDN) and EWS returns
+    /// that; this property keeps the address the contact was saved with.
+    /// </summary>
+    private static XElement Email1SmtpField() => T("ExtendedFieldURI",
+        new XAttribute("DistinguishedPropertySetId", "Address"),
+        new XAttribute("PropertyId", "32900"),
+        new XAttribute("PropertyType", "String"));
+
+    private static XElement Email1SmtpProperty(string address) => T("ExtendedProperty", Email1SmtpField(), T("Value", address));
+
+    private static string? ContactEmail(XElement item)
+    {
+        var email = Entry(item.Element(TNs + "EmailAddresses"), "EmailAddress1");
+        if (email is null || !IsLegacyAddress(email)) return email;
+        var smtp = item.Elements(TNs + "ExtendedProperty")
+            .Where(p => (string?)p.Element(TNs + "ExtendedFieldURI")?.Attribute("PropertyId") == "32900")
+            .Select(p => (string?)p.Element(TNs + "Value")).FirstOrDefault();
+        return smtp?.Contains('@') == true ? smtp.Trim() : email;
+    }
+
     private static ContactInfo ParseContact(XElement item) => new(
         ParseItemId(item.Element(TNs + "ItemId")),
         (string?)item.Element(TNs + "DisplayName") ?? "",
-        Entry(item.Element(TNs + "EmailAddresses"), "EmailAddress1"),
+        ContactEmail(item),
         (string?)item.Element(TNs + "CompanyName"),
         (string?)item.Element(TNs + "JobTitle"),
         (string?)item.Element(TNs + "Department"),

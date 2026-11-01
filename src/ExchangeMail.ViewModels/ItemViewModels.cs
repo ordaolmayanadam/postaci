@@ -123,7 +123,7 @@ public sealed partial class MessageItemViewModel(MailSummary summary, bool showR
     public bool IsChild => Parent is not null;
 
     /// <summary>Messages under a conversation are indented and repeat neither the subject nor the chevron space.</summary>
-    public double IndentWidth => IsChild ? 28 : 0;
+    public double IndentWidth => IsChild ? 24 : 0;
     public bool ShowSubject => !IsChild;
 
     public bool HasPreview => Preview.Length > 0;

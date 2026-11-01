@@ -1076,7 +1076,7 @@
     <value>Koyu temada iletiler de koyu</value>
   </data>
   <data name="Settings_DarkBodiesHint" xml:space="preserve">
-    <value>Kendi renklerini belirlemeyen iletiler ve yazma alanları koyu gösterilir. Okunması zor bir iletide okuma bölmesindeki "Açık arka plan" düğmesini kullanın.</value>
+    <value>İletiler ve yazma alanları koyu gösterilir; iletinin kendi açık arka planları koyulaşır, koyu yazıları açılır. Okunması zor bir iletide okuma bölmesindeki "Açık arka plan" düğmesini kullanın.</value>
   </data>
   <data name="Settings_DefaultFont" xml:space="preserve">
     <value>Varsayılan</value>

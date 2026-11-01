@@ -181,28 +181,38 @@
                 DragItemsStarting="OnMessagesDragStarting"
                 KeyDown="OnMessageListKeyDown"
                 SelectionChanged="OnMessageSelectionChanged">
+                <!--  The text starts near the search box: a narrower left edge than the default 16.  -->
+                <ListView.ItemContainerStyle>
+                    <Style BasedOn="{StaticResource DefaultListViewItemStyle}" TargetType="ListViewItem">
+                        <Setter Property="Padding" Value="12,0,12,0" />
+                    </Style>
+                </ListView.ItemContainerStyle>
                 <ListView.ItemTemplate>
                     <DataTemplate x:DataType="vm:MessageItemViewModel">
                         <!--
-                            Conversation view: a chevron opens the conversation, and its messages follow indented (IndentWidth),
-                            without repeating the subject.
+                            Conversation view: a chevron opens the conversation, and its messages follow indented (IndentWidth)
+                            so their text lines up with the conversation's, without repeating the subject. Fixed column widths
+                            instead of ColumnSpacing: a hidden chevron column then leaves no gap, and the unread bar no shift.
                         -->
-                        <Grid Margin="{x:Bind h:Ui.LeftMargin(IndentWidth)}" Padding="0,8" ColumnSpacing="8">
+                        <Grid Margin="{x:Bind h:Ui.LeftMargin(IndentWidth)}" Padding="0,8">
                             <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="3" />
+                                <ColumnDefinition Width="9" />
                                 <ColumnDefinition Width="Auto" />
                                 <ColumnDefinition Width="*" />
                             </Grid.ColumnDefinitions>
                             <Rectangle
+                                Width="3"
+                                HorizontalAlignment="Left"
                                 Fill="{ThemeResource AccentFillColorDefaultBrush}"
                                 RadiusX="1.5"
                                 RadiusY="1.5"
                                 Visibility="{x:Bind IsUnread, Mode=OneWay}" />
                             <Grid Grid.Column="1" Width="24" Visibility="{x:Bind HasExpanderColumn}">
                                 <Button
-                                    Width="24"
+                                    Width="20"
                                     Height="24"
                                     Padding="0"
+                                    HorizontalAlignment="Left"
                                     VerticalAlignment="Top"
                                     AutomationProperties.Name="{h:L Key=Mail_ShowConversation}"
                                     Background="Transparent"

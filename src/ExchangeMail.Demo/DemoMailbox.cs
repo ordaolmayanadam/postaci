@@ -140,14 +140,14 @@ public sealed class DemoMailbox
         DemoMessage Add(string folder, DemoPerson from, IReadOnlyList<DemoPerson> to, DateTimeOffset received, string subjectTr,
             string subjectEn, string bodyTr, string bodyEn, bool read = true, string importance = "Normal",
             IReadOnlyList<DemoAttachment>? attachments = null, string itemClass = "IPM.Note", IReadOnlyList<DemoPerson>? cc = null,
-            bool sameConversation = false)
+            bool sameConversation = false, string? html = null)
         {
             if (!sameConversation) conversation = NewId("conversation");
             var message = new DemoMessage
             {
                 Id = NewId("message"), FolderId = folder, ConversationId = conversation, Subject = T(subjectTr, subjectEn),
                 From = from, To = to, Cc = cc ?? [], Received = received, IsRead = read, Importance = importance,
-                ItemClass = itemClass, BodyHtml = DemoText.Html(T(bodyTr, bodyEn), from.Name),
+                ItemClass = itemClass, BodyHtml = html ?? DemoText.Html(T(bodyTr, bodyEn), from.Name),
                 Attachments = attachments ?? [],
             };
             list.Add(message);
@@ -210,7 +210,13 @@ public sealed class DemoMailbox
         Add("newsletters", selin, [Me], Ago(1, 11, 5),
             "Kasım bülteni taslağı", "November newsletter draft",
             "Kasım bülteninin taslağı hazır. Planlama ekibinden kısa bir başarı hikâyesi eklemek isteriz; birkaç cümle yazabilir misin?",
-            "The November newsletter draft is ready. We would love a short success story from the planning team; could you write a few sentences?");
+            "The November newsletter draft is ready. We would love a short success story from the planning team; could you write a few sentences?",
+            // Laid out like a real newsletter (white tables, dark banner) to show how the dark reading pane adapts it.
+            html: DemoText.NewsletterHtml(T("Kuzey Lojistik Bülteni · Kasım", "Harbor Logistics News · November"),
+                T("Kasım bülteninin taslağı hazır. Bu sayıda kampanya dönemi hazırlıkları, yeni depo ekibi ve rota optimizasyonu pilotu var.\n\nPlanlama ekibinden kısa bir başarı hikâyesi eklemek isteriz; birkaç cümle yazabilir misin?",
+                    "The November newsletter draft is ready. This issue covers campaign preparations, the new warehouse team and the route optimisation pilot.\n\nWe would love a short success story from the planning team; could you write a few sentences?"),
+                T("Taslağı aç", "Open the draft"),
+                T("Bu bülten şirket içi dağıtım içindir.", "This newsletter is for internal distribution.")));
 
         Add("inbox", emre, [Me], Ago(2, 9, 30),
             "Parola yenileme hatırlatması", "Password renewal reminder",
@@ -231,7 +237,13 @@ public sealed class DemoMailbox
         Add("inbox", can, [Me], Ago(4, 10, 20),
             "Teklif onaylandı", "Proposal approved",
             "Müjde: Ege bölgesi dağıtım teklifimiz onaylandı. Başlangıç tarihi 1 Aralık. Planlama tarafında neye ihtiyaç olduğunu konuşalım.",
-            "Good news: our distribution proposal for the South West has been approved. It starts on 1 December. Let's talk about what planning needs.");
+            "Good news: our distribution proposal for the South West has been approved. It starts on 1 December. Let's talk about what planning needs.",
+            // Written the way Outlook writes it (black text, colored signature) for the dark reading pane.
+            html: DemoText.OutlookHtml(
+                T("Merhaba,\n\nMüjde: Ege bölgesi dağıtım teklifimiz onaylandı. Başlangıç tarihi 1 Aralık. Planlama tarafında neye ihtiyaç olduğunu konuşalım.",
+                    "Hi,\n\nGood news: our distribution proposal for the South West has been approved. It starts on 1 December. Let's talk about what planning needs."),
+                can.Name, can.JobTitle,
+                T("Sözleşme imzası 25 Kasım'a kadar tamamlanmalı.", "The contract must be signed by 25 November.")));
 
         Add("invoices", ayse, [Me], Ago(5, 13, 45),
             "Eylül faturaları", "September invoices",

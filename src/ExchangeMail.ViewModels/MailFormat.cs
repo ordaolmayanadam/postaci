@@ -85,7 +85,7 @@ public static partial class MailFormat
         Default,
         /// <summary>
         /// Offers a dark scheme on <see cref="DarkPageBackground"/>: text and background the message leaves unset
-        /// turn dark, colors it sets itself are kept (so a light newsletter stays light).
+        /// turn dark, and colors it sets itself are adapted by <see cref="DarkMessageColors"/>.
         /// </summary>
         Dark,
         /// <summary>Light, also while the viewer reports prefers-color-scheme: dark (one message shown light in dark mode).</summary>
@@ -144,6 +144,7 @@ public static partial class MailFormat
     public static string ApplyReadingPreferences(string preparedHtml, string? fontFamily, bool overrideFonts, int zoomPercent,
         PageColorScheme scheme = PageColorScheme.Default)
     {
+        if (scheme == PageColorScheme.Dark) preparedHtml = DarkMessageColors.Apply(preparedHtml);
         var css = new StringBuilder();
         css.Append(scheme switch
         {

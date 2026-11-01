@@ -156,6 +156,74 @@ public class CalendarContactsTests
     }
 
     [Fact]
+    public async Task FindContacts_reads_the_smtp_address_kept_beside_an_exchange_internal_one()
+    {
+        var server = new FakeEwsServer().On("FindItem", Ok("FindItem", """
+            <m:RootFolder IndexedPagingOffset="1" TotalItemsInView="1" IncludesLastItemInRange="true"><t:Items>
+              <t:Contact><t:ItemId Id="C1" ChangeKey="c" />
+                <t:ExtendedProperty><t:ExtendedFieldURI DistinguishedPropertySetId="Address" PropertyId="32900" PropertyType="String" /><t:Value>ayse@sirket.com</t:Value></t:ExtendedProperty>
+                <t:DisplayName>Ayşe Kaya</t:DisplayName>
+                <t:EmailAddresses><t:Entry Key="EmailAddress1">/o=Org/ou=Exchange Administrative Group (FYDIBOHF23SPDLT)/cn=Recipients/cn=ayse</t:Entry></t:EmailAddresses></t:Contact>
+            </t:Items></m:RootFolder>
+            """));
+        using var client = server.CreateClient();
+
+        var page = await client.FindContactsAsync(ct: TestContext.Current.CancellationToken);
+
+        Assert.Equal("ayse@sirket.com", page.Items[0].Email);
+        Assert.DoesNotContain("ResolveNames", server.Operations); // no directory lookup needed
+        Assert.Contains(server.Request("FindItem").Descendants(T + "ExtendedFieldURI"), f => (string?)f.Attribute("PropertyId") == "32900");
+    }
+
+    [Fact]
+    public async Task FindContacts_looks_up_exchange_internal_addresses_saved_without_smtp()
+    {
+        const string known = "/o=Org/ou=Exchange Administrative Group (FYDIBOHF23SPDLT)/cn=Recipients/cn=ayse";
+        const string gone = "/o=Org/ou=Exchange Administrative Group (FYDIBOHF23SPDLT)/cn=Recipients/cn=eski";
+        const string noResults = """
+            <m:ResolveNamesResponse><m:ResponseMessages><m:ResolveNamesResponseMessage ResponseClass="Error">
+              <m:MessageText>No results were found.</m:MessageText><m:ResponseCode>ErrorNameResolutionNoResults</m:ResponseCode>
+            </m:ResolveNamesResponseMessage></m:ResponseMessages></m:ResolveNamesResponse>
+            """;
+        var server = new FakeEwsServer().On("FindItem", Ok("FindItem", $"""
+            <m:RootFolder IndexedPagingOffset="3" TotalItemsInView="3" IncludesLastItemInRange="true"><t:Items>
+              <t:Contact><t:ItemId Id="C1" ChangeKey="c" /><t:DisplayName>Ayşe Kaya</t:DisplayName>
+                <t:EmailAddresses><t:Entry Key="EmailAddress1">{known}</t:Entry></t:EmailAddresses></t:Contact>
+              <t:Contact><t:ItemId Id="C2" ChangeKey="c" /><t:DisplayName>Ayşe Kaya (kopya)</t:DisplayName>
+                <t:EmailAddresses><t:Entry Key="EmailAddress1">{known}</t:Entry></t:EmailAddresses></t:Contact>
+              <t:Contact><t:ItemId Id="C3" ChangeKey="c" /><t:DisplayName>Eski Çalışan</t:DisplayName>
+                <t:EmailAddresses><t:Entry Key="EmailAddress1">EX:{gone}</t:Entry></t:EmailAddresses></t:Contact>
+            </t:Items></m:RootFolder>
+            """));
+        // Lookups run at once, so each answer depends on what was asked.
+        server.OnRaw("ResolveNames", Answer).OnRaw("ResolveNames", Answer).OnRaw("ResolveNames", Answer);
+        using var client = server.CreateClient();
+
+        var page = await client.FindContactsAsync(ct: TestContext.Current.CancellationToken);
+
+        Assert.Equal("ayse@sirket.com", page.Items[0].Email);
+        Assert.Equal("ayse@sirket.com", page.Items[1].Email);
+        Assert.Null(page.Items[2].Email);
+        // One lookup for the known address; EX: then X500: for the one the directory no longer has.
+        var entries = server.Requests.Where(r => r.Name.LocalName == "ResolveNames").Select(r => (string?)r.Element(M + "UnresolvedEntry")).ToList();
+        Assert.Equal(3, entries.Count);
+        Assert.Contains("EX:" + known, entries);
+        Assert.Contains("X500:" + gone, entries);
+
+        HttpResponseMessage Answer()
+        {
+            var entry = (string?)server.Requests.Last(r => r.Name.LocalName == "ResolveNames").Element(M + "UnresolvedEntry");
+            return FakeEwsServer.Xml(System.Net.HttpStatusCode.OK, FakeEwsServer.Envelope(entry == "EX:" + known ? """
+                <m:ResolveNamesResponse><m:ResponseMessages><m:ResolveNamesResponseMessage ResponseClass="Success"><m:ResponseCode>NoError</m:ResponseCode>
+                  <m:ResolutionSet TotalItemsInView="1" IncludesLastItemInRange="true"><t:Resolution>
+                    <t:Mailbox><t:Name>Ayşe Kaya</t:Name><t:EmailAddress>ayse@sirket.com</t:EmailAddress><t:RoutingType>SMTP</t:RoutingType></t:Mailbox>
+                  </t:Resolution></m:ResolutionSet>
+                </m:ResolveNamesResponseMessage></m:ResponseMessages></m:ResolveNamesResponse>
+                """ : noResults));
+        }
+    }
+
+    [Fact]
     public async Task SearchDirectory_parses_full_contact_data()
     {
         var server = new FakeEwsServer().On("ResolveNames", """
@@ -192,9 +260,13 @@ public class CalendarContactsTests
         }, TestContext.Current.CancellationToken);
 
         var contact = server.Request("CreateItem").Descendants(T + "Contact").Single();
-        Assert.Equal(["DisplayName", "GivenName", "CompanyName", "EmailAddresses", "PhoneNumbers", "JobTitle", "Surname"],
+        Assert.Equal(["ExtendedProperty", "DisplayName", "GivenName", "CompanyName", "EmailAddresses", "PhoneNumbers", "JobTitle", "Surname"],
             contact.Elements().Select(e => e.Name.LocalName));
         Assert.Equal("Zeynep Ak", contact.Element(T + "DisplayName")!.Value);
+        // The SMTP address is kept alongside, as Exchange may store e-mail 1 in its internal form.
+        var smtp = contact.Element(T + "ExtendedProperty")!;
+        Assert.Equal("32900", (string?)smtp.Element(T + "ExtendedFieldURI")!.Attribute("PropertyId"));
+        Assert.Equal("zeynep@x.com", (string?)smtp.Element(T + "Value"));
         Assert.Equal(["BusinessPhone", "MobilePhone"], contact.Element(T + "PhoneNumbers")!.Elements().Select(e => (string)e.Attribute("Key")!));
     }
 }

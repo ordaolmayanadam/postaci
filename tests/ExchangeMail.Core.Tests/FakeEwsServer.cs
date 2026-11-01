@@ -55,13 +55,20 @@ internal sealed class FakeEwsServer : HttpMessageHandler
     {
         var doc = XDocument.Parse(await request.Content!.ReadAsStringAsync(cancellationToken));
         var operation = doc.Root!.Element(XName.Get("Body", "http://schemas.xmlsoap.org/soap/envelope/"))!.Elements().First();
-        Requests.Add(operation);
-        Headers.Add(doc.Root!.Element(XName.Get("Header", "http://schemas.xmlsoap.org/soap/envelope/")));
-        AnchorMailboxes.Add(request.Headers.TryGetValues("X-AnchorMailbox", out var anchor) ? anchor.Single() : null);
+        // Requests may arrive in parallel; each is recorded and answered as one step, so a response built from
+        // Requests sees its own request last.
+        Task<HttpResponseMessage> response;
+        lock (_responses)
+        {
+            Requests.Add(operation);
+            Headers.Add(doc.Root!.Element(XName.Get("Header", "http://schemas.xmlsoap.org/soap/envelope/")));
+            AnchorMailboxes.Add(request.Headers.TryGetValues("X-AnchorMailbox", out var anchor) ? anchor.Single() : null);
 
-        var name = operation.Name.LocalName;
-        if (!_responses.TryGetValue(name, out var queue) || queue.Count == 0)
-            throw new InvalidOperationException($"No canned response for {name}");
-        return await queue.Dequeue()();
+            var name = operation.Name.LocalName;
+            if (!_responses.TryGetValue(name, out var queue) || queue.Count == 0)
+                throw new InvalidOperationException($"No canned response for {name}");
+            response = queue.Dequeue()();
+        }
+        return await response;
     }
 }

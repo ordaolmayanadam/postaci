@@ -219,7 +219,7 @@ public class StreamingConversationTests
         var children = vm.Messages.Skip(1).Take(3).ToList();
         Assert.All(children, c => Assert.Same(conversation, c.Parent));
         Assert.Equal(["Ben", "Ayşe Kaya", "Ali Veli"], children.Select(c => c.Sender));
-        Assert.All(children, c => Assert.Equal(28, c.IndentWidth));
+        Assert.All(children, c => Assert.Equal(24, c.IndentWidth));
         Assert.False(children[0].ShowSubject);
 
         // Deleting the conversation takes its listed messages with it.

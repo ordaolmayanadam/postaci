@@ -348,6 +348,8 @@ public class FeatureTests
         var updates = server.Request("UpdateItem").Descendants(T + "Updates").Single().Elements().ToList();
         var setEmail = updates.Single(u => u.Name.LocalName == "SetItemField" && u.Element(T + "IndexedFieldURI") is { } f && (string?)f.Attribute("FieldIndex") == "EmailAddress1");
         Assert.Equal("ayse@yeni.com", setEmail.Descendants(T + "Entry").Single().Value);
+        var setSmtp = updates.Single(u => u.Name.LocalName == "SetItemField" && u.Element(T + "ExtendedFieldURI") is not null);
+        Assert.Equal("ayse@yeni.com", setSmtp.Descendants(T + "Value").Single().Value);
         Assert.Contains(updates, u => u.Name.LocalName == "DeleteItemField" && (string?)u.Element(T + "IndexedFieldURI")?.Attribute("FieldIndex") == "BusinessPhone");
         Assert.Contains(updates, u => u.Name.LocalName == "DeleteItemField" && (string?)u.Element(T + "FieldURI")?.Attribute("FieldURI") == "contacts:CompanyName");
         Assert.Equal("Ayşe Kaya", updates[0].Descendants(T + "DisplayName").Single().Value);
