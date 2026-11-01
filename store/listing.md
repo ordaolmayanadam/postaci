@@ -108,12 +108,19 @@ Store başlığı ve düğmeleri sol alta bindirdiği için pencereler sağ üst
 
 **Bu sürümdeki yenilikler** (1500 karakter)
 
+> Yeni:
+> - Birden çok iletiyle çalışma: liste başlığındaki Seç düğmesiyle satırlarda onay kutuları açılır. Seçili iletiler
+>   için okundu ya da okunmadı yapma, taşıma ve silme düğmeleri okuma bölmesinde görünür; aynı işlemler satırlara sağ
+>   tıklayınca da gelir.
+>
 > İyileştirmeler:
 > - Koyu temada iletiler daha okunaklı: iletinin kendi beyaz arka planları ve tabloları koyulaşır, siyah ya da koyu
 >   renkli yazılar açılır; renklerin tonu korunur. Kendi koyu görünümü olan iletiler olduğu gibi gösterilir.
 > - Posta listesi daha derli toplu: soldaki boşluk azaldı, açılan konuşmanın iletileri başlıkla aynı hizada.
 >
 > Düzeltmeler:
+> - Okunan bir iletinin yeni posta bildirimi artık bildirim merkezinden kalkıyor; ileti Outlook'ta ya da telefonda
+>   okunduysa da.
 > - Şirket rehberinden kişilere eklenen kişilerde e-posta adresi yerine Exchange'in iç adresi (/o=…) görünüyordu;
 >   artık gerçek e-posta adresi gösteriliyor.
 > - Ayarlar'da tema değiştirilince açık iletinin renkleri hemen yeni temaya geçiyor.
@@ -188,12 +195,19 @@ Exchange, e-posta, posta, takvim, EWS, Outlook alternatifi, kişiler
 
 **What's new in this version** (1500 characters)
 
+> New:
+> - Work with several messages: the Select button above the list puts check boxes on the rows. Buttons to mark the
+>   selected messages read or unread, move or delete them appear in the reading pane; the same actions are on the
+>   right-click menu of the rows.
+>
 > Improvements:
 > - Messages are easier to read in the dark theme: a message's own white backgrounds and tables turn dark and black or
 >   dark text turns light, keeping its hue. Messages with a dark look of their own are shown as they are.
 > - A tidier mail list: less space on the left, and the messages of an opened conversation line up with its title.
 >
 > Fixes:
+> - The new mail notification of a message that has been read now leaves the notification centre, also when the
+>   message was read in Outlook or on a phone.
 > - Contacts added from the company directory showed Exchange's internal address (/o=…) instead of the e-mail address;
 >   the real e-mail address is shown now.
 > - Changing the theme in Settings now updates the colors of the open message right away.
