@@ -1,3 +1,4 @@
+using System.Globalization;
 using ExchangeMail.Core.Ews;
 using ExchangeMail.Core.Models;
 using ExchangeMail.Demo;
@@ -10,6 +11,33 @@ public class DemoMailboxTests
     private static readonly DateTimeOffset Now = new(2026, 10, 28, 10, 0, 0, TimeSpan.FromHours(3)); // a Wednesday
 
     private static EwsClient Client(string language = "tr") => new(DemoEwsHandler.EwsUrl, new DemoEwsHandler(new DemoMailbox(language, Now)));
+
+    [Theory]
+    [InlineData("tr-TR")] // weeks start on Monday
+    [InlineData("en-US")] // weeks start on Sunday
+    public void The_working_week_lies_in_the_week_the_calendar_shows(string culture)
+    {
+        var previous = CultureInfo.CurrentCulture;
+        try
+        {
+            CultureInfo.CurrentCulture = CultureInfo.GetCultureInfo(culture);
+            // A Sunday: in en-US it starts a new week, in tr-TR it ends one.
+            var sunday = new DateTimeOffset(2026, 11, 1, 10, 0, 0, TimeSpan.FromHours(3));
+            var firstDay = CultureInfo.CurrentCulture.DateTimeFormat.FirstDayOfWeek;
+            var weekStart = sunday.Date.AddDays(-(((int)sunday.DayOfWeek - (int)firstDay + 7) % 7));
+
+            var shown = new DemoMailbox("en", sunday).Events
+                .Where(e => e.Start.Date >= weekStart && e.Start.Date < weekStart.AddDays(7)).ToList();
+
+            // The working week, Monday to Friday, is all on screen (one-off events: series also run into the next week).
+            Assert.Contains(shown, e => e.Subject == "Campaign planning" && e.Start.DayOfWeek == DayOfWeek.Monday);
+            Assert.Contains(shown, e => e.Subject == "Routing demo" && e.Start.DayOfWeek == DayOfWeek.Friday);
+        }
+        finally
+        {
+            CultureInfo.CurrentCulture = previous;
+        }
+    }
 
     [Fact]
     public async Task Folder_tree_has_the_well_known_folders_first()

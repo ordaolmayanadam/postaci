@@ -109,7 +109,7 @@ public class CalendarContactsTests
         using var client = new FakeEwsServer().CreateClient();
         var now = DateTimeOffset.Now;
 
-        await Assert.ThrowsAsync<ArgumentException>(() => client.CreateAppointmentAsync(new NewAppointment { Start = now, End = now }));
+        await Assert.ThrowsAsync<ArgumentException>(() => client.CreateAppointmentAsync(new NewAppointment { Start = now, End = now }, TestContext.Current.CancellationToken));
     }
 
     [Fact]

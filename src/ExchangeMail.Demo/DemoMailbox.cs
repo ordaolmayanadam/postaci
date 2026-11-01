@@ -1,3 +1,4 @@
+using System.Globalization;
 namespace ExchangeMail.Demo;
 
 public sealed record DemoPerson(string Name, string Address, string JobTitle, string Department, string Phone, string Mobile, string Office);
@@ -282,7 +283,11 @@ public sealed class DemoMailbox
         DemoPerson selin, DemoPerson zeynep)
     {
         var events = new List<DemoEvent>();
-        var monday = Now.Date.AddDays(-(((int)Now.DayOfWeek + 6) % 7));
+        // The Monday of the week the calendar opens on, which starts on the culture's first day: in en-US a Sunday
+        // begins a new week, so the working week is the one after it, not the one before.
+        var firstDay = CultureInfo.CurrentCulture.DateTimeFormat.FirstDayOfWeek;
+        var weekStart = Now.Date.AddDays(-(((int)Now.DayOfWeek - (int)firstDay + 7) % 7));
+        var monday = weekStart.AddDays(((int)DayOfWeek.Monday - (int)weekStart.DayOfWeek + 7) % 7);
 
         DemoEvent At(int day, double startHour, double hours, string subjectTr, string subjectEn, string locationTr, string locationEn,
             DemoPerson organizer, IReadOnlyList<DemoPerson> attendees, string? series = null, string response = "Accept",
