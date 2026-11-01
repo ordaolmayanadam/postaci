@@ -21,6 +21,8 @@ public sealed class HtmlViewer
     private bool _ready;
     private string? _pending;
     private bool _forceLight;
+    // Whether the shown page was rendered for a dark theme; null before the first one.
+    private bool? _shownDark;
 
     public HtmlViewer(WebView2 view)
     {
@@ -35,6 +37,14 @@ public sealed class HtmlViewer
         };
         _view.ActualThemeChanged += (_, _) =>
         {
+            Show(_pending);
+            DarkChanged?.Invoke(this, EventArgs.Empty);
+        };
+        // A theme changed in Settings changes it while this page waits in the navigation cache, out of the tree, where
+        // ActualThemeChanged does not reach it: catch up when the page is shown again.
+        _view.Loaded += (_, _) =>
+        {
+            if (!_ready || _shownDark == IsDark) return;
             Show(_pending);
             DarkChanged?.Invoke(this, EventArgs.Empty);
         };
@@ -111,6 +121,7 @@ public sealed class HtmlViewer
         _pending = html;
         if (!_ready) return;
         var p = App.Preferences;
+        _shownDark = IsDark;
         var dark = IsDark && !_forceLight;
         WebViewTheme.Apply(_view, dark);
         var scheme = dark ? MailFormat.PageColorScheme.Dark
