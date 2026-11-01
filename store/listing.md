@@ -108,16 +108,15 @@ Store başlığı ve düğmeleri sol alta bindirdiği için pencereler sağ üst
 
 **Bu sürümdeki yenilikler** (1500 karakter)
 
-> Yeni:
-> - Etkinlik anımsatıcıları: anımsatıcısı olan etkinlikler zamanı gelince Windows bildirimi olarak gösterilir. Ertele
->   ve Kapat Exchange'e kaydedilir, Outlook'ta ve telefonda da geçerli olur.
-> - Toplantıya katıl: Teams, Zoom, Google Meet, Webex ve Jitsi toplantılarına takvimden ve anımsatıcı bildiriminden
->   tek tıkla katılın. Kurum içi toplantı sunucularınızı Ayarlar → Takvim'den ekleyebilirsiniz.
-> - Ayarlar'da yeni Takvim bölümü: anımsatıcıları açıp kapatma ve kurumun toplantı adresleri.
+> İyileştirmeler:
+> - Koyu temada iletiler daha okunaklı: iletinin kendi beyaz arka planları ve tabloları koyulaşır, siyah ya da koyu
+>   renkli yazılar açılır; renklerin tonu korunur. Kendi koyu görünümü olan iletiler olduğu gibi gösterilir.
+> - Posta listesi daha derli toplu: soldaki boşluk azaldı, açılan konuşmanın iletileri başlıkla aynı hizada.
 >
 > Düzeltmeler:
-> - Kapatılan bir anımsatıcının birkaç dakikada bir yeniden görünmesi giderildi.
-> - http:// veya https:// olmadan yazılmış toplantı adresleri de tanınıyor.
+> - Şirket rehberinden kişilere eklenen kişilerde e-posta adresi yerine Exchange'in iç adresi (/o=…) görünüyordu;
+>   artık gerçek e-posta adresi gösteriliyor.
+> - Ayarlar'da tema değiştirilince açık iletinin renkleri hemen yeni temaya geçiyor.
 
 **Ürün özellikleri** (en fazla 20, her biri 200 karakter)
 
@@ -189,16 +188,15 @@ Exchange, e-posta, posta, takvim, EWS, Outlook alternatifi, kişiler
 
 **What's new in this version** (1500 characters)
 
-> New:
-> - Event reminders: events with a reminder show a Windows notification when it is due. Snooze and Dismiss are saved
->   in Exchange, so they apply in Outlook and on your phone too.
-> - Join meeting: join Teams, Zoom, Google Meet, Webex and Jitsi meetings with one click from the calendar and from the
->   reminder notification. Add your organization's own meeting servers under Settings → Calendar.
-> - A new Calendar section in Settings: turn reminders on or off and add your organization's meeting addresses.
+> Improvements:
+> - Messages are easier to read in the dark theme: a message's own white backgrounds and tables turn dark and black or
+>   dark text turns light, keeping its hue. Messages with a dark look of their own are shown as they are.
+> - A tidier mail list: less space on the left, and the messages of an opened conversation line up with its title.
 >
 > Fixes:
-> - A dismissed reminder no longer comes back every few minutes.
-> - Meeting addresses written without http:// or https:// are recognized too.
+> - Contacts added from the company directory showed Exchange's internal address (/o=…) instead of the e-mail address;
+>   the real e-mail address is shown now.
+> - Changing the theme in Settings now updates the colors of the open message right away.
 
 **Product features** (up to 20, 200 characters each)
 
